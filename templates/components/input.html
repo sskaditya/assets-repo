@@ -1,0 +1,30 @@
+<!-- Input Component -->
+<!-- Usage: {% include "components/input.html" with name="email" type="email" placeholder="Enter your email" label="Email Address" %} -->
+
+<div class="space-y-2 {{ wrapper_class }}">
+    {% if label %}
+    <label for="{{ name }}" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        {{ label }}
+        {% if required %}<span class="text-destructive">*</span>{% endif %}
+    </label>
+    {% endif %}
+    
+    <input 
+        type="{{ type|default:'text' }}" 
+        id="{{ name }}" 
+        name="{{ name }}"
+        class="input {{ class }}"
+        placeholder="{{ placeholder }}"
+        {% if value %}value="{{ value }}"{% endif %}
+        {% if required %}required{% endif %}
+        {% if disabled %}disabled{% endif %}
+    />
+    
+    {% if help_text %}
+    <p class="text-sm text-muted-foreground">{{ help_text }}</p>
+    {% endif %}
+    
+    {% if error %}
+    <p class="text-sm text-destructive">{{ error }}</p>
+    {% endif %}
+</div>

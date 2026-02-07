@@ -1,0 +1,33 @@
+<!-- Button Component Examples -->
+<!-- Usage: {% include "components/button.html" with text="Click Me" variant="primary" %} -->
+
+{% if variant == "primary" %}
+<button class="btn btn-primary px-4 py-2 {{ class }}">
+    {{ text|default:"Button" }}
+</button>
+
+{% elif variant == "secondary" %}
+<button class="btn btn-secondary px-4 py-2 {{ class }}">
+    {{ text|default:"Button" }}
+</button>
+
+{% elif variant == "destructive" %}
+<button class="btn btn-destructive px-4 py-2 {{ class }}">
+    {{ text|default:"Button" }}
+</button>
+
+{% elif variant == "outline" %}
+<button class="btn btn-outline px-4 py-2 {{ class }}">
+    {{ text|default:"Button" }}
+</button>
+
+{% elif variant == "ghost" %}
+<button class="btn btn-ghost px-4 py-2 {{ class }}">
+    {{ text|default:"Button" }}
+</button>
+
+{% else %}
+<button class="btn btn-primary px-4 py-2 {{ class }}">
+    {{ text|default:"Button" }}
+</button>
+{% endif %}

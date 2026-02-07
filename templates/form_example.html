@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Form Example - Assetz{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Page Header -->
+    <div>
+        <h1 class="text-3xl font-bold tracking-tight">Add New Asset</h1>
+        <p class="text-muted-foreground">Fill in the details to add a new asset to the system</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card p-6">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Asset Name -->
+            {% include "components/input.html" with name="asset_name" label="Asset Name" placeholder="e.g., Dell XPS 15" required=True %}
+            
+            <!-- Asset ID -->
+            {% include "components/input.html" with name="asset_id" label="Asset ID" placeholder="AST-XXX" required=True help_text="Unique identifier for this asset" %}
+            
+            <!-- Category -->
+            <div class="space-y-2">
+                <label for="category" class="text-sm font-medium leading-none">
+                    Category <span class="text-destructive">*</span>
+                </label>
+                <select id="category" name="category" class="input" required>
+                    <option value="">Select a category</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="it_infrastructure">IT Infrastructure</option>
+                    <option value="vehicles">Vehicles</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <!-- Value -->
+            {% include "components/input.html" with name="value" type="number" label="Asset Value" placeholder="0.00" required=True %}
+            
+            <!-- Status -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium leading-none">Status</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="status" value="active" class="h-4 w-4" checked>
+                        <span class="text-sm">Active</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="status" value="maintenance" class="h-4 w-4">
+                        <span class="text-sm">Maintenance</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="status" value="retired" class="h-4 w-4">
+                        <span class="text-sm">Retired</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="space-y-2">
+                <label for="description" class="text-sm font-medium leading-none">Description</label>
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    rows="4" 
+                    class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    placeholder="Enter a detailed description of the asset"
+                ></textarea>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex gap-4 justify-end pt-4">
+                <button type="button" class="btn btn-outline px-4 py-2">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary px-4 py-2">
+                    Add Asset
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Component Examples -->
+    <div class="card p-6">
+        <h2 class="text-xl font-semibold mb-4">Component Examples</h2>
+        
+        <div class="space-y-6">
+            <!-- Buttons -->
+            <div class="space-y-2">
+                <h3 class="text-sm font-medium">Buttons</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% include "components/button.html" with text="Primary" variant="primary" %}
+                    {% include "components/button.html" with text="Secondary" variant="secondary" %}
+                    {% include "components/button.html" with text="Destructive" variant="destructive" %}
+                    {% include "components/button.html" with text="Outline" variant="outline" %}
+                    {% include "components/button.html" with text="Ghost" variant="ghost" %}
+                </div>
+            </div>
+            
+            <!-- Badges -->
+            <div class="space-y-2">
+                <h3 class="text-sm font-medium">Badges</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% include "components/badge.html" with text="Default" variant="default" %}
+                    {% include "components/badge.html" with text="Secondary" variant="secondary" %}
+                    {% include "components/badge.html" with text="Outline" variant="outline" %}
+                    {% include "components/badge.html" with text="Destructive" variant="destructive" %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

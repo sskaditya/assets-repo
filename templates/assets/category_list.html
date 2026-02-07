@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Asset Categories - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Asset Categories</h1>
+            <p class="text-muted-foreground mt-1">Browse all asset categories</p>
+        </div>
+        <a href="{% url 'assets:category_create' %}" class="btn btn-primary">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Add Category
+        </a>
+    </div>
+
+    <!-- Categories Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for category in categories %}
+        <div class="card hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <i data-lucide="folder" class="w-6 h-6 text-primary"></i>
+                    </div>
+                    <span class="badge badge-secondary">{{ category.asset_count }} assets</span>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-1">{{ category.name }}</h3>
+                <p class="text-sm text-muted-foreground mb-1">{{ category.code }}</p>
+                {% if category.description %}
+                <p class="text-sm text-muted-foreground mt-3">{{ category.description|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+            <div class="p-4 border-t border-border bg-muted/20">
+                <a href="{% url 'assets:asset_list' %}?category={{ category.pk }}" class="text-sm text-primary hover:text-primary-600 font-medium">
+                    View Assets →
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="card p-12 text-center">
+                <div class="mx-auto h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <i data-lucide="folder" class="w-8 h-8 text-muted-foreground"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-2">No categories found</h3>
+                <p class="text-sm text-muted-foreground mb-4">Get started by creating your first category</p>
+                <a href="{% url 'assets:category_create' %}" class="btn btn-primary">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Add Category
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

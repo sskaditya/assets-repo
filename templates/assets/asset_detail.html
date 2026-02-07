@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}{{ asset.asset_tag }} - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-bold text-foreground">{{ asset.asset_tag }}</h1>
+                {% if asset.is_critical %}
+                <span class="badge bg-red-100 text-red-800 border-red-200">
+                    <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                    Critical
+                </span>
+                {% endif %}
+                {% if asset.is_under_warranty %}
+                <span class="badge bg-green-100 text-green-800 border-green-200">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i>
+                    Under Warranty
+                </span>
+                {% endif %}
+            </div>
+            <p class="text-muted-foreground mt-1">{{ asset.name }}</p>
+        </div>
+        <div class="flex gap-2">
+            {% if asset.qr_code_image %}
+            <a href="{% url 'assets:asset_qr_code' asset.pk %}" class="btn btn-outline" target="_blank">
+                <i data-lucide="qr-code" class="w-4 h-4"></i>
+                QR Code
+            </a>
+            {% endif %}
+            <a href="{% url 'assets:asset_update' asset.pk %}" class="btn btn-primary">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+                Edit
+            </a>
+            <a href="{% url 'assets:asset_delete' asset.pk %}" class="btn btn-destructive">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                Delete
+            </a>
+        </div>
+    </div>
+
+    <!-- Asset Information -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Information -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Basic Details -->
+            <div class="card">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground">Basic Information</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Asset Tag</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.asset_tag }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Serial Number</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.serial_number|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Category</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.category.name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Type</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.asset_type.name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Make</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.make|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Model</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.model|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Status</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.get_status_display }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Condition</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.get_condition_display|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                    {% if asset.description %}
+                    <div>
+                        <p class="text-sm text-muted-foreground">Description</p>
+                        <p class="text-sm text-foreground mt-1">{{ asset.description }}</p>
+                    </div>
+                    {% endif %}
+                    {% if asset.specifications %}
+                    <div>
+                        <p class="text-sm text-muted-foreground">Specifications</p>
+                        <p class="text-sm text-foreground mt-1 whitespace-pre-line">{{ asset.specifications }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Location & Assignment -->
+            <div class="card">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground">Location & Assignment</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Location</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.location.name|default:"Not assigned" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Department</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.department.name|default:"Not assigned" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Assigned To</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.assigned_to.get_full_name|default:"Unassigned" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Custodian</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.custodian.get_full_name|default:"Not assigned" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Procurement Information -->
+            <div class="card">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground">Procurement Information</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Vendor</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.vendor.name|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Purchase Date</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.purchase_date|date:"M d, Y"|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Purchase Price</p>
+                            <p class="text-sm font-medium text-foreground">{% if asset.purchase_price %}₹{{ asset.purchase_price }}{% else %}N/A{% endif %}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">PO Number</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.purchase_order_number|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Invoice Number</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.invoice_number|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Invoice Date</p>
+                            <p class="text-sm font-medium text-foreground">{{ asset.invoice_date|date:"M d, Y"|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warranty & AMC -->
+            <div class="card">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground">Warranty & AMC</h3>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        <p class="text-sm font-medium text-foreground mb-3">Warranty</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Start Date</p>
+                                <p class="text-sm font-medium text-foreground">{{ asset.warranty_start_date|date:"M d, Y"|default:"N/A" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-muted-foreground">End Date</p>
+                                <p class="text-sm font-medium text-foreground">{{ asset.warranty_end_date|date:"M d, Y"|default:"N/A" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-foreground mb-3">AMC</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Vendor</p>
+                                <p class="text-sm font-medium text-foreground">{{ asset.amc_vendor.name|default:"N/A" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-muted-foreground">AMC Cost</p>
+                                <p class="text-sm font-medium text-foreground">{% if asset.amc_cost %}₹{{ asset.amc_cost }}{% else %}N/A{% endif %}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-muted-foreground">Start Date</p>
+                                <p class="text-sm font-medium text-foreground">{{ asset.amc_start_date|date:"M d, Y"|default:"N/A" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-muted-foreground">End Date</p>
+                                <p class="text-sm font-medium text-foreground">{{ asset.amc_end_date|date:"M d, Y"|default:"N/A" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="card">
+                <div class="p-6 border-b border-border flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-foreground">Documents</h3>
+                    <a href="{% url 'assets:asset_add_document' asset.pk %}" class="btn btn-sm btn-primary">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        Upload
+                    </a>
+                </div>
+                <div class="p-6">
+                    {% if documents %}
+                    <div class="space-y-3">
+                        {% for doc in documents %}
+                        <div class="flex items-center justify-between p-3 rounded-lg border border-border">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <i data-lucide="file-text" class="w-5 h-5 text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-foreground">{{ doc.title }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ doc.get_document_type_display }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ doc.document_file.url }}" class="btn btn-sm btn-outline" target="_blank">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-muted-foreground text-center py-4">No documents uploaded</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground">Quick Actions</h3>
+                </div>
+                <div class="p-6 space-y-2">
+                    <a href="{% url 'assets:asset_add_document' asset.pk %}" class="btn btn-outline w-full justify-start">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        Upload Document
+                    </a>
+                    <button class="btn btn-outline w-full justify-start">
+                        <i data-lucide="wrench" class="w-4 h-4"></i>
+                        Request Maintenance
+                    </button>
+                    <button class="btn btn-outline w-full justify-start">
+                        <i data-lucide="move" class="w-4 h-4"></i>
+                        Transfer Asset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent History -->
+            <div class="card">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground">Recent History</h3>
+                </div>
+                <div class="p-6">
+                    {% if history %}
+                    <div class="space-y-4">
+                        {% for entry in history|slice:":5" %}
+                        <div class="flex gap-3">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-foreground">{{ entry.get_action_type_display }}</p>
+                                <p class="text-xs text-muted-foreground">{{ entry.action_date|date:"M d, Y H:i" }}</p>
+                                {% if entry.remarks %}
+                                <p class="text-xs text-muted-foreground mt-1">{{ entry.remarks }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-muted-foreground text-center py-4">No history available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

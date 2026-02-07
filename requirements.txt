@@ -1,0 +1,19 @@
+asgiref==3.11.0
+Django==6.0.1
+psycopg2==2.9.11
+python-dotenv==1.2.1
+sqlparse==0.5.5
+
+# Image processing and QR codes
+Pillow==11.1.0
+qrcode==8.0
+
+# Excel export (for reports)
+openpyxl==3.1.5
+
+# Date utilities
+python-dateutil==2.9.0
+
+# Django extensions
+django-crispy-forms==2.3
+crispy-bootstrap5==2024.10

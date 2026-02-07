@@ -1,0 +1,26 @@
+<!-- Card Component -->
+<!-- Usage: {% include "components/card.html" with title="Card Title" content="Card content here" %} -->
+
+<div class="card {{ class }}">
+    {% if title %}
+    <div class="p-6 pb-3">
+        <h3 class="text-lg font-semibold">{{ title }}</h3>
+        {% if description %}
+        <p class="text-sm text-muted-foreground">{{ description }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="p-6 {% if title %}pt-0{% endif %}">
+        {{ content|default:"Card content" }}
+        {% block card_content %}{% endblock %}
+    </div>
+    
+    {% if footer %}
+    <div class="p-6 pt-0">
+        <div class="border-t pt-4">
+            {{ footer }}
+        </div>
+    </div>
+    {% endif %}
+</div>

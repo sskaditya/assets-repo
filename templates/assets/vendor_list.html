@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Vendors - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Vendors</h1>
+            <p class="text-muted-foreground mt-1">Manage your vendors and suppliers</p>
+        </div>
+        <a href="{% url 'assets:vendor_create' %}" class="btn btn-primary">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Add Vendor
+        </a>
+    </div>
+
+    <!-- Vendors Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for vendor in vendors %}
+        <div class="card hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <i data-lucide="building-2" class="w-6 h-6 text-primary"></i>
+                    </div>
+                    <span class="badge badge-secondary">{{ vendor.get_vendor_type_display }}</span>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-1">{{ vendor.name }}</h3>
+                <p class="text-sm text-muted-foreground mb-3">{{ vendor.code }}</p>
+                
+                <div class="space-y-2">
+                    {% if vendor.contact_person %}
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        {{ vendor.contact_person }}
+                    </div>
+                    {% endif %}
+                    {% if vendor.email %}
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        {{ vendor.email }}
+                    </div>
+                    {% endif %}
+                    {% if vendor.phone %}
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        {{ vendor.phone }}
+                    </div>
+                    {% endif %}
+                    {% if vendor.city %}
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        {{ vendor.city }}{% if vendor.state %}, {{ vendor.state }}{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="p-4 border-t border-border bg-muted/20">
+                <a href="{% url 'assets:asset_list' %}?vendor={{ vendor.pk }}" class="text-sm text-primary hover:text-primary-600 font-medium">
+                    View Assets →
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="card p-12 text-center">
+                <div class="mx-auto h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <i data-lucide="building-2" class="w-8 h-8 text-muted-foreground"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-2">No vendors found</h3>
+                <p class="text-sm text-muted-foreground mb-4">Get started by adding your first vendor</p>
+                <a href="{% url 'assets:vendor_create' %}" class="btn btn-primary">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Add Vendor
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

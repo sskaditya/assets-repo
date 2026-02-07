@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Assetz{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">{{ title }}</h1>
+            <p class="text-muted-foreground mt-1">{% if asset %}Update asset details{% else %}Add a new asset to the system{% endif %}</p>
+        </div>
+        <a href="{% if asset %}{% url 'assets:asset_detail' asset.pk %}{% else %}{% url 'assets:asset_list' %}{% endif %}" class="btn btn-outline">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Basic Information</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Asset Tag *</label>
+                    {{ form.asset_tag }}
+                    {% if form.asset_tag.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.asset_tag.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-foreground mb-2 block">Description</label>
+                    {{ form.description }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Classification -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Classification</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Category *</label>
+                    {{ form.category }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Asset Type *</label>
+                    {{ form.asset_type }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset Details -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Asset Details</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Make/Manufacturer</label>
+                    {{ form.make }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Model</label>
+                    {{ form.model }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Serial Number</label>
+                    {{ form.serial_number }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Status</label>
+                    {{ form.status }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Condition</label>
+                    {{ form.condition }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-foreground mb-2 block">Specifications</label>
+                    {{ form.specifications }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & Assignment -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Location & Assignment</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Location</label>
+                    {{ form.location }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Department</label>
+                    {{ form.department }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Assigned To</label>
+                    {{ form.assigned_to }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Custodian</label>
+                    {{ form.custodian }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Procurement -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Procurement Information</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Vendor</label>
+                    {{ form.vendor }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Purchase Date</label>
+                    {{ form.purchase_date }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Purchase Price</label>
+                    {{ form.purchase_price }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">PO Number</label>
+                    {{ form.purchase_order_number }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Invoice Number</label>
+                    {{ form.invoice_number }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Invoice Date</label>
+                    {{ form.invoice_date }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Warranty -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Warranty Information</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Start Date</label>
+                    {{ form.warranty_start_date }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">End Date</label>
+                    {{ form.warranty_end_date }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Period (Months)</label>
+                    {{ form.warranty_period_months }}
+                </div>
+            </div>
+        </div>
+
+        <!-- AMC -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">AMC Information</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">AMC Vendor</label>
+                    {{ form.amc_vendor }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">AMC Cost</label>
+                    {{ form.amc_cost }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Start Date</label>
+                    {{ form.amc_start_date }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">End Date</label>
+                    {{ form.amc_end_date }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Depreciation -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Depreciation</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Depreciation Rate (%)</label>
+                    {{ form.depreciation_rate }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Salvage Value</label>
+                    {{ form.salvage_value }}
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Useful Life (Years)</label>
+                    {{ form.useful_life_years }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Insurance & Other -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Insurance & Additional Information</h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-center gap-2">
+                        {{ form.is_critical }}
+                        <label class="text-sm font-medium text-foreground">Is Critical Asset</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        {{ form.is_insured }}
+                        <label class="text-sm font-medium text-foreground">Is Insured</label>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Insurance Policy Number</label>
+                        {{ form.insurance_policy_number }}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Insurance Expiry Date</label>
+                        {{ form.insurance_expiry_date }}
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end gap-3">
+            <a href="{% if asset %}{% url 'assets:asset_detail' asset.pk %}{% else %}{% url 'assets:asset_list' %}{% endif %}" class="btn btn-outline">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                {% if asset %}Update Asset{% else %}Create Asset{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

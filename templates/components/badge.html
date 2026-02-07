@@ -1,0 +1,18 @@
+<!-- Badge Component -->
+<!-- Usage: {% include "components/badge.html" with text="New" variant="default" %} -->
+
+{% if variant == "default" %}
+<span class="badge badge-default {{ class }}">{{ text|default:"Badge" }}</span>
+
+{% elif variant == "secondary" %}
+<span class="badge badge-secondary {{ class }}">{{ text|default:"Badge" }}</span>
+
+{% elif variant == "outline" %}
+<span class="badge badge-outline {{ class }}">{{ text|default:"Badge" }}</span>
+
+{% elif variant == "destructive" %}
+<span class="badge border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80 {{ class }}">{{ text|default:"Badge" }}</span>
+
+{% else %}
+<span class="badge badge-default {{ class }}">{{ text|default:"Badge" }}</span>
+{% endif %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Assetz{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">{{ title }}</h1>
+            <p class="text-muted-foreground mt-1">{% if asset_type %}Update type details{% else %}Add a new asset type to the system{% endif %}</p>
+        </div>
+        <a href="{% url 'assets:type_list' %}" class="btn btn-outline">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back
+        </a>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Type Information</h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Code *</label>
+                        {{ form.code }}
+                        {% if form.code.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.code.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Description</label>
+                    {{ form.description }}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.category.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Category Type *</label>
+                        {{ form.category_type }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance & Compliance -->
+        <div class="card">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Maintenance & Compliance</h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="flex items-center gap-2">
+                    {{ form.requires_calibration }}
+                    <label class="text-sm font-medium text-foreground">Requires Calibration</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    {{ form.requires_insurance }}
+                    <label class="text-sm font-medium text-foreground">Requires Insurance</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    {{ form.is_active }}
+                    <label class="text-sm font-medium text-foreground">Is Active</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end gap-3">
+            <a href="{% url 'assets:type_list' %}" class="btn btn-outline">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                {% if asset_type %}Update Type{% else %}Create Type{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Company Audit Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Company-Wise Audit Report</h1>
+            <p class="text-muted-foreground mt-1">Audit trail comparison across all companies</p>
+        </div>
+        <div class="flex gap-2">
+            <select name="date_range" onchange="window.location.href='?date_range='+this.value" class="input">
+                <option value="week" {% if date_range == 'week' %}selected{% endif %}>Last 7 Days</option>
+                <option value="month" {% if date_range == 'month' %}selected{% endif %}>Last 30 Days</option>
+                <option value="quarter" {% if date_range == 'quarter' %}selected{% endif %}>Last 90 Days</option>
+                <option value="year" {% if date_range == 'year' %}selected{% endif %}>Last Year</option>
+            </select>
+            <button onclick="window.print()" class="btn btn-outline">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Companies Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Companies</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">{{ companies.count }}</h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="building-2" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Assets</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">
+                        {% widthratio companies|length 1 1 as total %}
+                        {{ companies|length|add:0 }}
+                    </h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="package" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Actions</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">
+                        {% for company in companies %}{{ company.total_actions|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                    </h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <i data-lucide="activity" class="w-6 h-6 text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Active Companies</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">{{ companies.count }}</h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="zap" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Details -->
+    {% for data in company_data %}
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">{{ data.company.name|slice:":1" }}</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-foreground">{{ data.company.name }}</h3>
+                        <p class="text-sm text-muted-foreground">{{ data.company.code }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'assets:audit_trail' %}?company_id={{ data.company.id }}" class="btn btn-outline btn-sm">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    View Audit Trail
+                </a>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Statistics -->
+                <div>
+                    <h4 class="text-sm font-semibold text-foreground mb-3">Statistics</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted-foreground">Total Assets:</span>
+                            <span class="font-medium">{{ data.company.total_assets }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted-foreground">Total Actions:</span>
+                            <span class="font-medium">{{ data.company.total_actions }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted-foreground">This Month:</span>
+                            <span class="font-medium">{{ data.company.actions_this_month }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions by Type -->
+                <div>
+                    <h4 class="text-sm font-semibold text-foreground mb-3">Actions by Type</h4>
+                    <div class="space-y-2">
+                        {% for action in data.actions_by_type %}
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted-foreground">{{ action.action_type }}:</span>
+                            <span class="font-medium">{{ action.count }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-muted-foreground">No actions recorded</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Top Activity -->
+                <div>
+                    <h4 class="text-sm font-semibold text-foreground mb-3">Top Activity</h4>
+                    <div class="space-y-3">
+                        {% if data.most_active_asset %}
+                        <div>
+                            <p class="text-xs text-muted-foreground mb-1">Most Active Asset</p>
+                            <p class="text-sm font-medium">{{ data.most_active_asset.asset__asset_tag }}</p>
+                            <p class="text-xs text-muted-foreground">{{ data.most_active_asset.count }} actions</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if data.most_active_user %}
+                        <div>
+                            <p class="text-xs text-muted-foreground mb-1">Most Active User</p>
+                            <p class="text-sm font-medium">
+                                {{ data.most_active_user.performed_by__first_name }} {{ data.most_active_user.performed_by__last_name }}
+                            </p>
+                            <p class="text-xs text-muted-foreground">{{ data.most_active_user.count }} actions</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card p-12 text-center">
+        <i data-lucide="inbox" class="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-20"></i>
+        <p class="text-muted-foreground">No companies found</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}{{ company.name }} - Assetz{% endblock %}
+{% block page_title %}Company Details{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'core:company_list' %}" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ company.name }}</h1>
+                <p class="text-sm text-gray-500">{{ company.code }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'core:company_update' company.pk %}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+                Edit Company
+            </a>
+            <a href="{% url 'core:company_delete' company.pk %}" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                Delete
+            </a>
+        </div>
+    </div>
+
+    <!-- Company Logo and Status -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div class="flex items-start gap-6">
+            {% if company.logo %}
+            <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="h-24 w-24 rounded-xl object-cover shadow-md">
+            {% else %}
+            <div class="h-24 w-24 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-md">
+                <span class="text-white font-bold text-4xl">{{ company.name|slice:":1" }}</span>
+            </div>
+            {% endif %}
+            <div class="flex-1">
+                <h2 class="text-xl font-semibold text-gray-900">{{ company.name }}</h2>
+                <p class="text-sm text-gray-500 mt-1">Company Code: {{ company.code }}</p>
+                <div class="flex items-center gap-4 mt-4">
+                    {% if company.is_active %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <span class="w-2 h-2 rounded-full bg-green-600 mr-2"></span>
+                        Active
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                        <span class="w-2 h-2 rounded-full bg-gray-600 mr-2"></span>
+                        Inactive
+                    </span>
+                    {% endif %}
+                    <span class="text-sm text-gray-500">Created: {{ company.created_at|date:"F d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Information -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Contact Information -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+            <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="mail" class="w-5 h-5 text-gray-400 mt-0.5"></i>
+                    <div>
+                        <p class="text-xs text-gray-500">Email</p>
+                        <p class="text-sm font-medium text-gray-900">{{ company.email|default:"Not provided" }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i data-lucide="phone" class="w-5 h-5 text-gray-400 mt-0.5"></i>
+                    <div>
+                        <p class="text-xs text-gray-500">Phone</p>
+                        <p class="text-sm font-medium text-gray-900">{{ company.phone|default:"Not provided" }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i data-lucide="globe" class="w-5 h-5 text-gray-400 mt-0.5"></i>
+                    <div>
+                        <p class="text-xs text-gray-500">Website</p>
+                        <p class="text-sm font-medium text-gray-900">{{ company.website|default:"Not provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Address</h3>
+            <div class="flex items-start gap-3">
+                <i data-lucide="map-pin" class="w-5 h-5 text-gray-400 mt-0.5"></i>
+                <div>
+                    {% if company.address_line1 %}
+                    <p class="text-sm text-gray-900">{{ company.address_line1 }}</p>
+                    {% if company.address_line2 %}
+                    <p class="text-sm text-gray-900">{{ company.address_line2 }}</p>
+                    {% endif %}
+                    <p class="text-sm text-gray-900">{{ company.city }}{% if company.state %}, {{ company.state }}{% endif %}</p>
+                    <p class="text-sm text-gray-900">{{ company.country }} {{ company.postal_code }}</p>
+                    {% else %}
+                    <p class="text-sm text-gray-500">No address provided</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax Information -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Tax Information</h3>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-xs text-gray-500">Tax ID</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.tax_id|default:"Not provided" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">GSTIN</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.gstin|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Subscription</h3>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-xs text-gray-500">Start Date</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.subscription_start_date|date:"F d, Y"|default:"Not set" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">End Date</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.subscription_end_date|date:"F d, Y"|default:"Not set" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Max Users</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.max_users }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Max Assets</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.max_assets }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if company.notes %}
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ company.notes }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

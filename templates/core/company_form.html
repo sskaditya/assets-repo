@@ -1,0 +1,181 @@
+{% extends "base_sidebar.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ action }} Company - Assetz{% endblock %}
+{% block page_title %}{{ action}} Company{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="{% url 'core:company_list' %}" class="p-2 hover:bg-gray-100 rounded-lg">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <h2 class="text-2xl font-bold text-gray-900">{{ action }} Company</h2>
+        </div>
+        <p class="text-gray-600 ml-14">Fill in the company information below</p>
+    </div>
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Code *</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    {{ form.email }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    {{ form.phone }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                    {{ form.website }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Address</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Address Line 1</label>
+                    {{ form.address_line1 }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Address Line 2</label>
+                    {{ form.address_line2 }}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        {{ form.city }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">State/Province</label>
+                        {{ form.state }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                        {{ form.country }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                        {{ form.postal_code }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax & Logo -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Tax & Branding</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                    {{ form.tax_id }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">GSTIN</label>
+                    {{ form.gstin }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+                    {{ form.logo }}
+                    <p class="text-sm text-gray-500 mt-1">Upload company logo (PNG, JPG, max 2MB)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                {{ form.notes }}
+            </div>
+        </div>
+
+        <!-- Subscription & Limits -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Subscription & Limits</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Start</label>
+                    {{ form.subscription_start_date }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subscription End</label>
+                    {{ form.subscription_end_date }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Users</label>
+                    {{ form.max_users }}
+                    <p class="text-sm text-gray-500 mt-1">Leave empty for unlimited</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Assets</label>
+                    {{ form.max_assets }}
+                    <p class="text-sm text-gray-500 mt-1">Leave empty for unlimited</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Status</h3>
+            <div class="flex items-center gap-3">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-gray-700">
+                    Active (Company can access the system)
+                </label>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3">
+            <a href="{% url 'core:company_list' %}" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>{{ action }} Company</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    lucide.createIcons();
+</script>
+{% endblock %}

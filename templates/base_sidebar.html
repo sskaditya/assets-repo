@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Assetz - Asset Management{% endblock %}</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#fef3f2',
+                            100: '#fee4e2',
+                            200: '#fecdca',
+                            300: '#fda29b',
+                            400: '#f97066',
+                            500: '#f04438',
+                            600: '#d92d20',
+                            700: '#b42318',
+                            800: '#912018',
+                            900: '#7a271a',
+                        },
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        /* Sidebar Link Styles */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            margin: 0 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+        
+        .sidebar-link:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+        
+        .sidebar-link.active {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .sidebar-link.active:hover {
+            background-color: #dc2626;
+        }
+        
+        .sidebar-link svg {
+            width: 1.125rem;
+            height: 1.125rem;
+            flex-shrink: 0;
+        }
+        
+        /* Collapsible Section Styles */
+        .nav-section {
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-section-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            margin: 0 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+        }
+        
+        .nav-section-trigger:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+        
+        .nav-section-trigger svg {
+            width: 1.125rem;
+            height: 1.125rem;
+            flex-shrink: 0;
+        }
+        
+        .nav-section-trigger .chevron {
+            width: 1rem;
+            height: 1rem;
+            color: #9ca3af;
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-section-trigger[aria-expanded="true"] .chevron {
+            transform: rotate(180deg);
+        }
+        
+        .nav-section-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.2s ease;
+        }
+        
+        .nav-section-content[data-state="open"] {
+            grid-template-rows: 1fr;
+        }
+        
+        .nav-section-content > div {
+            overflow: hidden;
+        }
+        
+        .nav-section-content .sidebar-link {
+            padding-left: 2.75rem;
+            font-size: 0.8125rem;
+            font-weight: 400;
+        }
+        
+        /* Scrollbar Styles */
+        nav::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        nav::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 3px;
+        }
+        
+        nav::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+            <!-- Logo -->
+            <div class="px-5 py-6 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 rounded-full bg-primary-500 flex items-center justify-center">
+                        <i data-lucide="package" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-gray-900">Assetz</div>
+                        <div class="text-xs text-gray-500">Asset Management System</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 overflow-y-auto px-2 py-4">
+                <div class="space-y-0.5">
+                    <!-- Dashboard -->
+                    <a href="{% url 'assets:dashboard' %}" class="sidebar-link {% if request.path == '/app/dashboard/' %}active{% endif %}">
+                        <i data-lucide="home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <!-- Asset Management Section -->
+                    <div class="nav-section">
+                        <button class="nav-section-trigger" onclick="toggleSection(this)" aria-expanded="true">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="box"></i>
+                                <span>Asset Management</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <div class="nav-section-content" data-state="open">
+                            <div class="py-1">
+                                <a href="{% url 'assets:asset_list' %}" class="sidebar-link {% if 'assets/' in request.path and 'category' not in request.path and 'type' not in request.path and 'vendor' not in request.path %}active{% endif %}">
+                                    <span>Assets</span>
+                                </a>
+                                <a href="{% url 'assets:category_list' %}" class="sidebar-link {% if 'categories' in request.path %}active{% endif %}">
+                                    <span>Categories</span>
+                                </a>
+                                <a href="{% url 'assets:type_list' %}" class="sidebar-link {% if 'types' in request.path %}active{% endif %}">
+                                    <span>Asset Types</span>
+                                </a>
+                                <a href="{% url 'assets:vendor_list' %}" class="sidebar-link {% if 'vendors' in request.path %}active{% endif %}">
+                                    <span>Vendors</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Operations Section -->
+                    <div class="nav-section">
+                        <button class="nav-section-trigger" onclick="toggleSection(this)" aria-expanded="false">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="activity"></i>
+                                <span>Operations</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <div class="nav-section-content">
+                            <div class="py-1">
+                                <a href="{% url 'assets:qr_scanner' %}" class="sidebar-link {% if 'qr-scanner' in request.path %}active{% endif %}">
+                                    <span>QR Scanner</span>
+                                </a>
+                                <a href="{% url 'assets:monitoring_dashboard' %}" class="sidebar-link {% if 'monitoring' in request.path %}active{% endif %}">
+                                    <span>Monitoring</span>
+                                </a>
+                                <a href="{% url 'assets:audit_trail' %}" class="sidebar-link {% if 'audit' in request.path %}active{% endif %}">
+                                    <span>Audit Trail</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reports & Analytics Section -->
+                    <div class="nav-section">
+                        <button class="nav-section-trigger" onclick="toggleSection(this)" aria-expanded="false">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="bar-chart-2"></i>
+                                <span>Reports & Analytics</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <div class="nav-section-content">
+                            <div class="py-1">
+                                <a href="{% url 'assets:reports_dashboard' %}" class="sidebar-link {% if 'reports' in request.path %}active{% endif %}">
+                                    <span>Reports</span>
+                                </a>
+                                <a href="{% url 'assets:financial_dashboard' %}" class="sidebar-link {% if 'financial' in request.path %}active{% endif %}">
+                                    <span>Financial</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if request.is_super_admin %}
+                    <!-- Administration Section -->
+                    <div class="nav-section">
+                        <button class="nav-section-trigger" onclick="toggleSection(this)" aria-expanded="false">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="users"></i>
+                                <span>Administration</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <div class="nav-section-content">
+                            <div class="py-1">
+                                <a href="{% url 'core:company_list' %}" class="sidebar-link {% if 'companies' in request.path or 'company' in request.path %}active{% endif %}">
+                                    <span>Companies</span>
+                                </a>
+                                <a href="{% url 'assets:company_audit_report' %}" class="sidebar-link">
+                                    <span>Company Reports</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </nav>
+            
+            <!-- User Profile -->
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">
+                    <div class="relative">
+                        <div class="h-9 w-9 rounded-lg bg-gray-200 flex items-center justify-center">
+                            <span class="text-gray-700 font-semibold text-sm">{{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}</span>
+                        </div>
+                        <div class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-gray-900 truncate">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="text-xs text-gray-500 truncate">
+                            {% if request.is_super_admin %}
+                                Super Admin
+                            {% elif request.is_company_admin %}
+                                Company Admin
+                            {% else %}
+                                User
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{% url 'logout' %}" class="p-1.5 hover:bg-gray-100 rounded-md transition-colors" title="Logout">
+                        <i data-lucide="log-out" class="w-4 h-4 text-gray-400"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+        
+        <script>
+            function toggleSection(trigger) {
+                const content = trigger.nextElementSibling;
+                const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+                
+                if (isExpanded) {
+                    trigger.setAttribute('aria-expanded', 'false');
+                    content.removeAttribute('data-state');
+                } else {
+                    trigger.setAttribute('aria-expanded', 'true');
+                    content.setAttribute('data-state', 'open');
+                }
+            }
+        </script>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Header -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button id="mobileSidebarToggle" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-xl font-semibold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
+                            {% if request.current_company %}
+                            <p class="text-sm text-gray-500">{{ request.current_company.name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <!-- Notifications -->
+                        <button class="p-2 hover:bg-gray-100 rounded-lg relative">
+                            <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                            <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        
+                        <!-- Quick Actions -->
+                        <a href="{% url 'assets:asset_create' %}" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Add Asset</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto p-6">
+                {% if messages %}
+                <div class="mb-6 space-y-2">
+                    {% for message in messages %}
+                    <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200 text-yellow-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                            <p class="flex-1">{{ message }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <!-- Initialize Lucide Icons -->
+    <script>
+        // Wait for both DOM and Lucide to be ready
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Mobile sidebar toggle
+        const sidebarToggle = document.getElementById('mobileSidebarToggle');
+        const sidebar = document.querySelector('aside');
+        
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        }
+        
+        // Reinitialize icons after any dynamic content
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }, 100);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

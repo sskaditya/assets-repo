@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}QR Scanner - Assetz{% endblock %}
+
+{% block extra_css %}
+<style>
+    #qr-reader {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    #qr-reader__dashboard_section_swaplink {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">QR Code Scanner</h1>
+            <p class="text-muted-foreground mt-1">Scan asset QR codes for quick identification and tracking</p>
+        </div>
+    </div>
+
+    <!-- Scanner Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- QR Scanner -->
+        <div class="card p-6">
+            <h3 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <i data-lucide="scan" class="w-5 h-5"></i>
+                Scan QR Code
+            </h3>
+            <div id="qr-reader" class="rounded-lg overflow-hidden border-2 border-border"></div>
+            <div class="mt-4 space-y-2">
+                <button id="start-scan" class="btn btn-primary w-full">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    Start Scanner
+                </button>
+                <button id="stop-scan" class="btn btn-outline w-full hidden">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                    Stop Scanner
+                </button>
+            </div>
+            
+            <!-- Manual Entry -->
+            <div class="mt-6 pt-6 border-t border-border">
+                <h4 class="text-sm font-semibold text-foreground mb-3">Or Enter Manually</h4>
+                <form id="manual-search-form" class="flex gap-2">
+                    <input type="text" id="manual-qr-code" placeholder="Enter QR Code or Asset Tag" class="input flex-1">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        Search
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Scan Result -->
+        <div class="card p-6">
+            <h3 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <i data-lucide="info" class="w-5 h-5"></i>
+                Scan Result
+            </h3>
+            
+            <div id="scan-result" class="text-center py-12 text-muted-foreground">
+                <i data-lucide="qr-code" class="w-16 h-16 mx-auto mb-4 opacity-20"></i>
+                <p>Scan a QR code or enter asset tag to view details</p>
+            </div>
+
+            <div id="asset-details" class="hidden space-y-4">
+                <!-- Asset info will be displayed here -->
+            </div>
+
+            <!-- Quick Actions -->
+            <div id="quick-actions" class="hidden mt-6 pt-6 border-t border-border">
+                <h4 class="text-sm font-semibold text-foreground mb-3">Quick Actions</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="recordMovement()" class="btn btn-outline btn-sm justify-start">
+                        <i data-lucide="move" class="w-4 h-4"></i>
+                        Record Movement
+                    </button>
+                    <button onclick="updateCondition()" class="btn btn-outline btn-sm justify-start">
+                        <i data-lucide="thermometer" class="w-4 h-4"></i>
+                        Update Condition
+                    </button>
+                    <button onclick="requestMaintenance()" class="btn btn-outline btn-sm justify-start">
+                        <i data-lucide="wrench" class="w-4 h-4"></i>
+                        Request Maintenance
+                    </button>
+                    <button onclick="viewFullDetails()" class="btn btn-outline btn-sm justify-start">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        View Full Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Scans -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5"></i>
+                Recent Scans
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-muted/50">
+                    <tr>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Time</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Asset Tag</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Name</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Location</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-scans" class="divide-y divide-border">
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-sm text-muted-foreground">
+                            No recent scans
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Movement Modal -->
+<div id="movement-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Record Asset Movement</h3>
+        <form id="movement-form" class="space-y-4">
+            <div>
+                <label class="text-sm font-medium mb-2 block">From Location</label>
+                <input type="text" id="from-location" class="input" readonly>
+            </div>
+            <div>
+                <label class="text-sm font-medium mb-2 block">To Location</label>
+                <select id="to-location" class="input" required>
+                    <option value="">Select location...</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-sm font-medium mb-2 block">Remarks</label>
+                <textarea id="movement-remarks" class="input" rows="3"></textarea>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="closeMovementModal()" class="btn btn-outline flex-1">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-1">Save Movement</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    let html5QrCode;
+    let currentAsset = null;
+    let recentScans = [];
+
+    // Initialize QR Scanner
+    document.getElementById('start-scan').addEventListener('click', function() {
+        startScanner();
+    });
+
+    document.getElementById('stop-scan').addEventListener('click', function() {
+        stopScanner();
+    });
+
+    function startScanner() {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            onScanSuccess,
+            onScanError
+        ).then(() => {
+            document.getElementById('start-scan').classList.add('hidden');
+            document.getElementById('stop-scan').classList.remove('hidden');
+        }).catch(err => {
+            alert('Error starting scanner: ' + err);
+        });
+    }
+
+    function stopScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('start-scan').classList.remove('hidden');
+                document.getElementById('stop-scan').classList.add('hidden');
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Vibrate if supported
+        if (navigator.vibrate) {
+            navigator.vibrate(200);
+        }
+        
+        // Look up asset
+        lookupAsset(decodedText);
+        
+        // Stop scanner after successful scan
+        stopScanner();
+    }
+
+    function onScanError(error) {
+        // Ignore errors during scanning
+    }
+
+    // Manual search
+    document.getElementById('manual-search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const code = document.getElementById('manual-qr-code').value;
+        if (code) {
+            lookupAsset(code);
+        }
+    });
+
+    function lookupAsset(code) {
+        // Show loading
+        document.getElementById('scan-result').innerHTML = '<p>Looking up asset...</p>';
+        
+        // Make API call to look up asset
+        fetch(`/app/api/asset-lookup/?code=${encodeURIComponent(code)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayAssetDetails(data.asset);
+                    addToRecentScans(data.asset);
+                } else {
+                    document.getElementById('scan-result').innerHTML = 
+                        '<p class="text-red-600">Asset not found</p>';
+                    document.getElementById('asset-details').classList.add('hidden');
+                    document.getElementById('quick-actions').classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                document.getElementById('scan-result').innerHTML = 
+                    '<p class="text-red-600">Error looking up asset</p>';
+                console.error('Error:', error);
+            });
+    }
+
+    function displayAssetDetails(asset) {
+        currentAsset = asset;
+        document.getElementById('scan-result').classList.add('hidden');
+        
+        const detailsDiv = document.getElementById('asset-details');
+        detailsDiv.innerHTML = `
+            <div class="flex items-start gap-4">
+                <div class="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="package" class="w-8 h-8 text-primary"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-foreground">${asset.name}</h4>
+                    <p class="text-sm text-muted-foreground">${asset.asset_tag}</p>
+                </div>
+                <span class="badge badge-secondary">${asset.status}</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 pt-4">
+                <div>
+                    <p class="text-xs text-muted-foreground">Category</p>
+                    <p class="text-sm font-medium">${asset.category || 'N/A'}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-muted-foreground">Location</p>
+                    <p class="text-sm font-medium">${asset.location || 'Not assigned'}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-muted-foreground">Serial Number</p>
+                    <p class="text-sm font-medium">${asset.serial_number || 'N/A'}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-muted-foreground">Condition</p>
+                    <p class="text-sm font-medium">${asset.condition || 'N/A'}</p>
+                </div>
+            </div>
+        `;
+        detailsDiv.classList.remove('hidden');
+        document.getElementById('quick-actions').classList.remove('hidden');
+        
+        // Re-initialize icons
+        lucide.createIcons();
+    }
+
+    function addToRecentScans(asset) {
+        const now = new Date();
+        recentScans.unshift({
+            time: now.toLocaleTimeString(),
+            asset: asset
+        });
+        
+        // Keep only last 10 scans
+        if (recentScans.length > 10) {
+            recentScans.pop();
+        }
+        
+        updateRecentScansTable();
+    }
+
+    function updateRecentScansTable() {
+        const tbody = document.getElementById('recent-scans');
+        if (recentScans.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-sm text-muted-foreground">No recent scans</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = recentScans.map(scan => `
+            <tr class="hover:bg-muted/30">
+                <td class="px-6 py-4 text-sm">${scan.time}</td>
+                <td class="px-6 py-4 text-sm font-medium">${scan.asset.asset_tag}</td>
+                <td class="px-6 py-4 text-sm">${scan.asset.name}</td>
+                <td class="px-6 py-4 text-sm">${scan.asset.location || 'N/A'}</td>
+                <td class="px-6 py-4 text-sm">
+                    <a href="/app/assets/${scan.asset.id}/" class="text-primary hover:text-primary-600">View</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function recordMovement() {
+        if (!currentAsset) return;
+        
+        document.getElementById('from-location').value = currentAsset.location || 'Unknown';
+        document.getElementById('movement-modal').classList.remove('hidden');
+        
+        // Load locations
+        fetch('/app/api/locations/')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('to-location');
+                select.innerHTML = '<option value="">Select location...</option>' +
+                    data.locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+            });
+    }
+
+    function closeMovementModal() {
+        document.getElementById('movement-modal').classList.add('hidden');
+    }
+
+    function updateCondition() {
+        alert('Update condition feature - to be implemented');
+    }
+
+    function requestMaintenance() {
+        alert('Request maintenance feature - to be implemented');
+    }
+
+    function viewFullDetails() {
+        if (currentAsset) {
+            window.location.href = `/app/assets/${currentAsset.id}/`;
+        }
+    }
+
+    // Handle movement form submission
+    document.getElementById('movement-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Submit movement data
+        alert('Movement recorded successfully!');
+        closeMovementModal();
+    });
+</script>
+{% endblock %}

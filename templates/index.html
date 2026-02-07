@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p class="text-muted-foreground">Welcome to your asset management system</p>
+        </div>
+        <button class="btn btn-primary px-4 py-2">
+            <span>Add New Asset</span>
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div class="card p-6">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium text-muted-foreground">Total Assets</h3>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">1,234</p>
+                <p class="text-xs text-muted-foreground">+20.1% from last month</p>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium text-muted-foreground">Asset Value</h3>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">$45,231.89</p>
+                <p class="text-xs text-muted-foreground">+10.5% from last month</p>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium text-muted-foreground">Active Assets</h3>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">1,156</p>
+                <p class="text-xs text-muted-foreground">+2.3% from last month</p>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium text-muted-foreground">Maintenance Due</h3>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">23</p>
+                <p class="text-xs text-destructive">Requires attention</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Assets Table -->
+    <div class="card">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Recent Assets</h2>
+            <div class="relative w-full overflow-auto">
+                <table class="w-full caption-bottom text-sm">
+                    <thead class="border-b">
+                        <tr class="border-b transition-colors hover:bg-muted/50">
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Asset ID</th>
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Category</th>
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Value</th>
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="[&_tr:last-child]:border-0">
+                        <tr class="border-b transition-colors hover:bg-muted/50">
+                            <td class="p-4 align-middle">AST-001</td>
+                            <td class="p-4 align-middle font-medium">Laptop - Dell XPS 15</td>
+                            <td class="p-4 align-middle">Electronics</td>
+                            <td class="p-4 align-middle">
+                                <span class="badge badge-default">Active</span>
+                            </td>
+                            <td class="p-4 align-middle">$1,299.00</td>
+                            <td class="p-4 align-middle">
+                                <button class="btn btn-ghost px-2 py-1 h-8">Edit</button>
+                            </td>
+                        </tr>
+                        <tr class="border-b transition-colors hover:bg-muted/50">
+                            <td class="p-4 align-middle">AST-002</td>
+                            <td class="p-4 align-middle font-medium">Office Chair</td>
+                            <td class="p-4 align-middle">Furniture</td>
+                            <td class="p-4 align-middle">
+                                <span class="badge badge-default">Active</span>
+                            </td>
+                            <td class="p-4 align-middle">$349.00</td>
+                            <td class="p-4 align-middle">
+                                <button class="btn btn-ghost px-2 py-1 h-8">Edit</button>
+                            </td>
+                        </tr>
+                        <tr class="border-b transition-colors hover:bg-muted/50">
+                            <td class="p-4 align-middle">AST-003</td>
+                            <td class="p-4 align-middle font-medium">Server Rack</td>
+                            <td class="p-4 align-middle">IT Infrastructure</td>
+                            <td class="p-4 align-middle">
+                                <span class="badge badge-secondary">Maintenance</span>
+                            </td>
+                            <td class="p-4 align-middle">$4,599.00</td>
+                            <td class="p-4 align-middle">
+                                <button class="btn btn-ghost px-2 py-1 h-8">Edit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Trail - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Audit Trail</h1>
+            <p class="text-muted-foreground mt-1">Complete history of all asset changes and activities</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="exportAudit()" class="btn btn-outline">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </button>
+            <button onclick="printAudit()" class="btn btn-outline">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Actions</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">{{ total_actions }}</h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Assets Modified</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">{{ assets_modified }}</h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="package" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Users Active</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">{{ users_active }}</h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <i data-lucide="users" class="w-6 h-6 text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Today's Actions</p>
+                    <h3 class="text-2xl font-bold text-foreground mt-2">{{ today_actions }}</h3>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="zap" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card p-6">
+        <form method="get" action="{% url 'assets:audit_trail' %}" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="text-sm font-medium mb-2 block">Asset</label>
+                    <select name="asset_id" class="input">
+                        <option value="">All Assets</option>
+                        {% for asset in all_assets %}
+                        <option value="{{ asset.id }}" {% if request.GET.asset_id == asset.id|stringformat:"s" %}selected{% endif %}>
+                            {{ asset.asset_tag }} - {{ asset.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium mb-2 block">Action Type</label>
+                    <select name="action_type" class="input">
+                        <option value="">All Actions</option>
+                        <option value="CREATED" {% if request.GET.action_type == 'CREATED' %}selected{% endif %}>Created</option>
+                        <option value="UPDATED" {% if request.GET.action_type == 'UPDATED' %}selected{% endif %}>Updated</option>
+                        <option value="ASSIGNED" {% if request.GET.action_type == 'ASSIGNED' %}selected{% endif %}>Assigned</option>
+                        <option value="TRANSFERRED" {% if request.GET.action_type == 'TRANSFERRED' %}selected{% endif %}>Transferred</option>
+                        <option value="RETURNED" {% if request.GET.action_type == 'RETURNED' %}selected{% endif %}>Returned</option>
+                        <option value="MAINTENANCE" {% if request.GET.action_type == 'MAINTENANCE' %}selected{% endif %}>Maintenance</option>
+                        <option value="STATUS_CHANGED" {% if request.GET.action_type == 'STATUS_CHANGED' %}selected{% endif %}>Status Changed</option>
+                        <option value="LOCATION_CHANGED" {% if request.GET.action_type == 'LOCATION_CHANGED' %}selected{% endif %}>Location Changed</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium mb-2 block">User</label>
+                    <select name="user_id" class="input">
+                        <option value="">All Users</option>
+                        {% for user in all_users %}
+                        <option value="{{ user.id }}" {% if request.GET.user_id == user.id|stringformat:"s" %}selected{% endif %}>
+                            {{ user.get_full_name|default:user.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium mb-2 block">Date Range</label>
+                    <select name="date_range" class="input">
+                        <option value="all" {% if request.GET.date_range == 'all' %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if request.GET.date_range == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if request.GET.date_range == 'week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="month" {% if request.GET.date_range == 'month' %}selected{% endif %}>Last 30 Days</option>
+                        <option value="quarter" {% if request.GET.date_range == 'quarter' %}selected{% endif %}>Last 90 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm font-medium mb-2 block">Start Date</label>
+                    <input type="date" name="start_date" value="{{ request.GET.start_date }}" class="input">
+                </div>
+                <div>
+                    <label class="text-sm font-medium mb-2 block">End Date</label>
+                    <input type="date" name="end_date" value="{{ request.GET.end_date }}" class="input">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    Apply Filters
+                </button>
+                <a href="{% url 'assets:audit_trail' %}" class="btn btn-outline">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                    Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Audit Trail Table -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="list" class="w-5 h-5"></i>
+                Audit History
+                <span class="text-sm font-normal text-muted-foreground ml-2">({{ page_obj.paginator.count }} records)</span>
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-muted/50">
+                    <tr>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Date & Time</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Asset</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Action</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">User</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Details</th>
+                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Location</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    {% for entry in page_obj %}
+                    <tr class="hover:bg-muted/30">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-foreground">{{ entry.action_date|date:"M d, Y" }}</div>
+                            <div class="text-xs text-muted-foreground">{{ entry.action_date|date:"h:i A" }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="{% url 'assets:asset_detail' entry.asset.pk %}" class="text-sm font-medium text-primary hover:text-primary-600">
+                                {{ entry.asset.asset_tag }}
+                            </a>
+                            <div class="text-xs text-muted-foreground">{{ entry.asset.name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if entry.action_type == 'CREATED' %}
+                            <span class="badge bg-green-100 text-green-800 border-green-200">
+                                <i data-lucide="plus" class="w-3 h-3"></i>
+                                {{ entry.get_action_type_display }}
+                            </span>
+                            {% elif entry.action_type == 'UPDATED' %}
+                            <span class="badge bg-blue-100 text-blue-800 border-blue-200">
+                                <i data-lucide="edit" class="w-3 h-3"></i>
+                                {{ entry.get_action_type_display }}
+                            </span>
+                            {% elif entry.action_type == 'ASSIGNED' %}
+                            <span class="badge bg-purple-100 text-purple-800 border-purple-200">
+                                <i data-lucide="user-check" class="w-3 h-3"></i>
+                                {{ entry.get_action_type_display }}
+                            </span>
+                            {% elif entry.action_type == 'LOCATION_CHANGED' %}
+                            <span class="badge bg-orange-100 text-orange-800 border-orange-200">
+                                <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                {{ entry.get_action_type_display }}
+                            </span>
+                            {% elif entry.action_type == 'STATUS_CHANGED' %}
+                            <span class="badge bg-yellow-100 text-yellow-800 border-yellow-200">
+                                <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                                {{ entry.get_action_type_display }}
+                            </span>
+                            {% elif entry.action_type == 'MAINTENANCE' %}
+                            <span class="badge bg-red-100 text-red-800 border-red-200">
+                                <i data-lucide="wrench" class="w-3 h-3"></i>
+                                {{ entry.get_action_type_display }}
+                            </span>
+                            {% else %}
+                            <span class="badge badge-secondary">{{ entry.get_action_type_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-foreground">{{ entry.performed_by.get_full_name|default:entry.performed_by.username }}</div>
+                            <div class="text-xs text-muted-foreground">{{ entry.performed_by.username }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if entry.action_type == 'LOCATION_CHANGED' %}
+                            <div class="text-sm text-foreground flex items-center gap-1">
+                                <span class="text-muted-foreground">{{ entry.from_location.name|default:"N/A" }}</span>
+                                <i data-lucide="arrow-right" class="w-3 h-3 text-muted-foreground"></i>
+                                <span class="font-medium">{{ entry.to_location.name }}</span>
+                            </div>
+                            {% elif entry.action_type == 'ASSIGNED' %}
+                            <div class="text-sm text-foreground flex items-center gap-1">
+                                <span class="text-muted-foreground">{{ entry.from_user.get_full_name|default:"Unassigned" }}</span>
+                                <i data-lucide="arrow-right" class="w-3 h-3 text-muted-foreground"></i>
+                                <span class="font-medium">{{ entry.to_user.get_full_name }}</span>
+                            </div>
+                            {% elif entry.action_type == 'STATUS_CHANGED' %}
+                            <div class="text-sm text-foreground flex items-center gap-1">
+                                <span class="text-muted-foreground">{{ entry.old_value }}</span>
+                                <i data-lucide="arrow-right" class="w-3 h-3 text-muted-foreground"></i>
+                                <span class="font-medium">{{ entry.new_value }}</span>
+                            </div>
+                            {% else %}
+                            <div class="text-sm text-muted-foreground">{{ entry.remarks|default:"No details" }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                            {% if entry.to_location %}
+                            {{ entry.to_location.name }}
+                            {% elif entry.from_location %}
+                            {{ entry.from_location.name }}
+                            {% else %}
+                            {{ entry.asset.location.name|default:"N/A" }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-sm text-muted-foreground">
+                            No audit records found for the selected filters
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-6 border-t border-border">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-muted-foreground">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+                </div>
+                <div class="flex gap-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline btn-sm">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline btn-sm">Previous</a>
+                    {% endif %}
+                    
+                    <span class="btn btn-outline btn-sm pointer-events-none">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline btn-sm">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline btn-sm">Last</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function exportAudit() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', 'excel');
+        window.location.href = '{% url "assets:audit_export" %}?' + params.toString();
+    }
+
+    function printAudit() {
+        window.print();
+    }
+</script>
+{% endblock %}

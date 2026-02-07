@@ -1,0 +1,76 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Delete Company - Assetz{% endblock %}
+{% block page_title %}Delete Company{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Warning Header -->
+        <div class="bg-red-50 border-b border-red-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-red-900">Delete Company</h2>
+                    <p class="text-sm text-red-600 mt-1">This action will soft delete the company</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6">
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ company.name }}</h3>
+                <p class="text-sm text-gray-600">Company Code: {{ company.code }}</p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                <div class="flex gap-3">
+                    <i data-lucide="info" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <p class="text-sm text-amber-900 font-medium">Important Information</p>
+                        <ul class="text-sm text-amber-800 mt-2 space-y-1 list-disc list-inside">
+                            <li>This is a soft delete - data will be preserved</li>
+                            <li>The company can be restored later if needed</li>
+                            <li>All associated assets and users will remain in the system</li>
+                            <li>The company will be marked as inactive</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                    <input type="checkbox" id="confirm" required class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                    <label for="confirm" class="text-sm text-gray-700">
+                        I understand that this will soft delete the company <strong>{{ company.name }}</strong>
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-3 pt-4 border-t border-gray-200">
+                    <a href="{% url 'core:company_detail' company.pk %}" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Delete Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-6 text-center">
+        <a href="{% url 'core:company_list' %}" class="text-sm text-gray-600 hover:text-gray-900 inline-flex items-center gap-2">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Companies
+        </a>
+    </div>
+</div>
+{% endblock %}
