@@ -52,6 +52,10 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = ["https://assetz.toystack.dev"]
 
+# Site configuration for QR codes
+SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'localhost:8000')
+USE_HTTPS = os.environ.get('USE_HTTPS', 'False') == 'True'
+
 # Application definition
 
 INSTALLED_APPS = [

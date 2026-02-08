@@ -10,10 +10,19 @@ def generate_asset_qr_code(sender, instance, created, **kwargs):
     """
     if created and not instance.qr_code_image:
         from core.utils import generate_qr_code_with_label
+        from django.conf import settings
         
-        # Generate QR code with asset tag as label
+        # Construct the full URL for the asset
+        # Use the domain from settings or a default
+        domain = getattr(settings, 'SITE_DOMAIN', 'localhost:8000')
+        protocol = 'https' if getattr(settings, 'USE_HTTPS', False) else 'http'
+        
+        # Build the asset URL with QR code
+        asset_url = f"{protocol}://{domain}/app/assets/qr/{instance.qr_code}/"
+        
+        # Generate QR code with the full URL and asset tag as label
         qr_file = generate_qr_code_with_label(
-            data=str(instance.qr_code),
+            data=asset_url,
             label_text=instance.asset_tag,
             asset_tag=instance.asset_tag
         )
