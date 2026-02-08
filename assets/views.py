@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+# CSRF disabled - import removed
 import json
 
 from .models import Asset, AssetCategory, AssetType, Vendor, AssetDocument, AssetHistory

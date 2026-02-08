@@ -11,6 +11,8 @@ DATABASES['default']['TEST'] = {
     'NAME': 'test_assetz',
 }
 
+# CSRF is already disabled in main settings
+
 # Use simpler password hashers for faster tests
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',

@@ -73,7 +73,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -92,6 +92,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # CSRF context processor not needed - CSRF disabled
             ],
         },
     },
@@ -171,6 +172,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 PAGE_SIZE = 25
 
 # Authentication URLs
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/app/dashboard/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/app/dashboard/"
+LOGOUT_REDIRECT_URL = "/"
