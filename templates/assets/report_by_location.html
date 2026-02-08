@@ -1,0 +1,152 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Assets by Location Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Assets by Location Report</h1>
+            <p class="text-muted-foreground mt-1">Comprehensive breakdown of assets grouped by location</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=excel" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Assets</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ total_assets }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Value</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">₹{{ total_value|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Locations -->
+    {% for loc_data in locations %}
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-semibold text-foreground">
+                        {% if loc_data.location %}
+                        {{ loc_data.location.name }}
+                        {% else %}
+                        Unassigned Location
+                        {% endif %}
+                    </h3>
+                    {% if loc_data.location and loc_data.location.city %}
+                    <p class="text-sm text-muted-foreground mt-1">{{ loc_data.location.city }}, {{ loc_data.location.state }}</p>
+                    {% endif %}
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-muted-foreground">Assets</p>
+                    <p class="text-2xl font-bold text-foreground">{{ loc_data.count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="text-center p-4 bg-muted/30 rounded-lg">
+                    <p class="text-sm text-muted-foreground">Total Assets</p>
+                    <p class="text-xl font-bold text-foreground">{{ loc_data.count }}</p>
+                </div>
+                <div class="text-center p-4 bg-muted/30 rounded-lg">
+                    <p class="text-sm text-muted-foreground">Total Value</p>
+                    <p class="text-xl font-bold text-foreground">₹{{ loc_data.total_value|floatformat:2 }}</p>
+                </div>
+                <div class="text-center p-4 bg-muted/30 rounded-lg">
+                    <p class="text-sm text-muted-foreground">Categories</p>
+                    <p class="text-sm font-medium text-foreground">
+                        {% for cat in loc_data.by_category|slice:":3" %}
+                        {{ cat.category__name|default:"Uncategorized" }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                        -
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Assets Table -->
+            {% if loc_data.assets %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-border">
+                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Department</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in loc_data.assets|slice:":10" %}
+                        <tr class="border-b border-border hover:bg-muted/20">
+                            <td class="py-3 px-4">
+                                <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                                    {{ asset.asset_tag }}
+                                </a>
+                            </td>
+                            <td class="py-3 px-4">{{ asset.name }}</td>
+                            <td class="py-3 px-4">{{ asset.category.name|default:"-" }}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
+                                    {{ asset.status }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">{{ asset.department.name|default:"-" }}</td>
+                            <td class="py-3 px-4 text-right">₹{{ asset.purchase_price|floatformat:2|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if loc_data.assets|length > 10 %}
+                <p class="text-sm text-muted-foreground mt-4 text-center">
+                    Showing 10 of {{ loc_data.assets|length }} assets. Export to Excel for full list.
+                </p>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-center text-muted-foreground py-8">No assets at this location</p>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="card p-12 text-center">
+        <i data-lucide="inbox" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
+        <p class="text-lg text-muted-foreground">No locations found</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

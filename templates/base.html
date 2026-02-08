@@ -122,8 +122,51 @@
             }
             
             /* Input styles */
-            .input {
-                @apply flex h-10 w-full rounded-lg border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
+            .input,
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="number"],
+            input[type="date"],
+            input[type="datetime-local"],
+            input[type="time"],
+            input[type="url"],
+            input[type="tel"],
+            input[type="search"],
+            input[type="file"],
+            select,
+            textarea,
+            .form-control,
+            .form-select {
+                @apply flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50;
+            }
+            
+            textarea {
+                @apply min-h-[80px] resize-y;
+            }
+            
+            select,
+            .form-select {
+                @apply appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M10.293%203.293%206%207.586%201.707%203.293A1%201%200%200%200%20.293%204.707l5%205a1%201%200%200%200%201.414%200l5-5a1%201%200%201%200-1.414-1.414z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_0.5rem_center] bg-no-repeat pr-10;
+            }
+            
+            input[type="checkbox"],
+            input[type="radio"] {
+                @apply h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary;
+            }
+            
+            input[type="file"] {
+                @apply h-auto py-1;
+            }
+            
+            /* Form label styles */
+            label {
+                @apply text-sm font-medium text-gray-700;
+            }
+            
+            /* Form group styles */
+            .form-group {
+                @apply mb-4;
             }
             
             /* Badge styles */

@@ -1,0 +1,192 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}User Management - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
+            <p class="text-gray-500 mt-1">
+                {% if is_super_admin %}
+                Manage users across all companies
+                {% else %}
+                Manage users in your company
+                {% endif %}
+            </p>
+        </div>
+        <a href="{% url 'users:user_create' %}" class="btn btn-primary">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            Add User
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card p-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" name="search" value="{{ search }}" placeholder="Search by name, email, or employee ID..." class="form-control">
+            </div>
+            
+            <div class="min-w-[150px]">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            
+            {% if is_super_admin %}
+            <div class="min-w-[200px]">
+                <select name="company" class="form-select">
+                    <option value="">All Companies</option>
+                    {% for comp in companies %}
+                    <option value="{{ comp.id }}" {% if company_filter == comp.id|stringformat:"s" %}selected{% endif %}>
+                        {{ comp.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                Search
+            </button>
+            
+            {% if search or status or company_filter %}
+            <a href="{% url 'users:user_list' %}" class="btn btn-outline">
+                <i data-lucide="x" class="w-4 h-4"></i>
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-500">User</th>
+                        {% if is_super_admin %}
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-500">Company</th>
+                        {% endif %}
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-500">Employee ID</th>
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-500">Department</th>
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-500">Role</th>
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-500">Status</th>
+                        <th class="text-right py-4 px-6 text-sm font-medium text-gray-500">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in page_obj %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">
+                                    {{ user.first_name.0|default:user.username.0|upper }}{{ user.last_name.0|default:""|upper }}
+                                </div>
+                                <div>
+                                    <a href="{% url 'users:user_detail' user.pk %}" class="font-medium text-gray-900 hover:text-primary-500">
+                                        {{ user.get_full_name|default:user.username }}
+                                    </a>
+                                    <p class="text-sm text-gray-500">{{ user.email }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        {% if is_super_admin %}
+                        <td class="py-4 px-6">
+                            {% if user.profile %}
+                            <span class="text-sm text-gray-900">{{ user.profile.company.name }}</span>
+                            {% else %}
+                            <span class="text-sm text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                        <td class="py-4 px-6">
+                            {% if user.profile %}
+                            <span class="text-sm text-gray-900">{{ user.profile.employee_id|default:"-" }}</span>
+                            {% else %}
+                            <span class="text-sm text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if user.profile and user.profile.department %}
+                            <span class="text-sm text-gray-900">{{ user.profile.department.name }}</span>
+                            {% else %}
+                            <span class="text-sm text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex flex-wrap gap-1">
+                                {% if user.is_superuser %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-600 font-medium">Super Admin</span>
+                                {% elif user.profile.is_company_admin %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600 font-medium">Admin</span>
+                                {% endif %}
+                                {% if user.profile.is_asset_approver %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium">Approver</span>
+                                {% endif %}
+                                {% if user.profile.is_asset_custodian %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-600 font-medium">Custodian</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if user.is_active %}
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium">Active</span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-medium">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'users:user_detail' user.pk %}" class="text-blue-600 hover:text-blue-800" title="View">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{% url 'users:user_update' user.pk %}" class="text-green-600 hover:text-green-800" title="Edit">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </a>
+                                {% if user != request.user %}
+                                <a href="{% url 'users:user_delete' user.pk %}" class="text-red-600 hover:text-red-800" title="Delete">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if is_super_admin %}7{% else %}6{% endif %}" class="py-12 text-center">
+                            <i data-lucide="users" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                            <p class="text-gray-500">No users found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-6 border-t border-gray-200 flex items-center justify-between">
+            <div class="text-sm text-gray-500">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} users
+            </div>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&status={{ status }}{% if company_filter %}&company={{ company_filter }}{% endif %}" class="btn btn-outline btn-sm">Previous</a>
+                {% endif %}
+                <span class="px-4 py-2 text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search }}&status={{ status }}{% if company_filter %}&company={{ company_filter }}{% endif %}" class="btn btn-outline btn-sm">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

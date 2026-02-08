@@ -25,7 +25,9 @@ class AssetCategory(BaseModel):
         unique_together = [['company', 'code'], ['company', 'name']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.code} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.code} - {self.name}"
+        return f"{self.code} - {self.name}"
 
 
 class AssetType(BaseModel):
@@ -58,7 +60,9 @@ class AssetType(BaseModel):
         unique_together = [['company', 'code'], ['company', 'name']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.code} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.code} - {self.name}"
+        return f"{self.code} - {self.name}"
 
 
 class Vendor(BaseModel):
@@ -92,7 +96,9 @@ class Vendor(BaseModel):
         unique_together = [['company', 'code'], ['company', 'name']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.code} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.code} - {self.name}"
+        return f"{self.code} - {self.name}"
 
 
 class Asset(BaseModel):
@@ -193,7 +199,9 @@ class Asset(BaseModel):
         ]
 
     def __str__(self):
-        return f"{self.company.code} - {self.asset_tag} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.asset_tag} - {self.name}"
+        return f"{self.asset_tag} - {self.name}"
 
     @property
     def is_under_warranty(self):
@@ -239,7 +247,9 @@ class AssetDocument(BaseModel):
         verbose_name_plural = 'Asset Documents'
 
     def __str__(self):
-        return f"{self.asset.asset_tag} - {self.title}"
+        if self.asset:
+            return f"{self.asset.asset_tag} - {self.title}"
+        return self.title
 
 
 class AssetHistory(models.Model):
@@ -280,7 +290,9 @@ class AssetHistory(models.Model):
         verbose_name_plural = 'Asset History'
 
     def __str__(self):
-        return f"{self.asset.asset_tag} - {self.action_type} on {self.action_date}"
+        if self.asset:
+            return f"{self.asset.asset_tag} - {self.action_type} on {self.action_date}"
+        return f"{self.action_type} on {self.action_date}"
 
 
 class AssetTransfer(BaseModel):
@@ -344,7 +356,9 @@ class AssetTransfer(BaseModel):
         ]
     
     def __str__(self):
-        return f"{self.transfer_number} - {self.asset.asset_tag}"
+        if self.asset:
+            return f"{self.transfer_number} - {self.asset.asset_tag}"
+        return self.transfer_number or "New Transfer"
     
     def save(self, *args, **kwargs):
         if not self.transfer_number:
@@ -438,7 +452,9 @@ class AssetDisposal(BaseModel):
         ]
     
     def __str__(self):
-        return f"{self.disposal_number} - {self.asset.asset_tag}"
+        if self.asset:
+            return f"{self.disposal_number} - {self.asset.asset_tag}"
+        return self.disposal_number or "New Disposal"
     
     def save(self, *args, **kwargs):
         if not self.disposal_number:

@@ -1,0 +1,179 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Asset Assignment Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Asset Assignment Report</h1>
+            <p class="text-muted-foreground mt-1">Track asset assignments to users and custodians</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=excel" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Assigned Assets</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ total_assigned }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="user-check" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Unassigned Assets</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ total_unassigned }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="user-x" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Assignments -->
+    {% for assignment in assignments %}
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-semibold text-foreground">
+                        {{ assignment.user.get_full_name }} ({{ assignment.user.username }})
+                    </h3>
+                    <p class="text-sm text-muted-foreground mt-1">{{ assignment.user.email }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-muted-foreground">Total Assignments</p>
+                    <p class="text-2xl font-bold text-foreground">{{ assignment.assigned_count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="text-center p-4 bg-muted/30 rounded-lg">
+                    <p class="text-sm text-muted-foreground">Assigned Assets</p>
+                    <p class="text-xl font-bold text-foreground">{{ assignment.assigned_count }}</p>
+                </div>
+                <div class="text-center p-4 bg-muted/30 rounded-lg">
+                    <p class="text-sm text-muted-foreground">Total Value (Assigned)</p>
+                    <p class="text-xl font-bold text-foreground">₹{{ assignment.total_value_assigned|floatformat:2 }}</p>
+                </div>
+                <div class="text-center p-4 bg-muted/30 rounded-lg">
+                    <p class="text-sm text-muted-foreground">Custodian Assets</p>
+                    <p class="text-xl font-bold text-foreground">{{ assignment.custodian_count }}</p>
+                </div>
+            </div>
+
+            <!-- Assets Table -->
+            {% if assignment.assigned_assets %}
+            <div class="mb-4">
+                <h4 class="font-semibold text-foreground mb-3">Assigned Assets</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-border">
+                                <th class="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                                <th class="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Name</th>
+                                <th class="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Category</th>
+                                <th class="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Location</th>
+                                <th class="text-right py-2 px-3 text-sm font-medium text-muted-foreground">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in assignment.assigned_assets|slice:":5" %}
+                            <tr class="border-b border-border hover:bg-muted/20">
+                                <td class="py-2 px-3">
+                                    <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                                        {{ asset.asset_tag }}
+                                    </a>
+                                </td>
+                                <td class="py-2 px-3">{{ asset.name }}</td>
+                                <td class="py-2 px-3">{{ asset.category.name|default:"-" }}</td>
+                                <td class="py-2 px-3">{{ asset.location.name|default:"-" }}</td>
+                                <td class="py-2 px-3 text-right">₹{{ asset.purchase_price|floatformat:2|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if assignment.assigned_assets|length > 5 %}
+                    <p class="text-sm text-muted-foreground mt-2 text-center">
+                        Showing 5 of {{ assignment.assigned_assets|length }} assets
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="card p-12 text-center">
+        <i data-lucide="users" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
+        <p class="text-lg text-muted-foreground">No asset assignments found</p>
+    </div>
+    {% endfor %}
+
+    <!-- Unassigned Assets -->
+    {% if unassigned_assets %}
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
+                Unassigned Assets ({{ total_unassigned }})
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Location</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in unassigned_assets %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">{{ asset.name }}</td>
+                        <td class="py-3 px-4">{{ asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-4">{{ asset.location.name|default:"-" }}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-600">
+                                {{ asset.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

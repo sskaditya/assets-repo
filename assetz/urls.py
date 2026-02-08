@@ -25,6 +25,7 @@ urlpatterns = [
     path("", views.landing, name="landing"),  # Landing page
     path("app/", include('assets.urls')),  # Asset management app
     path("core/", include('core.urls')),  # Core app (companies)
+    path("users/", include('users.urls')),  # User management
     
     # Custom authentication URLs
     path("accounts/login/", auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),

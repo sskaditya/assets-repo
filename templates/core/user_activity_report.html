@@ -1,0 +1,270 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}User Activity Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">User Activity Report</h1>
+            <p class="text-gray-500 mt-1">{{ date_from|date:"M d, Y" }} - {{ date_to|date:"M d, Y" }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'core:audit_log_list' %}" class="btn btn-outline">
+                <i data-lucide="list" class="w-4 h-4"></i>
+                View Logs
+            </a>
+            <a href="{% url 'core:user_activity_export' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="card p-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    Update Report
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Overall Statistics -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="card p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Total Actions</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_actions }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Creates</p>
+                    <p class="text-2xl font-bold text-green-600">{{ total_creates }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <i data-lucide="plus-circle" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Updates</p>
+                    <p class="text-2xl font-bold text-blue-600">{{ total_updates }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="edit" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Deletes</p>
+                    <p class="text-2xl font-bold text-red-600">{{ total_deletes }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <i data-lucide="trash-2" class="w-6 h-6 text-red-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Views</p>
+                    <p class="text-2xl font-bold text-purple-600">{{ total_views }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                    <i data-lucide="eye" class="w-6 h-6 text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Exports</p>
+                    <p class="text-2xl font-bold text-yellow-600">{{ total_exports }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                    <i data-lucide="download" class="w-6 h-6 text-yellow-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Active Users -->
+    <div class="card">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Top 10 Most Active Users</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Rank</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">User</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Total</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Creates</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Updates</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Deletes</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Views</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Exports</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Logins</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in top_users %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-6">
+                            <span class="text-sm font-bold text-gray-500">{{ forloop.counter }}</span>
+                        </td>
+                        <td class="py-3 px-6">
+                            <span class="text-sm font-medium text-gray-900">{{ stat.username }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm font-bold text-blue-600">{{ stat.total_actions }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.creates }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.updates }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.deletes }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.views }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.exports }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.logins }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="py-12 text-center">
+                            <i data-lucide="users" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                            <p class="text-gray-500">No activity data available</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- All Users Activity -->
+    <div class="card">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">All Users Activity</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">User</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Total</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Creates</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Updates</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Deletes</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Views</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Exports</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-500">Logins</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in user_stats %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-6">
+                            <span class="text-sm font-medium text-gray-900">{{ stat.username }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm font-semibold text-gray-900">{{ stat.total_actions }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.creates }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.updates }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.deletes }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.views }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.exports }}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <span class="text-sm text-gray-700">{{ stat.logins }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Daily Activity Chart Data (for future chart implementation) -->
+    {% if daily_activity %}
+    <div class="card">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Daily Activity Trend</h3>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-2 px-4 text-sm font-medium text-gray-500">Date</th>
+                            <th class="text-right py-2 px-4 text-sm font-medium text-gray-500">Actions</th>
+                            <th class="text-left py-2 px-4 text-sm font-medium text-gray-500">Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in daily_activity %}
+                        <tr class="border-b border-gray-100">
+                            <td class="py-2 px-4 text-sm text-gray-900">{{ day.date|date:"M d, Y" }}</td>
+                            <td class="py-2 px-4 text-right text-sm font-medium text-gray-900">{{ day.count }}</td>
+                            <td class="py-2 px-4">
+                                <div class="bg-blue-100 h-4 rounded" style="width: {% widthratio day.count total_actions 100 %}%"></div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

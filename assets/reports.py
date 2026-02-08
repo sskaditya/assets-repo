@@ -554,3 +554,677 @@ class DisposalReport(ReportGenerator):
         response['Content-Disposition'] = f'attachment; filename=disposal_report_{datetime.now().strftime("%Y%m%d")}.xlsx'
         wb.save(response)
         return response
+
+
+class AssetByCategoryReport(ReportGenerator):
+    """Asset by Category Report"""
+    
+    def generate(self):
+        """Generate asset breakdown by category"""
+        from .models import AssetCategory
+        
+        assets = self.get_base_queryset()
+        
+        if self.company:
+            categories = AssetCategory.objects.filter(company=self.company, is_deleted=False)
+        else:
+            categories = AssetCategory.objects.filter(is_deleted=False)
+        
+        category_data = []
+        for category in categories:
+            category_assets = assets.filter(category=category)
+            total_value = category_assets.aggregate(total=Sum('purchase_price'))['total'] or 0
+            
+            category_data.append({
+                'category': category,
+                'count': category_assets.count(),
+                'total_value': total_value,
+                'by_status': category_assets.values('status').annotate(count=Count('id')),
+                'assets': category_assets.select_related('asset_type', 'location', 'department')
+            })
+        
+        return {
+            'categories': category_data,
+            'total_assets': assets.count(),
+            'total_value': assets.aggregate(total=Sum('purchase_price'))['total'] or 0,
+        }
+    
+    def export_to_excel(self):
+        """Export asset by category to Excel"""
+        wb, ws = self.create_excel_workbook("Assets by Category")
+        
+        data = self.generate()
+        row = 1
+        
+        # Title
+        ws.merge_cells(f'A{row}:F{row}')
+        ws[f'A{row}'] = 'ASSETS BY CATEGORY REPORT'
+        ws[f'A{row}'].font = Font(bold=True, size=14)
+        ws[f'A{row}'].alignment = Alignment(horizontal='center')
+        row += 2
+        
+        for cat_data in data['categories']:
+            # Category header
+            ws[f'A{row}'] = f'{cat_data["category"].name}'
+            ws[f'A{row}'].font = Font(bold=True, size=12)
+            row += 1
+            
+            ws[f'A{row}'] = f'Total Assets: {cat_data["count"]}'
+            ws[f'C{row}'] = f'Total Value: {float(cat_data["total_value"])}'
+            row += 1
+            
+            # Asset details
+            headers = ['Asset Tag', 'Name', 'Type', 'Status', 'Location', 'Purchase Price']
+            for col, header in enumerate(headers, 1):
+                ws.cell(row=row, column=col, value=header)
+            self.style_header(ws, row=row, cols=len(headers))
+            row += 1
+            
+            for asset in cat_data['assets']:
+                ws.cell(row=row, column=1, value=asset.asset_tag)
+                ws.cell(row=row, column=2, value=asset.name)
+                ws.cell(row=row, column=3, value=asset.asset_type.name if asset.asset_type else '')
+                ws.cell(row=row, column=4, value=asset.status)
+                ws.cell(row=row, column=5, value=asset.location.name if asset.location else '')
+                ws.cell(row=row, column=6, value=float(asset.purchase_price) if asset.purchase_price else 0)
+                row += 1
+            
+            row += 2
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=assets_by_category_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response
+
+
+class AssetByLocationReport(ReportGenerator):
+    """Asset by Location Report"""
+    
+    def generate(self):
+        """Generate asset breakdown by location"""
+        assets = self.get_base_queryset()
+        
+        if self.company:
+            locations = Location.objects.filter(company=self.company, is_deleted=False)
+        else:
+            locations = Location.objects.all()
+        
+        location_data = []
+        for location in locations:
+            location_assets = assets.filter(location=location)
+            total_value = location_assets.aggregate(total=Sum('purchase_price'))['total'] or 0
+            
+            location_data.append({
+                'location': location,
+                'count': location_assets.count(),
+                'total_value': total_value,
+                'by_status': location_assets.values('status').annotate(count=Count('id')),
+                'by_category': location_assets.values('category__name').annotate(count=Count('id')),
+                'assets': location_assets.select_related('category', 'asset_type', 'department')
+            })
+        
+        # Unassigned assets
+        unassigned = assets.filter(location__isnull=True)
+        if unassigned.exists():
+            location_data.append({
+                'location': None,
+                'count': unassigned.count(),
+                'total_value': unassigned.aggregate(total=Sum('purchase_price'))['total'] or 0,
+                'by_status': unassigned.values('status').annotate(count=Count('id')),
+                'by_category': unassigned.values('category__name').annotate(count=Count('id')),
+                'assets': unassigned.select_related('category', 'asset_type', 'department')
+            })
+        
+        return {
+            'locations': location_data,
+            'total_assets': assets.count(),
+            'total_value': assets.aggregate(total=Sum('purchase_price'))['total'] or 0,
+        }
+    
+    def export_to_excel(self):
+        """Export asset by location to Excel"""
+        wb, ws = self.create_excel_workbook("Assets by Location")
+        
+        data = self.generate()
+        row = 1
+        
+        # Title
+        ws.merge_cells(f'A{row}:F{row}')
+        ws[f'A{row}'] = 'ASSETS BY LOCATION REPORT'
+        ws[f'A{row}'].font = Font(bold=True, size=14)
+        ws[f'A{row}'].alignment = Alignment(horizontal='center')
+        row += 2
+        
+        for loc_data in data['locations']:
+            # Location header
+            location_name = loc_data['location'].name if loc_data['location'] else 'Unassigned'
+            ws[f'A{row}'] = f'{location_name}'
+            ws[f'A{row}'].font = Font(bold=True, size=12)
+            row += 1
+            
+            ws[f'A{row}'] = f'Total Assets: {loc_data["count"]}'
+            ws[f'C{row}'] = f'Total Value: {float(loc_data["total_value"])}'
+            row += 1
+            
+            # Asset details
+            headers = ['Asset Tag', 'Name', 'Category', 'Status', 'Department', 'Purchase Price']
+            for col, header in enumerate(headers, 1):
+                ws.cell(row=row, column=col, value=header)
+            self.style_header(ws, row=row, cols=len(headers))
+            row += 1
+            
+            for asset in loc_data['assets']:
+                ws.cell(row=row, column=1, value=asset.asset_tag)
+                ws.cell(row=row, column=2, value=asset.name)
+                ws.cell(row=row, column=3, value=asset.category.name if asset.category else '')
+                ws.cell(row=row, column=4, value=asset.status)
+                ws.cell(row=row, column=5, value=asset.department.name if asset.department else '')
+                ws.cell(row=row, column=6, value=float(asset.purchase_price) if asset.purchase_price else 0)
+                row += 1
+            
+            row += 2
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=assets_by_location_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response
+
+
+class DepreciationScheduleReport(ReportGenerator):
+    """Depreciation Schedule Report"""
+    
+    def generate(self):
+        """Generate depreciation schedule"""
+        from .utils import calculate_current_book_value
+        
+        assets = self.get_base_queryset().filter(
+            purchase_price__isnull=False,
+            depreciation_rate__isnull=False
+        )
+        
+        schedule = []
+        total_original_value = Decimal('0')
+        total_accumulated_depreciation = Decimal('0')
+        total_book_value = Decimal('0')
+        
+        for asset in assets:
+            book_value = calculate_current_book_value(asset)
+            accumulated_depreciation = asset.purchase_price - book_value
+            
+            # Calculate yearly depreciation
+            if asset.purchase_date:
+                years_owned = (timezone.now().date() - asset.purchase_date).days / 365.25
+            else:
+                years_owned = 0
+            
+            annual_depreciation = asset.purchase_price * (asset.depreciation_rate / 100) if asset.depreciation_rate else 0
+            
+            schedule.append({
+                'asset': asset,
+                'original_value': asset.purchase_price,
+                'depreciation_rate': asset.depreciation_rate,
+                'useful_life': asset.useful_life_years,
+                'years_owned': round(years_owned, 2),
+                'annual_depreciation': annual_depreciation,
+                'accumulated_depreciation': accumulated_depreciation,
+                'book_value': book_value,
+                'salvage_value': asset.salvage_value or 0,
+            })
+            
+            total_original_value += asset.purchase_price
+            total_accumulated_depreciation += accumulated_depreciation
+            total_book_value += book_value
+        
+        return {
+            'schedule': schedule,
+            'total_original_value': total_original_value,
+            'total_accumulated_depreciation': total_accumulated_depreciation,
+            'total_book_value': total_book_value,
+        }
+    
+    def export_to_excel(self):
+        """Export depreciation schedule to Excel"""
+        wb, ws = self.create_excel_workbook("Depreciation Schedule")
+        
+        # Headers
+        headers = [
+            'Asset Tag', 'Name', 'Category', 'Purchase Date', 'Original Value',
+            'Depreciation Rate (%)', 'Useful Life (Years)', 'Years Owned',
+            'Annual Depreciation', 'Accumulated Depreciation', 'Current Book Value', 'Salvage Value'
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col, value=header)
+        
+        self.style_header(ws, row=1, cols=len(headers))
+        
+        # Data
+        data = self.generate()
+        row = 2
+        for item in data['schedule']:
+            asset = item['asset']
+            ws.cell(row=row, column=1, value=asset.asset_tag)
+            ws.cell(row=row, column=2, value=asset.name)
+            ws.cell(row=row, column=3, value=asset.category.name if asset.category else '')
+            ws.cell(row=row, column=4, value=asset.purchase_date.strftime('%Y-%m-%d') if asset.purchase_date else '')
+            ws.cell(row=row, column=5, value=float(item['original_value']))
+            ws.cell(row=row, column=6, value=float(item['depreciation_rate']) if item['depreciation_rate'] else 0)
+            ws.cell(row=row, column=7, value=item['useful_life'] or 0)
+            ws.cell(row=row, column=8, value=item['years_owned'])
+            ws.cell(row=row, column=9, value=float(item['annual_depreciation']))
+            ws.cell(row=row, column=10, value=float(item['accumulated_depreciation']))
+            ws.cell(row=row, column=11, value=float(item['book_value']))
+            ws.cell(row=row, column=12, value=float(item['salvage_value']))
+            row += 1
+        
+        # Summary
+        row += 2
+        ws.cell(row=row, column=1, value='SUMMARY').font = Font(bold=True)
+        row += 1
+        ws.cell(row=row, column=1, value='Total Original Value')
+        ws.cell(row=row, column=2, value=float(data['total_original_value']))
+        row += 1
+        ws.cell(row=row, column=1, value='Total Accumulated Depreciation')
+        ws.cell(row=row, column=2, value=float(data['total_accumulated_depreciation']))
+        row += 1
+        ws.cell(row=row, column=1, value='Total Current Book Value')
+        ws.cell(row=row, column=2, value=float(data['total_book_value']))
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=depreciation_schedule_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response
+
+
+class WarrantyReport(ReportGenerator):
+    """Warranty Report"""
+    
+    def generate(self):
+        """Generate warranty data"""
+        assets = self.get_base_queryset()
+        today = timezone.now().date()
+        thirty_days = today + timedelta(days=30)
+        sixty_days = today + timedelta(days=60)
+        ninety_days = today + timedelta(days=90)
+        
+        return {
+            'under_warranty': assets.filter(
+                warranty_start_date__lte=today,
+                warranty_end_date__gte=today
+            ).select_related('category', 'location', 'vendor').order_by('warranty_end_date'),
+            'expiring_30_days': assets.filter(
+                warranty_end_date__gte=today,
+                warranty_end_date__lte=thirty_days
+            ).select_related('category', 'location', 'vendor').order_by('warranty_end_date'),
+            'expiring_60_days': assets.filter(
+                warranty_end_date__gt=thirty_days,
+                warranty_end_date__lte=sixty_days
+            ).select_related('category', 'location', 'vendor').order_by('warranty_end_date'),
+            'expiring_90_days': assets.filter(
+                warranty_end_date__gt=sixty_days,
+                warranty_end_date__lte=ninety_days
+            ).select_related('category', 'location', 'vendor').order_by('warranty_end_date'),
+            'expired': assets.filter(
+                warranty_end_date__lt=today
+            ).select_related('category', 'location', 'vendor').order_by('-warranty_end_date'),
+            'no_warranty': assets.filter(
+                warranty_end_date__isnull=True
+            ).select_related('category', 'location').order_by('asset_tag'),
+        }
+    
+    def export_to_excel(self):
+        """Export warranty report to Excel"""
+        wb, ws = self.create_excel_workbook("Warranty Report")
+        
+        data = self.generate()
+        row = 1
+        
+        sections = [
+            ('UNDER WARRANTY', data['under_warranty']),
+            ('EXPIRING IN 30 DAYS', data['expiring_30_days']),
+            ('EXPIRING IN 60 DAYS', data['expiring_60_days']),
+            ('EXPIRING IN 90 DAYS', data['expiring_90_days']),
+            ('EXPIRED', data['expired']),
+            ('NO WARRANTY', data['no_warranty']),
+        ]
+        
+        for section_title, assets in sections:
+            ws.cell(row=row, column=1, value=f'{section_title} ({assets.count()})').font = Font(bold=True, size=12)
+            row += 1
+            
+            if assets.exists():
+                headers = ['Asset Tag', 'Name', 'Category', 'Location', 'Vendor', 'Warranty Start', 'Warranty End', 'Days Remaining']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=row, column=col, value=header)
+                self.style_header(ws, row=row, cols=len(headers))
+                row += 1
+                
+                for asset in assets:
+                    days_remaining = (asset.warranty_end_date - today).days if asset.warranty_end_date else 'N/A'
+                    ws.cell(row=row, column=1, value=asset.asset_tag)
+                    ws.cell(row=row, column=2, value=asset.name)
+                    ws.cell(row=row, column=3, value=asset.category.name if asset.category else '')
+                    ws.cell(row=row, column=4, value=asset.location.name if asset.location else '')
+                    ws.cell(row=row, column=5, value=asset.vendor.name if asset.vendor else '')
+                    ws.cell(row=row, column=6, value=asset.warranty_start_date.strftime('%Y-%m-%d') if asset.warranty_start_date else '')
+                    ws.cell(row=row, column=7, value=asset.warranty_end_date.strftime('%Y-%m-%d') if asset.warranty_end_date else '')
+                    ws.cell(row=row, column=8, value=days_remaining if days_remaining != 'N/A' else 'N/A')
+                    row += 1
+            
+            row += 2
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=warranty_report_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response
+
+
+class AMCReport(ReportGenerator):
+    """AMC (Annual Maintenance Contract) Report"""
+    
+    def generate(self):
+        """Generate AMC data"""
+        assets = self.get_base_queryset()
+        today = timezone.now().date()
+        thirty_days = today + timedelta(days=30)
+        sixty_days = today + timedelta(days=60)
+        ninety_days = today + timedelta(days=90)
+        
+        return {
+            'under_amc': assets.filter(
+                amc_start_date__lte=today,
+                amc_end_date__gte=today
+            ).select_related('category', 'location', 'amc_vendor').order_by('amc_end_date'),
+            'expiring_30_days': assets.filter(
+                amc_end_date__gte=today,
+                amc_end_date__lte=thirty_days
+            ).select_related('category', 'location', 'amc_vendor').order_by('amc_end_date'),
+            'expiring_60_days': assets.filter(
+                amc_end_date__gt=thirty_days,
+                amc_end_date__lte=sixty_days
+            ).select_related('category', 'location', 'amc_vendor').order_by('amc_end_date'),
+            'expiring_90_days': assets.filter(
+                amc_end_date__gt=sixty_days,
+                amc_end_date__lte=ninety_days
+            ).select_related('category', 'location', 'amc_vendor').order_by('amc_end_date'),
+            'expired': assets.filter(
+                amc_end_date__lt=today
+            ).select_related('category', 'location', 'amc_vendor').order_by('-amc_end_date'),
+            'no_amc': assets.filter(
+                amc_end_date__isnull=True
+            ).select_related('category', 'location').order_by('asset_tag'),
+            'total_amc_cost': assets.filter(
+                amc_start_date__lte=today,
+                amc_end_date__gte=today
+            ).aggregate(total=Sum('amc_cost'))['total'] or 0,
+        }
+    
+    def export_to_excel(self):
+        """Export AMC report to Excel"""
+        wb, ws = self.create_excel_workbook("AMC Report")
+        
+        data = self.generate()
+        row = 1
+        
+        sections = [
+            ('UNDER AMC', data['under_amc']),
+            ('EXPIRING IN 30 DAYS', data['expiring_30_days']),
+            ('EXPIRING IN 60 DAYS', data['expiring_60_days']),
+            ('EXPIRING IN 90 DAYS', data['expiring_90_days']),
+            ('EXPIRED', data['expired']),
+            ('NO AMC', data['no_amc']),
+        ]
+        
+        for section_title, assets in sections:
+            ws.cell(row=row, column=1, value=f'{section_title} ({assets.count()})').font = Font(bold=True, size=12)
+            row += 1
+            
+            if assets.exists():
+                headers = ['Asset Tag', 'Name', 'Category', 'Location', 'AMC Vendor', 'AMC Start', 'AMC End', 'Days Remaining', 'AMC Cost']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=row, column=col, value=header)
+                self.style_header(ws, row=row, cols=len(headers))
+                row += 1
+                
+                today = timezone.now().date()
+                for asset in assets:
+                    days_remaining = (asset.amc_end_date - today).days if asset.amc_end_date else 'N/A'
+                    ws.cell(row=row, column=1, value=asset.asset_tag)
+                    ws.cell(row=row, column=2, value=asset.name)
+                    ws.cell(row=row, column=3, value=asset.category.name if asset.category else '')
+                    ws.cell(row=row, column=4, value=asset.location.name if asset.location else '')
+                    ws.cell(row=row, column=5, value=asset.amc_vendor.name if asset.amc_vendor else '')
+                    ws.cell(row=row, column=6, value=asset.amc_start_date.strftime('%Y-%m-%d') if asset.amc_start_date else '')
+                    ws.cell(row=row, column=7, value=asset.amc_end_date.strftime('%Y-%m-%d') if asset.amc_end_date else '')
+                    ws.cell(row=row, column=8, value=days_remaining if days_remaining != 'N/A' else 'N/A')
+                    ws.cell(row=row, column=9, value=float(asset.amc_cost) if asset.amc_cost else 0)
+                    row += 1
+            
+            row += 2
+        
+        # Summary
+        ws.cell(row=row, column=1, value='SUMMARY').font = Font(bold=True)
+        row += 1
+        ws.cell(row=row, column=1, value='Total Active AMC Cost')
+        ws.cell(row=row, column=2, value=float(data['total_amc_cost']))
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=amc_report_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response
+
+
+class AssignmentReport(ReportGenerator):
+    """Asset Assignment Report"""
+    
+    def generate(self):
+        """Generate asset assignment data"""
+        assets = self.get_base_queryset()
+        
+        from django.contrib.auth.models import User
+        
+        if self.company:
+            users = User.objects.filter(profile__company=self.company).distinct()
+        else:
+            users = User.objects.all()
+        
+        assignment_data = []
+        for user in users:
+            user_assets = assets.filter(assigned_to=user)
+            custodian_assets = assets.filter(custodian=user)
+            
+            if user_assets.exists() or custodian_assets.exists():
+                assignment_data.append({
+                    'user': user,
+                    'assigned_count': user_assets.count(),
+                    'custodian_count': custodian_assets.count(),
+                    'assigned_assets': user_assets.select_related('category', 'location', 'department'),
+                    'custodian_assets': custodian_assets.select_related('category', 'location', 'department'),
+                    'total_value_assigned': user_assets.aggregate(total=Sum('purchase_price'))['total'] or 0,
+                    'total_value_custodian': custodian_assets.aggregate(total=Sum('purchase_price'))['total'] or 0,
+                })
+        
+        return {
+            'assignments': assignment_data,
+            'total_assigned': assets.filter(assigned_to__isnull=False).count(),
+            'total_unassigned': assets.filter(assigned_to__isnull=True).count(),
+            'unassigned_assets': assets.filter(assigned_to__isnull=True).select_related('category', 'location', 'department'),
+        }
+    
+    def export_to_excel(self):
+        """Export assignment report to Excel"""
+        wb, ws = self.create_excel_workbook("Assignment Report")
+        
+        data = self.generate()
+        row = 1
+        
+        # Title
+        ws.merge_cells(f'A{row}:F{row}')
+        ws[f'A{row}'] = 'ASSET ASSIGNMENT REPORT'
+        ws[f'A{row}'].font = Font(bold=True, size=14)
+        ws[f'A{row}'].alignment = Alignment(horizontal='center')
+        row += 2
+        
+        for assignment in data['assignments']:
+            user = assignment['user']
+            ws[f'A{row}'] = f'{user.get_full_name()} ({user.username})'
+            ws[f'A{row}'].font = Font(bold=True, size=12)
+            row += 1
+            
+            ws[f'A{row}'] = f'Assigned Assets: {assignment["assigned_count"]}'
+            ws[f'C{row}'] = f'Custodian Assets: {assignment["custodian_count"]}'
+            row += 1
+            
+            # Assigned assets
+            if assignment['assigned_assets'].exists():
+                ws[f'A{row}'] = 'ASSIGNED ASSETS'
+                ws[f'A{row}'].font = Font(bold=True)
+                row += 1
+                
+                headers = ['Asset Tag', 'Name', 'Category', 'Location', 'Department', 'Purchase Price']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=row, column=col, value=header)
+                self.style_header(ws, row=row, cols=len(headers))
+                row += 1
+                
+                for asset in assignment['assigned_assets']:
+                    ws.cell(row=row, column=1, value=asset.asset_tag)
+                    ws.cell(row=row, column=2, value=asset.name)
+                    ws.cell(row=row, column=3, value=asset.category.name if asset.category else '')
+                    ws.cell(row=row, column=4, value=asset.location.name if asset.location else '')
+                    ws.cell(row=row, column=5, value=asset.department.name if asset.department else '')
+                    ws.cell(row=row, column=6, value=float(asset.purchase_price) if asset.purchase_price else 0)
+                    row += 1
+            
+            row += 2
+        
+        # Unassigned assets
+        if data['unassigned_assets'].exists():
+            ws[f'A{row}'] = f'UNASSIGNED ASSETS ({data["total_unassigned"]})'
+            ws[f'A{row}'].font = Font(bold=True, size=12)
+            row += 1
+            
+            headers = ['Asset Tag', 'Name', 'Category', 'Location', 'Department', 'Status']
+            for col, header in enumerate(headers, 1):
+                ws.cell(row=row, column=col, value=header)
+            self.style_header(ws, row=row, cols=len(headers))
+            row += 1
+            
+            for asset in data['unassigned_assets']:
+                ws.cell(row=row, column=1, value=asset.asset_tag)
+                ws.cell(row=row, column=2, value=asset.name)
+                ws.cell(row=row, column=3, value=asset.category.name if asset.category else '')
+                ws.cell(row=row, column=4, value=asset.location.name if asset.location else '')
+                ws.cell(row=row, column=5, value=asset.department.name if asset.department else '')
+                ws.cell(row=row, column=6, value=asset.status)
+                row += 1
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=assignment_report_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response
+
+
+class MovementReport(ReportGenerator):
+    """Asset Movement/History Report"""
+    
+    def generate(self):
+        """Generate asset movement data"""
+        history = AssetHistory.objects.filter(
+            action_date__date__gte=self.start_date,
+            action_date__date__lte=self.end_date
+        )
+        
+        if self.company:
+            history = history.filter(asset__company=self.company)
+        
+        return {
+            'all_movements': history.select_related(
+                'asset', 'performed_by', 'from_location', 'to_location', 'from_user', 'to_user'
+            ).order_by('-action_date'),
+            'by_action_type': history.values('action_type').annotate(count=Count('id')),
+            'total_movements': history.count(),
+            'location_changes': history.filter(action_type='LOCATION_CHANGED').count(),
+            'assignments': history.filter(action_type='ASSIGNED').count(),
+            'transfers': history.filter(action_type='TRANSFERRED').count(),
+        }
+    
+    def export_to_excel(self):
+        """Export movement report to Excel"""
+        wb, ws = self.create_excel_workbook("Movement Report")
+        
+        # Headers
+        headers = [
+            'Date', 'Asset Tag', 'Asset Name', 'Action Type', 'From Location',
+            'To Location', 'From User', 'To User', 'Performed By', 'Remarks'
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col, value=header)
+        
+        self.style_header(ws, row=1, cols=len(headers))
+        
+        # Data
+        data = self.generate()
+        row = 2
+        for movement in data['all_movements']:
+            ws.cell(row=row, column=1, value=movement.action_date.strftime('%Y-%m-%d %H:%M'))
+            ws.cell(row=row, column=2, value=movement.asset.asset_tag if movement.asset else '')
+            ws.cell(row=row, column=3, value=movement.asset.name if movement.asset else '')
+            ws.cell(row=row, column=4, value=movement.action_type)
+            ws.cell(row=row, column=5, value=movement.from_location.name if movement.from_location else '')
+            ws.cell(row=row, column=6, value=movement.to_location.name if movement.to_location else '')
+            ws.cell(row=row, column=7, value=movement.from_user.get_full_name() if movement.from_user else '')
+            ws.cell(row=row, column=8, value=movement.to_user.get_full_name() if movement.to_user else '')
+            ws.cell(row=row, column=9, value=movement.performed_by.get_full_name() if movement.performed_by else '')
+            ws.cell(row=row, column=10, value=movement.remarks or '')
+            row += 1
+        
+        # Summary
+        row += 2
+        ws.cell(row=row, column=1, value='SUMMARY').font = Font(bold=True)
+        row += 1
+        ws.cell(row=row, column=1, value='Total Movements')
+        ws.cell(row=row, column=2, value=data['total_movements'])
+        row += 1
+        ws.cell(row=row, column=1, value='Location Changes')
+        ws.cell(row=row, column=2, value=data['location_changes'])
+        row += 1
+        ws.cell(row=row, column=1, value='Assignments')
+        ws.cell(row=row, column=2, value=data['assignments'])
+        row += 1
+        ws.cell(row=row, column=1, value='Transfers')
+        ws.cell(row=row, column=2, value=data['transfers'])
+        
+        self.auto_adjust_columns(ws)
+        
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=movement_report_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        wb.save(response)
+        return response

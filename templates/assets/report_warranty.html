@@ -1,0 +1,189 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Warranty Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Warranty Report</h1>
+            <p class="text-muted-foreground mt-1">Track warranty status and expiry dates</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=excel" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="card p-6">
+            <div class="text-center">
+                <p class="text-sm text-muted-foreground">Under Warranty</p>
+                <p class="text-3xl font-bold text-green-600 mt-2">{{ under_warranty|length }}</p>
+            </div>
+        </div>
+        <div class="card p-6">
+            <div class="text-center">
+                <p class="text-sm text-muted-foreground">Expiring in 30 Days</p>
+                <p class="text-3xl font-bold text-orange-600 mt-2">{{ expiring_30_days|length }}</p>
+            </div>
+        </div>
+        <div class="card p-6">
+            <div class="text-center">
+                <p class="text-sm text-muted-foreground">Expired</p>
+                <p class="text-3xl font-bold text-red-600 mt-2">{{ expired|length }}</p>
+            </div>
+        </div>
+        <div class="card p-6">
+            <div class="text-center">
+                <p class="text-sm text-muted-foreground">No Warranty</p>
+                <p class="text-3xl font-bold text-gray-600 mt-2">{{ no_warranty|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Under Warranty -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+                Under Warranty ({{ under_warranty|length }})
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Vendor</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Warranty End</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Days Left</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in under_warranty|slice:":10" %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">{{ asset.name }}</td>
+                        <td class="py-3 px-4">{{ asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-4">{{ asset.vendor.name|default:"-" }}</td>
+                        <td class="py-3 px-4">{{ asset.warranty_end_date|date:"Y-m-d" }}</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-green-600 font-medium">{{ asset.warranty_end_date|timeuntil }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-muted-foreground">No assets under warranty</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Expiring Soon -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600"></i>
+                Expiring in 30 Days ({{ expiring_30_days|length }})
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Vendor</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Warranty End</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Days Left</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in expiring_30_days %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">{{ asset.name }}</td>
+                        <td class="py-3 px-4">{{ asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-4">{{ asset.vendor.name|default:"-" }}</td>
+                        <td class="py-3 px-4">{{ asset.warranty_end_date|date:"Y-m-d" }}</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-orange-600 font-medium">{{ asset.warranty_end_date|timeuntil }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-muted-foreground">No warranties expiring soon</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Expired -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="x-circle" class="w-5 h-5 text-red-600"></i>
+                Expired Warranties ({{ expired|length }})
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Warranty End</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Days Ago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in expired %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">{{ asset.name }}</td>
+                        <td class="py-3 px-4">{{ asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-4">{{ asset.warranty_end_date|date:"Y-m-d" }}</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-red-600">{{ asset.warranty_end_date|timesince }} ago</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-muted-foreground">No expired warranties</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

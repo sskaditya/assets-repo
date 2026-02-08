@@ -1,0 +1,197 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Asset Movement Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Asset Movement Report</h1>
+            <p class="text-muted-foreground mt-1">Track asset movements, transfers, and location changes</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=excel&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="card p-6">
+        <form method="get" class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-foreground mb-2">Start Date</label>
+                <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-foreground mb-2">End Date</label>
+                <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="filter" class="w-4 h-4"></i>
+                Apply Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Movements</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ total_movements }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Location Changes</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ location_changes }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Assignments</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ assignments }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="user-check" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Transfers</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">{{ transfers }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="arrow-right-left" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement History Table -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Movement History</h3>
+            <p class="text-sm text-muted-foreground mt-1">
+                Showing movements from {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
+            </p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date & Time</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Action Type</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">From</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">To</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Performed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movement in page_obj %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 text-sm">
+                            {{ movement.action_date|date:"M d, Y H:i" }}
+                        </td>
+                        <td class="py-3 px-4">
+                            {% if movement.asset %}
+                            <a href="{% url 'assets:asset_detail' movement.asset.pk %}" class="text-primary hover:underline">
+                                {{ movement.asset.asset_tag }}
+                            </a>
+                            <div class="text-sm text-muted-foreground">{{ movement.asset.name }}</div>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {% if movement.action_type == 'CREATED' %}bg-blue-100 text-blue-600
+                                {% elif movement.action_type == 'TRANSFERRED' %}bg-purple-100 text-purple-600
+                                {% elif movement.action_type == 'ASSIGNED' %}bg-green-100 text-green-600
+                                {% elif movement.action_type == 'LOCATION_CHANGED' %}bg-orange-100 text-orange-600
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                {{ movement.action_type }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-sm">
+                            {% if movement.from_location %}
+                            <div>{{ movement.from_location.name }}</div>
+                            {% endif %}
+                            {% if movement.from_user %}
+                            <div class="text-muted-foreground">{{ movement.from_user.get_full_name }}</div>
+                            {% endif %}
+                            {% if not movement.from_location and not movement.from_user %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-sm">
+                            {% if movement.to_location %}
+                            <div>{{ movement.to_location.name }}</div>
+                            {% endif %}
+                            {% if movement.to_user %}
+                            <div class="text-muted-foreground">{{ movement.to_user.get_full_name }}</div>
+                            {% endif %}
+                            {% if not movement.to_location and not movement.to_user %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-sm">
+                            {{ movement.performed_by.get_full_name|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 text-muted-foreground"></i>
+                            <p>No movements found for the selected date range</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-6 border-t border-border flex items-center justify-between">
+            <div class="text-sm text-muted-foreground">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+            </div>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline btn-sm">Previous</a>
+                {% endif %}
+                <span class="px-4 py-2 text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline btn-sm">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

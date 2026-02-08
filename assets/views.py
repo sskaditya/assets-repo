@@ -66,27 +66,55 @@ def dashboard(request):
         })
     else:
         # Regular User Dashboard - Asset Management Focus
-        total_assets = Asset.objects.filter(is_deleted=False).count()
-        active_assets = Asset.objects.filter(is_deleted=False, status='IN_USE').count()
-        under_maintenance = Asset.objects.filter(is_deleted=False, status='UNDER_MAINTENANCE').count()
-        critical_assets = Asset.objects.filter(is_deleted=False, is_critical=True).count()
+        company = getattr(request, 'current_company', None)
         
-        # Assets by category
-        assets_by_category = AssetCategory.objects.filter(
-            is_deleted=False, is_active=True
-        ).annotate(
-            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
-        ).order_by('-asset_count')[:5]
-        
-        # Recent assets
-        recent_assets = Asset.objects.filter(is_deleted=False).order_by('-created_at')[:10]
-        
-        # Assets expiring warranty soon (within 30 days)
-        warranty_expiring = Asset.objects.filter(
-            is_deleted=False,
-            warranty_end_date__gte=date.today(),
-            warranty_end_date__lte=date.today() + timedelta(days=30)
-        ).order_by('warranty_end_date')[:10]
+        if company:
+            # Company-specific dashboard
+            total_assets = Asset.objects.filter(company=company, is_deleted=False).count()
+            active_assets = Asset.objects.filter(company=company, is_deleted=False, status='IN_USE').count()
+            under_maintenance = Asset.objects.filter(company=company, is_deleted=False, status='UNDER_MAINTENANCE').count()
+            critical_assets = Asset.objects.filter(company=company, is_deleted=False, is_critical=True).count()
+            
+            # Assets by category
+            assets_by_category = AssetCategory.objects.filter(
+                company=company, is_deleted=False, is_active=True
+            ).annotate(
+                asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+            ).order_by('-asset_count')[:5]
+            
+            # Recent assets
+            recent_assets = Asset.objects.filter(company=company, is_deleted=False).select_related('category', 'location').order_by('-created_at')[:10]
+            
+            # Assets expiring warranty soon (within 30 days)
+            warranty_expiring = Asset.objects.filter(
+                company=company,
+                is_deleted=False,
+                warranty_end_date__gte=date.today(),
+                warranty_end_date__lte=date.today() + timedelta(days=30)
+            ).select_related('category', 'location').order_by('warranty_end_date')[:10]
+        else:
+            # No company context (shouldn't normally happen for regular users)
+            total_assets = Asset.objects.filter(is_deleted=False).count()
+            active_assets = Asset.objects.filter(is_deleted=False, status='IN_USE').count()
+            under_maintenance = Asset.objects.filter(is_deleted=False, status='UNDER_MAINTENANCE').count()
+            critical_assets = Asset.objects.filter(is_deleted=False, is_critical=True).count()
+            
+            # Assets by category
+            assets_by_category = AssetCategory.objects.filter(
+                is_deleted=False, is_active=True
+            ).select_related('company').annotate(
+                asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+            ).order_by('-asset_count')[:5]
+            
+            # Recent assets
+            recent_assets = Asset.objects.filter(is_deleted=False).select_related('company', 'category', 'location').order_by('-created_at')[:10]
+            
+            # Assets expiring warranty soon (within 30 days)
+            warranty_expiring = Asset.objects.filter(
+                is_deleted=False,
+                warranty_end_date__gte=date.today(),
+                warranty_end_date__lte=date.today() + timedelta(days=30)
+            ).select_related('company', 'category', 'location').order_by('warranty_end_date')[:10]
         
         context.update({
             'is_super_admin_dashboard': False,
@@ -97,6 +125,8 @@ def dashboard(request):
             'assets_by_category': assets_by_category,
             'recent_assets': recent_assets,
             'warranty_expiring': warranty_expiring,
+            'company': company,
+            'showing_all_companies': not company,
         })
     
     return render(request, 'assets/dashboard.html', context)
@@ -105,9 +135,18 @@ def dashboard(request):
 @login_required
 def asset_list(request):
     """List all assets with filtering"""
-    assets = Asset.objects.filter(is_deleted=False).select_related(
-        'category', 'asset_type', 'location', 'department', 'assigned_to'
-    ).order_by('-created_at')
+    company = getattr(request, 'current_company', None)
+    
+    # Filter by company if context exists
+    if company:
+        assets = Asset.objects.filter(company=company, is_deleted=False).select_related(
+            'category', 'asset_type', 'location', 'department', 'assigned_to'
+        ).order_by('-created_at')
+    else:
+        # Super admin - show all assets with company info
+        assets = Asset.objects.filter(is_deleted=False).select_related(
+            'company', 'category', 'asset_type', 'location', 'department', 'assigned_to'
+        ).order_by('-created_at')
     
     # Apply filters
     filter_form = AssetFilterForm(request.GET)
@@ -150,6 +189,8 @@ def asset_list(request):
     context = {
         'page_obj': page_obj,
         'filter_form': filter_form,
+        'company': company,
+        'showing_all_companies': not company,
     }
     
     return render(request, 'assets/asset_list.html', context)
@@ -347,12 +388,26 @@ def asset_add_document(request, pk):
 @login_required
 def asset_categories(request):
     """List all asset categories"""
-    categories = AssetCategory.objects.filter(is_deleted=False, is_active=True).annotate(
-        asset_count=Count('assets', filter=Q(assets__is_deleted=False))
-    ).order_by('name')
+    company = getattr(request, 'current_company', None)
+    
+    if company:
+        categories = AssetCategory.objects.filter(
+            company=company, is_deleted=False, is_active=True
+        ).annotate(
+            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+        ).order_by('name')
+    else:
+        # Super admin - show all categories with company info
+        categories = AssetCategory.objects.filter(
+            is_deleted=False, is_active=True
+        ).select_related('company').annotate(
+            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+        ).order_by('company__name', 'name')
     
     context = {
         'categories': categories,
+        'company': company,
+        'showing_all_companies': not company,
     }
     
     return render(request, 'assets/category_list.html', context)
@@ -361,12 +416,26 @@ def asset_categories(request):
 @login_required
 def asset_types(request):
     """List all asset types"""
-    asset_types = AssetType.objects.filter(is_deleted=False, is_active=True).select_related('category').annotate(
-        asset_count=Count('assets', filter=Q(assets__is_deleted=False))
-    ).order_by('category', 'name')
+    company = getattr(request, 'current_company', None)
+    
+    if company:
+        asset_types = AssetType.objects.filter(
+            company=company, is_deleted=False, is_active=True
+        ).select_related('category').annotate(
+            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+        ).order_by('category', 'name')
+    else:
+        # Super admin - show all types with company info
+        asset_types = AssetType.objects.filter(
+            is_deleted=False, is_active=True
+        ).select_related('company', 'category').annotate(
+            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+        ).order_by('company__name', 'category', 'name')
     
     context = {
         'asset_types': asset_types,
+        'company': company,
+        'showing_all_companies': not company,
     }
     
     return render(request, 'assets/type_list.html', context)
@@ -375,10 +444,22 @@ def asset_types(request):
 @login_required
 def vendors(request):
     """List all vendors"""
-    vendors = Vendor.objects.filter(is_deleted=False, is_active=True).order_by('name')
+    company = getattr(request, 'current_company', None)
+    
+    if company:
+        vendors = Vendor.objects.filter(
+            company=company, is_deleted=False, is_active=True
+        ).order_by('name')
+    else:
+        # Super admin - show all vendors with company info
+        vendors = Vendor.objects.filter(
+            is_deleted=False, is_active=True
+        ).select_related('company').order_by('company__name', 'name')
     
     context = {
         'vendors': vendors,
+        'company': company,
+        'showing_all_companies': not company,
     }
     
     return render(request, 'assets/vendor_list.html', context)
@@ -602,19 +683,25 @@ def qr_scanner(request):
 def asset_lookup_api(request):
     """API endpoint for asset lookup by QR code or asset tag"""
     code = request.GET.get('code', '')
+    company = getattr(request, 'current_company', None)
     
     if not code:
         return JsonResponse({'success': False, 'message': 'No code provided'})
+    
+    # Build base query with company filter if applicable
+    base_query = {'is_deleted': False}
+    if company:
+        base_query['company'] = company
     
     # Try to find asset by QR code (UUID) or asset tag
     asset = None
     try:
         # Try UUID lookup first
-        asset = Asset.objects.get(qr_code=code, is_deleted=False)
+        asset = Asset.objects.get(qr_code=code, **base_query)
     except:
         # Try asset tag lookup
         try:
-            asset = Asset.objects.get(asset_tag=code, is_deleted=False)
+            asset = Asset.objects.get(asset_tag=code, **base_query)
         except:
             pass
     
@@ -698,9 +785,17 @@ def record_asset_movement(request):
 @login_required
 def financial_dashboard(request):
     """Financial dashboard with depreciation calculations"""
-    assets = Asset.objects.filter(is_deleted=False, purchase_price__isnull=False).select_related(
-        'category', 'location'
-    )
+    company = getattr(request, 'current_company', None)
+    
+    if company:
+        assets = Asset.objects.filter(
+            company=company, is_deleted=False, purchase_price__isnull=False
+        ).select_related('category', 'location')
+    else:
+        # Super admin - show all assets
+        assets = Asset.objects.filter(
+            is_deleted=False, purchase_price__isnull=False
+        ).select_related('category', 'location', 'company')
     
     # Calculate totals
     total_purchase_value = sum(asset.purchase_price for asset in assets if asset.purchase_price)
@@ -727,6 +822,8 @@ def financial_dashboard(request):
         'total_current_value': total_current_value,
         'total_depreciation': total_depreciation,
         'high_depreciation_assets': high_depreciation_assets[:10],
+        'company': company,
+        'showing_all_companies': not company,
     }
     
     return render(request, 'assets/financial_dashboard.html', context)
@@ -761,39 +858,56 @@ def monitoring_dashboard(request):
     
     # Get current company
     company = getattr(request, 'current_company', None)
-    if not company:
-        messages.error(request, 'No company context')
-        return redirect('assets:dashboard')
+    
+    # Base queryset
+    if company:
+        base_assets = Asset.objects.filter(company=company, is_deleted=False)
+    else:
+        # Super admin or no company context - show all assets
+        base_assets = Asset.objects.filter(is_deleted=False)
     
     # Assets by status
-    assets_by_status = Asset.objects.filter(
-        company=company, is_deleted=False
-    ).values('status').annotate(count=Count('id'))
+    assets_by_status = base_assets.values('status').annotate(count=Count('id'))
     
     # Critical assets
-    critical_assets = Asset.objects.filter(
-        company=company, is_deleted=False, is_critical=True
-    ).count()
+    critical_assets = base_assets.filter(is_critical=True).count()
     
     # Assets under maintenance
-    under_maintenance = Asset.objects.filter(
-        company=company, is_deleted=False, status='UNDER_MAINTENANCE'
-    ).select_related('location')[:10]
+    under_maintenance = base_assets.filter(status='UNDER_MAINTENANCE').select_related('location', 'company')[:10]
     
     # Upcoming maintenance
-    maintenance_due = get_assets_due_for_maintenance(company, days_ahead=7)
-    
-    # Warranty expiring
-    warranty_expiring = get_assets_warranty_expiring(company, days_ahead=30)
-    
-    # AMC expiring
-    amc_expiring = get_assets_amc_expiring(company, days_ahead=30)
+    if company:
+        maintenance_due = get_assets_due_for_maintenance(company, days_ahead=7)
+        warranty_expiring = get_assets_warranty_expiring(company, days_ahead=30)
+        amc_expiring = get_assets_amc_expiring(company, days_ahead=30)
+    else:
+        # For super admin, get all assets
+        today = timezone.now().date()
+        maintenance_due = base_assets.filter(
+            warranty_end_date__gte=today,
+            warranty_end_date__lte=today + timedelta(days=7)
+        ).select_related('category', 'location', 'company')[:10]
+        
+        warranty_expiring = base_assets.filter(
+            warranty_end_date__gte=today,
+            warranty_end_date__lte=today + timedelta(days=30)
+        ).select_related('category', 'location', 'company')[:10]
+        
+        amc_expiring = base_assets.filter(
+            amc_end_date__gte=today,
+            amc_end_date__lte=today + timedelta(days=30)
+        ).select_related('category', 'location', 'amc_vendor', 'company')[:10]
     
     # Recent asset movements (from history)
-    recent_movements = AssetHistory.objects.filter(
-        asset__company=company,
-        action_type='LOCATION_CHANGED'
-    ).select_related('asset', 'from_location', 'to_location', 'performed_by').order_by('-action_date')[:10]
+    if company:
+        recent_movements = AssetHistory.objects.filter(
+            asset__company=company,
+            action_type='LOCATION_CHANGED'
+        ).select_related('asset', 'from_location', 'to_location', 'performed_by').order_by('-action_date')[:10]
+    else:
+        recent_movements = AssetHistory.objects.filter(
+            action_type='LOCATION_CHANGED'
+        ).select_related('asset', 'asset__company', 'from_location', 'to_location', 'performed_by').order_by('-action_date')[:10]
     
     context = {
         'assets_by_status': assets_by_status,
@@ -802,7 +916,10 @@ def monitoring_dashboard(request):
         'maintenance_due': maintenance_due,
         'warranty_expiring': warranty_expiring,
         'amc_expiring': amc_expiring,
+        'recent_activities': recent_activities,
         'recent_movements': recent_movements,
+        'company': company,
+        'showing_all_companies': not company,
     }
     
     return render(request, 'assets/monitoring_dashboard.html', context)
@@ -1391,3 +1508,202 @@ def report_disposal(request):
     }
     
     return render(request, 'assets/report_disposal.html', context)
+
+
+@login_required
+def report_by_category(request):
+    """Asset by Category Report"""
+    from .reports import AssetByCategoryReport
+    
+    company = getattr(request, 'current_company', None)
+    
+    if request.GET.get('export') == 'excel':
+        report = AssetByCategoryReport(company=company)
+        return report.export_to_excel()
+    
+    report = AssetByCategoryReport(company=company)
+    data = report.generate()
+    
+    context = {
+        'categories': data['categories'],
+        'total_assets': data['total_assets'],
+        'total_value': data['total_value'],
+    }
+    
+    return render(request, 'assets/report_by_category.html', context)
+
+
+@login_required
+def report_by_location(request):
+    """Asset by Location Report"""
+    from .reports import AssetByLocationReport
+    
+    company = getattr(request, 'current_company', None)
+    
+    if request.GET.get('export') == 'excel':
+        report = AssetByLocationReport(company=company)
+        return report.export_to_excel()
+    
+    report = AssetByLocationReport(company=company)
+    data = report.generate()
+    
+    context = {
+        'locations': data['locations'],
+        'total_assets': data['total_assets'],
+        'total_value': data['total_value'],
+    }
+    
+    return render(request, 'assets/report_by_location.html', context)
+
+
+@login_required
+def report_depreciation(request):
+    """Depreciation Schedule Report"""
+    from .reports import DepreciationScheduleReport
+    
+    company = getattr(request, 'current_company', None)
+    
+    if request.GET.get('export') == 'excel':
+        report = DepreciationScheduleReport(company=company)
+        return report.export_to_excel()
+    
+    report = DepreciationScheduleReport(company=company)
+    data = report.generate()
+    
+    # Pagination
+    paginator = Paginator(data['schedule'], 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_original_value': data['total_original_value'],
+        'total_accumulated_depreciation': data['total_accumulated_depreciation'],
+        'total_book_value': data['total_book_value'],
+    }
+    
+    return render(request, 'assets/report_depreciation.html', context)
+
+
+@login_required
+def report_warranty(request):
+    """Warranty Report"""
+    from .reports import WarrantyReport
+    
+    company = getattr(request, 'current_company', None)
+    
+    if request.GET.get('export') == 'excel':
+        report = WarrantyReport(company=company)
+        return report.export_to_excel()
+    
+    report = WarrantyReport(company=company)
+    data = report.generate()
+    
+    context = {
+        'under_warranty': data['under_warranty'],
+        'expiring_30_days': data['expiring_30_days'],
+        'expiring_60_days': data['expiring_60_days'],
+        'expiring_90_days': data['expiring_90_days'],
+        'expired': data['expired'][:20],  # Limit to 20
+        'no_warranty': data['no_warranty'][:20],  # Limit to 20
+    }
+    
+    return render(request, 'assets/report_warranty.html', context)
+
+
+@login_required
+def report_amc(request):
+    """AMC Report"""
+    from .reports import AMCReport
+    
+    company = getattr(request, 'current_company', None)
+    
+    if request.GET.get('export') == 'excel':
+        report = AMCReport(company=company)
+        return report.export_to_excel()
+    
+    report = AMCReport(company=company)
+    data = report.generate()
+    
+    context = {
+        'under_amc': data['under_amc'],
+        'expiring_30_days': data['expiring_30_days'],
+        'expiring_60_days': data['expiring_60_days'],
+        'expiring_90_days': data['expiring_90_days'],
+        'expired': data['expired'][:20],  # Limit to 20
+        'no_amc': data['no_amc'][:20],  # Limit to 20
+        'total_amc_cost': data['total_amc_cost'],
+    }
+    
+    return render(request, 'assets/report_amc.html', context)
+
+
+@login_required
+def report_assignment(request):
+    """Asset Assignment Report"""
+    from .reports import AssignmentReport
+    
+    company = getattr(request, 'current_company', None)
+    
+    if request.GET.get('export') == 'excel':
+        report = AssignmentReport(company=company)
+        return report.export_to_excel()
+    
+    report = AssignmentReport(company=company)
+    data = report.generate()
+    
+    context = {
+        'assignments': data['assignments'],
+        'total_assigned': data['total_assigned'],
+        'total_unassigned': data['total_unassigned'],
+        'unassigned_assets': data['unassigned_assets'][:20],  # Limit to 20
+    }
+    
+    return render(request, 'assets/report_assignment.html', context)
+
+
+@login_required
+def report_movement(request):
+    """Asset Movement Report"""
+    from .reports import MovementReport
+    from datetime import datetime, timedelta
+    
+    company = getattr(request, 'current_company', None)
+    
+    # Date range
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    if not start_date:
+        start_date = (datetime.now() - timedelta(days=30)).date()
+    else:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    
+    if not end_date:
+        end_date = datetime.now().date()
+    else:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    
+    if request.GET.get('export') == 'excel':
+        report = MovementReport(company=company, start_date=start_date, end_date=end_date)
+        return report.export_to_excel()
+    
+    report = MovementReport(company=company, start_date=start_date, end_date=end_date)
+    data = report.generate()
+    
+    # Pagination
+    paginator = Paginator(data['all_movements'], 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_movements': data['total_movements'],
+        'location_changes': data['location_changes'],
+        'assignments': data['assignments'],
+        'transfers': data['transfers'],
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+    return render(request, 'assets/report_movement.html', context)

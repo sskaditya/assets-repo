@@ -1,0 +1,131 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Depreciation Schedule Report - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Depreciation Schedule Report</h1>
+            <p class="text-muted-foreground mt-1">Detailed depreciation schedule for all assets</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=excel" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Original Value</p>
+                    <p class="text-2xl font-bold text-foreground mt-1">₹{{ total_original_value|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="dollar-sign" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Accumulated Depreciation</p>
+                    <p class="text-2xl font-bold text-foreground mt-1">₹{{ total_accumulated_depreciation|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="trending-down" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Current Book Value</p>
+                    <p class="text-2xl font-bold text-foreground mt-1">₹{{ total_book_value|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Depreciation Table -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Depreciation Schedule</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Original Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Rate %</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Years Owned</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Annual Depr.</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Accumulated</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Book Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' item.asset.pk %}" class="text-primary hover:underline">
+                                {{ item.asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">{{ item.asset.name }}</td>
+                        <td class="py-3 px-4">{{ item.asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-4 text-right">₹{{ item.original_value|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right">{{ item.depreciation_rate|floatformat:2 }}%</td>
+                        <td class="py-3 px-4 text-right">{{ item.years_owned }}</td>
+                        <td class="py-3 px-4 text-right">₹{{ item.annual_depreciation|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right text-orange-600">₹{{ item.accumulated_depreciation|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-green-600">₹{{ item.book_value|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="py-12 text-center text-muted-foreground">
+                            No depreciation data available
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-6 border-t border-border flex items-center justify-between">
+            <div class="text-sm text-muted-foreground">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+            </div>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">Previous</a>
+                {% endif %}
+                <span class="px-4 py-2 text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

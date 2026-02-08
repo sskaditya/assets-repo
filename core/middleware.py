@@ -25,7 +25,16 @@ class CompanyMiddleware(MiddlewareMixin):
             # Check if user is superuser (Softlogic super admin)
             if request.user.is_superuser:
                 request.is_super_admin = True
-                request.current_company = None
+                # Super admin can optionally select a company to view
+                selected_company_id = request.session.get('selected_company_id')
+                if selected_company_id:
+                    try:
+                        from .models import Company
+                        request.current_company = Company.objects.get(id=selected_company_id, is_deleted=False)
+                    except:
+                        request.current_company = None
+                else:
+                    request.current_company = None
                 return None
             
             # Get user profile to determine company

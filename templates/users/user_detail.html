@@ -1,0 +1,245 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}{{ user_obj.get_full_name }} - User Detail - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ user_obj.get_full_name|default:user_obj.username }}</h1>
+            <p class="text-gray-500 mt-1">{{ user_obj.email }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'users:user_update' user_obj.pk %}" class="btn btn-primary">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+                Edit User
+            </a>
+            <a href="{% url 'users:user_list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Users
+            </a>
+        </div>
+    </div>
+
+    <!-- User Info Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Basic Information -->
+        <div class="card">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                    Basic Information
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <p class="text-sm text-gray-500">Username</p>
+                    <p class="text-gray-900 font-medium">{{ user_obj.username }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Full Name</p>
+                    <p class="text-gray-900 font-medium">{{ user_obj.get_full_name|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Email</p>
+                    <p class="text-gray-900 font-medium">{{ user_obj.email }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    {% if user_obj.is_active %}
+                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium">Active</span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-medium">Inactive</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Member Since</p>
+                    <p class="text-gray-900 font-medium">{{ user_obj.date_joined|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Last Login</p>
+                    <p class="text-gray-900 font-medium">{{ user_obj.last_login|date:"M d, Y H:i"|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Information -->
+        <div class="card">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    Profile Information
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                {% if profile %}
+                <div>
+                    <p class="text-sm text-gray-500">Company</p>
+                    <p class="text-gray-900 font-medium">{{ profile.company.name }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Employee ID</p>
+                    <p class="text-gray-900 font-medium">{{ profile.employee_id|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Department</p>
+                    <p class="text-gray-900 font-medium">{{ profile.department.name|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Location</p>
+                    <p class="text-gray-900 font-medium">{{ profile.location.name|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Designation</p>
+                    <p class="text-gray-900 font-medium">{{ profile.designation|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Phone</p>
+                    <p class="text-gray-900 font-medium">{{ profile.phone|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Mobile</p>
+                    <p class="text-gray-900 font-medium">{{ profile.mobile|default:"-" }}</p>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-4">No profile information available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Roles & Permissions -->
+        <div class="card">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="shield" class="w-5 h-5"></i>
+                    Roles & Permissions
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                {% if user_obj.is_superuser %}
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-red-600"></i>
+                    <span class="text-sm font-medium text-gray-900">Super Administrator</span>
+                </div>
+                {% endif %}
+                
+                {% if profile %}
+                {% if profile.is_company_admin %}
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-blue-600"></i>
+                    <span class="text-sm font-medium text-gray-900">Company Administrator</span>
+                </div>
+                {% endif %}
+                
+                {% if profile.is_asset_approver %}
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                    <span class="text-sm font-medium text-gray-900">Asset Approver</span>
+                </div>
+                {% endif %}
+                
+                {% if profile.is_asset_custodian %}
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-purple-600"></i>
+                    <span class="text-sm font-medium text-gray-900">Asset Custodian</span>
+                </div>
+                {% endif %}
+                
+                {% if not profile.is_company_admin and not profile.is_asset_approver and not profile.is_asset_custodian and not user_obj.is_superuser %}
+                <p class="text-gray-500 text-sm">No special roles assigned</p>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Assets Assigned -->
+    {% if assigned_assets %}
+    <div class="card">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <i data-lucide="package" class="w-5 h-5"></i>
+                Assigned Assets ({{ assigned_assets|length }})
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Asset Tag</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Name</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Category</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Location</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assigned_assets %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-6">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary-500 hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-6">{{ asset.name }}</td>
+                        <td class="py-3 px-6">{{ asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-6">{{ asset.location.name|default:"-" }}</td>
+                        <td class="py-3 px-6">
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
+                                {{ asset.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Custodian Assets -->
+    {% if custodian_assets %}
+    <div class="card">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <i data-lucide="shield" class="w-5 h-5"></i>
+                Custodian Assets ({{ custodian_assets|length }})
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Asset Tag</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Name</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Category</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Location</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-500">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in custodian_assets %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-6">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary-500 hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-6">{{ asset.name }}</td>
+                        <td class="py-3 px-6">{{ asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-6">{{ asset.location.name|default:"-" }}</td>
+                        <td class="py-3 px-6">
+                            <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-600">
+                                {{ asset.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

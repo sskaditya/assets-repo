@@ -21,7 +21,9 @@ class Department(BaseModel):
         unique_together = [['company', 'code'], ['company', 'name']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.code} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.code} - {self.name}"
+        return f"{self.code} - {self.name}"
 
 
 class Location(BaseModel):
@@ -53,7 +55,9 @@ class Location(BaseModel):
         unique_together = [['company', 'code'], ['company', 'name']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.code} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.code} - {self.name}"
+        return f"{self.code} - {self.name}"
 
 
 class UserProfile(BaseModel):
@@ -78,4 +82,11 @@ class UserProfile(BaseModel):
         unique_together = [['company', 'employee_id']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.user.get_full_name()} ({self.employee_id})"
+        parts = []
+        if self.company:
+            parts.append(self.company.code)
+        if self.user:
+            parts.append(self.user.get_full_name())
+            if self.employee_id:
+                parts[-1] = f"{parts[-1]} ({self.employee_id})"
+        return " - ".join(parts) if parts else "User Profile"

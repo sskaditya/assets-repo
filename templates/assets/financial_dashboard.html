@@ -1,0 +1,197 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Financial Dashboard - Assetz{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Financial Dashboard</h1>
+            <p class="text-muted-foreground mt-1">
+                {% if showing_all_companies %}
+                Financial overview and depreciation tracking across all companies
+                {% else %}
+                Asset valuation and depreciation tracking
+                {% endif %}
+            </p>
+        </div>
+        <div class="flex gap-2">
+            {% if showing_all_companies %}
+            <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                <i data-lucide="building-2" class="w-4 h-4 text-blue-600"></i>
+                <span class="text-sm font-medium text-blue-900">Viewing All Companies</span>
+            </div>
+            {% endif %}
+            <a href="{% url 'assets:report_financial' %}" class="btn btn-primary">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                Financial Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Financial Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Purchase Value</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">₹{{ total_purchase_value|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="dollar-sign" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+            <p class="text-xs text-muted-foreground">Original purchase value of all assets</p>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-sm text-muted-foreground">Current Book Value</p>
+                    <p class="text-3xl font-bold text-green-600 mt-1">₹{{ total_current_value|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+            <p class="text-xs text-muted-foreground">Current value after depreciation</p>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Depreciation</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-1">₹{{ total_depreciation|floatformat:2 }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="trending-down" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+            <p class="text-xs text-muted-foreground">
+                {% if total_purchase_value > 0 %}
+                {{ total_depreciation|floatformat:0|divide:total_purchase_value|multiply:100|floatformat:1 }}% of original value
+                {% else %}
+                0% of original value
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Depreciation Chart Placeholder -->
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold text-foreground mb-4">Depreciation Overview</h3>
+        <div class="h-64 flex items-center justify-center bg-muted/30 rounded-lg">
+            <div class="text-center">
+                <i data-lucide="bar-chart-3" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
+                <p class="text-muted-foreground">Depreciation chart visualization</p>
+                <p class="text-sm text-muted-foreground mt-2">Coming soon: Interactive depreciation charts</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- High Depreciation Assets -->
+    {% if high_depreciation_assets %}
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
+                High Depreciation Assets (>50%)
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        {% if showing_all_companies %}
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        {% endif %}
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Purchase Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Current Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Depreciation %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in high_depreciation_assets %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' item.asset.pk %}" class="text-primary hover:underline">
+                                {{ item.asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">{{ item.asset.name }}</td>
+                        {% if showing_all_companies %}
+                        <td class="py-3 px-4">{{ item.asset.company.name|default:"-" }}</td>
+                        {% endif %}
+                        <td class="py-3 px-4">{{ item.asset.category.name|default:"-" }}</td>
+                        <td class="py-3 px-4 text-right">₹{{ item.asset.purchase_price|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right">₹{{ item.asset.purchase_price|subtract:item.asset.purchase_price|multiply:item.depreciation_pct|divide:100|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {% if item.depreciation_pct >= 80 %}bg-red-100 text-red-600
+                                {% elif item.depreciation_pct >= 60 %}bg-orange-100 text-orange-600
+                                {% else %}bg-yellow-100 text-yellow-600{% endif %}">
+                                {{ item.depreciation_pct }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card p-12 text-center">
+        <i data-lucide="check-circle" class="w-16 h-16 text-green-600 mx-auto mb-4"></i>
+        <p class="text-lg text-foreground font-medium">No High Depreciation Assets</p>
+        <p class="text-muted-foreground mt-2">All assets have depreciation below 50%</p>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{% url 'assets:report_depreciation' %}" class="card p-6 hover:shadow-lg transition-shadow">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="trending-down" class="w-6 h-6 text-blue-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-foreground">Depreciation Schedule</h4>
+                    <p class="text-sm text-muted-foreground">View detailed schedule</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'assets:report_financial' %}" class="card p-6 hover:shadow-lg transition-shadow">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="file-text" class="w-6 h-6 text-green-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-foreground">Financial Report</h4>
+                    <p class="text-sm text-muted-foreground">Generate full report</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'assets:report_disposal' %}" class="card p-6 hover:shadow-lg transition-shadow">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <i data-lucide="trash-2" class="w-6 h-6 text-purple-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-foreground">Disposal Report</h4>
+                    <p class="text-sm text-muted-foreground">Track asset disposals</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Custom template filters if needed -->
+{% load custom_filters %}
+
+{% endblock %}

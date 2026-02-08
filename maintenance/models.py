@@ -22,7 +22,9 @@ class MaintenanceType(BaseModel):
         unique_together = [['company', 'code'], ['company', 'name']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.code} - {self.name}"
+        if self.company:
+            return f"{self.company.code} - {self.code} - {self.name}"
+        return f"{self.code} - {self.name}"
 
 
 class MaintenanceSchedule(BaseModel):
@@ -64,7 +66,11 @@ class MaintenanceSchedule(BaseModel):
         verbose_name_plural = 'Maintenance Schedules'
 
     def __str__(self):
-        return f"{self.asset.asset_tag} - {self.maintenance_type.name} (Due: {self.next_due_date})"
+        if self.asset and self.maintenance_type:
+            return f"{self.asset.asset_tag} - {self.maintenance_type.name} (Due: {self.next_due_date})"
+        elif self.asset:
+            return f"{self.asset.asset_tag} (Due: {self.next_due_date})"
+        return f"Schedule (Due: {self.next_due_date})"
 
 
 class MaintenanceRequest(BaseModel):
@@ -136,7 +142,14 @@ class MaintenanceRequest(BaseModel):
         unique_together = [['company', 'request_number']]
 
     def __str__(self):
-        return f"{self.company.code} - {self.request_number} - {self.asset.asset_tag}"
+        parts = []
+        if self.company:
+            parts.append(self.company.code)
+        if self.request_number:
+            parts.append(self.request_number)
+        if self.asset:
+            parts.append(self.asset.asset_tag)
+        return " - ".join(parts) if parts else "New Maintenance Request"
 
     def save(self, *args, **kwargs):
         if not self.request_number:
@@ -187,7 +200,11 @@ class MaintenanceLog(BaseModel):
         verbose_name_plural = 'Maintenance Logs'
 
     def __str__(self):
-        return f"{self.asset.asset_tag} - {self.maintenance_type.name} on {self.maintenance_date}"
+        if self.asset and self.maintenance_type:
+            return f"{self.asset.asset_tag} - {self.maintenance_type.name} on {self.maintenance_date}"
+        elif self.asset:
+            return f"{self.asset.asset_tag} on {self.maintenance_date}"
+        return f"Maintenance on {self.maintenance_date}"
 
 
 class MaintenanceDocument(BaseModel):
