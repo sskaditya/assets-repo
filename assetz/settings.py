@@ -50,6 +50,8 @@ SECRET_KEY = SECRET_KEY_ENV
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = ["https://assetz.toystack.dev"]
+
 # Application definition
 
 INSTALLED_APPS = [
