@@ -1,0 +1,249 @@
+{% extends "base_sidebar.html" %}
+{% load humanize %}
+
+{% block title %}Asset Disposal Report - Assetz{% endblock %}
+{% block page_title %}Asset Disposal Report{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Company Context Banner -->
+    {% if showing_all_companies %}
+    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center gap-2">
+            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+            <div>
+                <h4 class="font-semibold text-blue-900">Viewing All Companies</h4>
+                <p class="text-sm text-blue-700">This report includes data from all companies in the system</p>
+            </div>
+        </div>
+    </div>
+    {% elif company %}
+    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div class="flex items-center gap-2">
+            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <div>
+                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-sm text-green-700">This report shows data for {{ company.name }} only</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">Asset Disposal Report</h1>
+            <p class="text-muted-foreground mt-1">Track disposed and retired assets</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=excel&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-primary">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Export to Excel
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="card p-6">
+        <form method="get" class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-foreground mb-2">Start Date</label>
+                <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-foreground mb-2">End Date</label>
+                <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="filter" class="w-4 h-4"></i>
+                Apply Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Total Book Value</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">${{ total_book_value|floatformat:0|intcomma }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-lucide="trending-down" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Disposal Value</p>
+                    <p class="text-3xl font-bold text-green-600 mt-1">${{ total_disposal_value|floatformat:0|intcomma }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Disposal Cost</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-1">${{ total_disposal_cost|floatformat:0|intcomma }}</p>
+                </div>
+                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="receipt" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disposal Table -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="trash-2" class="w-5 h-5 text-red-600"></i>
+                Disposal History
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">
+                Showing disposals from {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
+            </p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset</th>
+                        {% if showing_all_companies %}
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        {% endif %}
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Disposal Method</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Reason</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Book Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Disposal Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Disposal Cost</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Disposal Date</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for disposal in page_obj %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' disposal.asset.pk %}" class="font-medium text-primary hover:underline">
+                                {{ disposal.asset.asset_tag }}
+                            </a>
+                            <p class="text-sm text-muted-foreground">{{ disposal.asset.name }}</p>
+                        </td>
+                        {% if showing_all_companies %}
+                        <td class="py-3 px-4">
+                            <span class="text-sm font-medium text-blue-600">
+                                {{ disposal.asset.company.name|default:"N/A" }}
+                            </span>
+                        </td>
+                        {% endif %}
+                        <td class="py-3 px-4">
+                            <span class="text-sm font-medium text-foreground">
+                                {{ disposal.disposal_method|title|default:"N/A" }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-muted-foreground">
+                                {{ disposal.reason|truncatewords:10|default:"-" }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            {% if disposal.book_value %}
+                            <span class="font-semibold text-foreground">${{ disposal.book_value|floatformat:2|intcomma }}</span>
+                            {% else %}
+                            <span class="text-muted-foreground">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            {% if disposal.disposal_value %}
+                            <span class="font-semibold text-green-600">${{ disposal.disposal_value|floatformat:2|intcomma }}</span>
+                            {% else %}
+                            <span class="text-muted-foreground">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            {% if disposal.disposal_cost %}
+                            <span class="font-semibold text-orange-600">${{ disposal.disposal_cost|floatformat:2|intcomma }}</span>
+                            {% else %}
+                            <span class="text-muted-foreground">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="text-sm">{{ disposal.disposal_date|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            {% if disposal.status == 'PENDING' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
+                                Pending
+                            </span>
+                            {% elif disposal.status == 'APPROVED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                Approved
+                            </span>
+                            {% elif disposal.status == 'COMPLETED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                Completed
+                            </span>
+                            {% elif disposal.status == 'REJECTED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                Rejected
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                {{ disposal.status|title }}
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if showing_all_companies %}9{% else %}8{% endif %}" class="py-12 text-center">
+                            <div class="flex flex-col items-center gap-2 text-muted-foreground">
+                                <i data-lucide="inbox" class="w-12 h-12"></i>
+                                <p class="text-lg font-medium">No disposals found</p>
+                                <p class="text-sm">No asset disposals found for the selected date range</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-4 border-t border-border flex items-center justify-between">
+            <div class="text-sm text-muted-foreground">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} disposals
+            </div>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page=1&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Previous</a>
+                {% endif %}
+                
+                <span class="flex items-center px-3 text-sm text-foreground">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Last</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

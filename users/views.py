@@ -315,3 +315,105 @@ def location_list(request):
     }
     
     return render(request, 'users/location_list.html', context)
+
+
+@login_required
+@user_passes_test(is_company_admin_check)
+def department_create(request):
+    """Create a new department"""
+    from .forms import DepartmentForm
+    from core.audit_utils import log_create
+    
+    company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
+    
+    # For non-super admins, company context is required
+    if not is_super_admin and not company:
+        messages.error(request, 'Company context is required to create a department')
+        return redirect('users:department_list')
+    
+    if request.method == 'POST':
+        form = DepartmentForm(request.POST, company=company, is_super_admin=is_super_admin)
+        if form.is_valid():
+            department = form.save(commit=False)
+            
+            # For super admin, get company from form; for company admin, use context
+            if is_super_admin and not company:
+                department.company = form.cleaned_data.get('company')
+            else:
+                department.company = company
+            
+            department.save()
+            
+            # Log the creation
+            log_create(request, department, metadata={
+                'action': 'department_created',
+                'department_name': department.name,
+                'department_code': department.code,
+                'company': department.company.name if department.company else 'N/A'
+            })
+            
+            messages.success(request, f'Department "{department.name}" has been created successfully.')
+            return redirect('users:department_list')
+    else:
+        form = DepartmentForm(company=company, is_super_admin=is_super_admin)
+    
+    context = {
+        'form': form,
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'title': 'Create Department',
+    }
+    
+    return render(request, 'users/department_form.html', context)
+
+
+@login_required
+@user_passes_test(is_company_admin_check)
+def location_create(request):
+    """Create a new location"""
+    from .forms import LocationForm
+    from core.audit_utils import log_create
+    
+    company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
+    
+    # For non-super admins, company context is required
+    if not is_super_admin and not company:
+        messages.error(request, 'Company context is required to create a location')
+        return redirect('users:location_list')
+    
+    if request.method == 'POST':
+        form = LocationForm(request.POST, company=company, is_super_admin=is_super_admin)
+        if form.is_valid():
+            location = form.save(commit=False)
+            
+            # For super admin, get company from form; for company admin, use context
+            if is_super_admin and not company:
+                location.company = form.cleaned_data.get('company')
+            else:
+                location.company = company
+            
+            location.save()
+            
+            # Log the creation
+            log_create(request, location, metadata={
+                'action': 'location_created',
+                'location_name': location.name,
+                'location_code': location.code,
+                'company': location.company.name if location.company else 'N/A'
+            })
+            
+            messages.success(request, f'Location "{location.name}" has been created successfully.')
+            return redirect('users:location_list')
+    else:
+        form = LocationForm(company=company, is_super_admin=is_super_admin)
+    
+    context = {
+        'form': form,
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'title': 'Create Location',
+    }
+    
+    return render(request, 'users/location_form.html', context)

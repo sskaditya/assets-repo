@@ -1,0 +1,176 @@
+{% extends "base_sidebar.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Assetz{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-foreground">{{ title }}</h1>
+            <p class="text-muted-foreground mt-1">Add a new location{% if company %} for {{ company.name }}{% endif %}</p>
+        </div>
+        <a href="{% url 'users:location_list' %}" class="btn btn-outline">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Locations
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Location Information</h3>
+            <p class="text-sm text-muted-foreground mt-1">Fill in the details to create a new location</p>
+        </div>
+        
+        <form method="post" class="p-6">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-start gap-2">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <h4 class="font-semibold text-red-900">Please correct the errors below:</h4>
+                        <ul class="list-disc list-inside text-sm text-red-700 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="space-y-6">
+                <!-- Company Selection (Super Admin Only) -->
+                {% if is_super_admin and form.company %}
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start gap-2 mb-3">
+                        <i data-lucide="building-2" class="w-5 h-5 text-blue-600 flex-shrink-0"></i>
+                        <div>
+                            <h4 class="font-semibold text-blue-900">Company Selection</h4>
+                            <p class="text-sm text-blue-700 mt-1">Select which company this location belongs to</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Company *</label>
+                        {{ form.company }}
+                        {% if form.company.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.company.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Basic Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Code *</label>
+                        {{ form.code }}
+                        {% if form.code.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.code.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-muted-foreground mt-1">Unique identifier for this location</p>
+                    </div>
+                </div>
+
+                <!-- Location Type -->
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Location Type *</label>
+                    {{ form.location_type }}
+                    {% if form.location_type.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.location_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Address -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-semibold text-foreground">Address Details</h4>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Address Line 1 *</label>
+                        {{ form.address_line1 }}
+                        {% if form.address_line1.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.address_line1.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Address Line 2</label>
+                        {{ form.address_line2 }}
+                        {% if form.address_line2.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.address_line2.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-sm font-medium text-foreground mb-2 block">City *</label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                            <p class="text-sm text-red-600 mt-1">{{ form.city.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm font-medium text-foreground mb-2 block">State *</label>
+                            {{ form.state }}
+                            {% if form.state.errors %}
+                            <p class="text-sm text-red-600 mt-1">{{ form.state.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-sm font-medium text-foreground mb-2 block">Country *</label>
+                            {{ form.country }}
+                            {% if form.country.errors %}
+                            <p class="text-sm text-red-600 mt-1">{{ form.country.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm font-medium text-foreground mb-2 block">Postal Code *</label>
+                            {{ form.postal_code }}
+                            {% if form.postal_code.errors %}
+                            <p class="text-sm text-red-600 mt-1">{{ form.postal_code.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="flex items-center gap-2">
+                    {{ form.is_active }}
+                    <label class="text-sm font-medium text-foreground">Active</label>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-border">
+                <a href="{% url 'users:location_list' %}" class="btn btn-outline">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Create Location
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

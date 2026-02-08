@@ -13,5 +13,7 @@ urlpatterns = [
     
     # Departments & Locations
     path('departments/', views.department_list, name='department_list'),
+    path('departments/create/', views.department_create, name='department_create'),
     path('locations/', views.location_list, name='location_list'),
+    path('locations/create/', views.location_create, name='location_create'),
 ]

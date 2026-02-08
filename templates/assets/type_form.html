@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %}{{ title }} - Assetz{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto space-y-6">
@@ -46,18 +47,13 @@
                     <label class="text-sm font-medium text-foreground mb-2 block">Description</label>
                     {{ form.description }}
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="text-sm font-medium text-foreground mb-2 block">Category *</label>
-                        {{ form.category }}
-                        {% if form.category.errors %}
-                        <p class="text-sm text-red-600 mt-1">{{ form.category.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-foreground mb-2 block">Category Type *</label>
-                        {{ form.category_type }}
-                    </div>
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Category *</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.category.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-muted-foreground mt-1">Select the asset category this type belongs to</p>
                 </div>
             </div>
         </div>

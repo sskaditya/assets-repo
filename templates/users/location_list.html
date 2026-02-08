@@ -1,6 +1,7 @@
 {% extends "base_sidebar.html" %}
 
 {% block title %}Locations - Assetz{% endblock %}
+{% block page_title %}Locations{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -16,6 +17,12 @@
                 {% endif %}
             </p>
         </div>
+        {% if request.is_company_admin or request.is_super_admin %}
+        <a href="{% url 'users:location_create' %}" class="btn btn-primary">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Add Location
+        </a>
+        {% endif %}
     </div>
 
     <!-- Locations Grid -->
@@ -65,8 +72,19 @@
         {% empty %}
         <div class="col-span-full">
             <div class="card p-12 text-center">
-                <i data-lucide="map-pin" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
-                <p class="text-gray-500">No locations found</p>
+                <div class="flex flex-col items-center">
+                    <div class="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                        <i data-lucide="map-pin" class="w-8 h-8 text-muted-foreground"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-foreground mb-2">No locations found</h3>
+                    <p class="text-sm text-muted-foreground mb-4">Get started by creating your first location</p>
+                    {% if request.is_company_admin or request.is_super_admin %}
+                    <a href="{% url 'users:location_create' %}" class="btn btn-primary">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Add Location
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endfor %}

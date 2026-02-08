@@ -108,7 +108,6 @@ class Command(BaseCommand):
             defaults={
                 'category': cat_electronics,
                 'name': 'Laptop',
-                'category_type': 'ELECTRONIC',
                 'description': 'Portable computers',
                 'is_active': True
             }
@@ -118,7 +117,6 @@ class Command(BaseCommand):
             defaults={
                 'category': cat_electronics,
                 'name': 'Desktop Computer',
-                'category_type': 'ELECTRONIC',
                 'description': 'Desktop computers',
                 'is_active': True
             }
@@ -128,7 +126,6 @@ class Command(BaseCommand):
             defaults={
                 'category': cat_electronics,
                 'name': 'Printer',
-                'category_type': 'ELECTRONIC',
                 'description': 'Printers and multifunction devices',
                 'is_active': True
             }

@@ -1,14 +1,39 @@
 {% extends "base_sidebar.html" %}
+{% load humanize %}
 
 {% block title %}AMC Report - Assetz{% endblock %}
+{% block page_title %}AMC Report{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Company Context Banner -->
+    {% if showing_all_companies %}
+    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center gap-2">
+            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+            <div>
+                <h4 class="font-semibold text-blue-900">Viewing All Companies</h4>
+                <p class="text-sm text-blue-700">This report includes data from all companies in the system</p>
+            </div>
+        </div>
+    </div>
+    {% elif company %}
+    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div class="flex items-center gap-2">
+            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <div>
+                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-sm text-green-700">This report shows data for {{ company.name }} only</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-foreground">AMC (Annual Maintenance Contract) Report</h1>
-            <p class="text-muted-foreground mt-1">Track AMC status, renewal dates, and costs</p>
+            <h1 class="text-3xl font-bold text-foreground">AMC Report</h1>
+            <p class="text-muted-foreground mt-1">Track AMC status and renewal dates</p>
         </div>
         <div class="flex gap-2">
             <a href="?export=excel" class="btn btn-primary">
@@ -22,174 +47,248 @@
         </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div class="card p-6">
-            <div class="text-center">
-                <p class="text-sm text-muted-foreground">Under AMC</p>
-                <p class="text-3xl font-bold text-green-600 mt-2">{{ under_amc|length }}</p>
-            </div>
-        </div>
-        <div class="card p-6">
-            <div class="text-center">
-                <p class="text-sm text-muted-foreground">Expiring in 30 Days</p>
-                <p class="text-3xl font-bold text-orange-600 mt-2">{{ expiring_30_days|length }}</p>
-            </div>
-        </div>
-        <div class="card p-6">
-            <div class="text-center">
-                <p class="text-sm text-muted-foreground">Expired</p>
-                <p class="text-3xl font-bold text-red-600 mt-2">{{ expired|length }}</p>
-            </div>
-        </div>
-        <div class="card p-6">
-            <div class="text-center">
-                <p class="text-sm text-muted-foreground">No AMC</p>
-                <p class="text-3xl font-bold text-gray-600 mt-2">{{ no_amc|length }}</p>
-            </div>
-        </div>
-        <div class="card p-6">
-            <div class="text-center">
-                <p class="text-sm text-muted-foreground">Total AMC Cost</p>
-                <p class="text-2xl font-bold text-primary mt-2">₹{{ total_amc_cost|floatformat:2 }}</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Under AMC -->
+    {% if showing_all_companies %}
+    <!-- Company-wise AMC Summary Table for Super Admin -->
     <div class="card">
         <div class="p-6 border-b border-border">
             <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
-                Under AMC ({{ under_amc|length }})
+                <i data-lucide="file-check" class="w-5 h-5 text-blue-600"></i>
+                Company-wise AMC Summary
             </h3>
+            <p class="text-sm text-muted-foreground mt-1">AMC status across all companies</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
-                    <tr class="border-b border-border">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">AMC Vendor</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">AMC End</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Days Left</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">AMC Cost</th>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Under AMC</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Expiring (30 Days)</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Expired</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">No AMC</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total AMC Cost</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Assets</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for asset in under_amc|slice:":10" %}
+                    {% for data in company_data %}
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-3 px-4">
-                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
-                                {{ asset.asset_tag }}
-                            </a>
+                            <div>
+                                <p class="font-semibold text-foreground">{{ data.company.name }}</p>
+                                <p class="text-xs text-muted-foreground">{{ data.company.code }}</p>
+                            </div>
                         </td>
-                        <td class="py-3 px-4">{{ asset.name }}</td>
-                        <td class="py-3 px-4">{{ asset.amc_vendor.name|default:"-" }}</td>
-                        <td class="py-3 px-4">{{ asset.amc_end_date|date:"Y-m-d" }}</td>
                         <td class="py-3 px-4 text-right">
-                            <span class="text-green-600 font-medium">{{ asset.amc_end_date|timeuntil }}</span>
+                            <span class="text-lg font-semibold text-green-600">{{ data.under_amc|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">₹{{ asset.amc_cost|floatformat:2|default:"-" }}</td>
+                        <td class="py-3 px-4 text-right">
+                            {% if data.expiring_30_days > 0 %}
+                            <span class="text-lg font-semibold text-orange-600">{{ data.expiring_30_days|intcomma }}</span>
+                            {% else %}
+                            <span class="text-muted-foreground">0</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            {% if data.expired > 0 %}
+                            <span class="text-lg font-semibold text-red-600">{{ data.expired|intcomma }}</span>
+                            {% else %}
+                            <span class="text-muted-foreground">0</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-sm text-muted-foreground">{{ data.no_amc|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-blue-600">${{ data.total_amc_cost|floatformat:0|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-sm font-medium text-foreground">{{ data.total_assets|intcomma }}</span>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-muted-foreground">No assets under AMC</td>
+                        <td colspan="7" class="py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3"></i>
+                            <p>No AMC data available</p>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
-    <!-- Expiring Soon -->
+    {% else %}
+    <!-- Company-specific AMC Tables -->
+    
+    <!-- AMC Summary Table -->
     <div class="card">
         <div class="p-6 border-b border-border">
             <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600"></i>
-                Expiring in 30 Days ({{ expiring_30_days|length }})
+                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i>
+                AMC Summary
             </h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
-                    <tr class="border-b border-border">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">AMC Vendor</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">AMC End</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Days Left</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">AMC Cost</th>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for asset in expiring_30_days %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
-                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
-                                {{ asset.asset_tag }}
-                            </a>
-                        </td>
-                        <td class="py-3 px-4">{{ asset.name }}</td>
-                        <td class="py-3 px-4">{{ asset.amc_vendor.name|default:"-" }}</td>
-                        <td class="py-3 px-4">{{ asset.amc_end_date|date:"Y-m-d" }}</td>
+                        <td class="py-3 px-4 font-medium text-foreground">Under AMC</td>
                         <td class="py-3 px-4 text-right">
-                            <span class="text-orange-600 font-medium">{{ asset.amc_end_date|timeuntil }}</span>
+                            <span class="text-2xl font-bold text-green-600">{{ under_amc }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">₹{{ asset.amc_cost|floatformat:2|default:"-" }}</td>
                     </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="py-8 text-center text-muted-foreground">No AMCs expiring soon</td>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Expiring in 30 Days</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-orange-600">{{ expiring_30_days }}</span>
+                        </td>
                     </tr>
-                    {% endfor %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Expiring in 60 Days</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-yellow-600">{{ expiring_60_days }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Expiring in 90 Days</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-blue-600">{{ expiring_90_days }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Expired</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-red-600">{{ expired|length }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">No AMC</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-gray-600">{{ no_amc|length }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20 bg-blue-50">
+                        <td class="py-3 px-4 font-semibold text-foreground">Total AMC Cost</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-blue-600">${{ total_amc_cost|floatformat:0|intcomma }}</span>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Expired -->
+    <!-- Expired AMC Details -->
+    {% if expired %}
     <div class="card">
         <div class="p-6 border-b border-border">
             <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="x-circle" class="w-5 h-5 text-red-600"></i>
-                Expired AMCs ({{ expired|length }})
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
+                Expired AMC ({{ expired|length }})
             </h3>
+            <p class="text-sm text-muted-foreground mt-1">Recently expired AMC (showing up to 20)</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
-                    <tr class="border-b border-border">
+                    <tr class="border-b border-border bg-muted/30">
                         <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
                         <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">AMC Vendor</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">AMC End</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Days Ago</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Expired On</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Days Ago</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">AMC Cost</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for asset in expired %}
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-3 px-4">
-                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-primary hover:underline">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="font-medium text-primary hover:underline">
                                 {{ asset.asset_tag }}
                             </a>
                         </td>
-                        <td class="py-3 px-4">{{ asset.name }}</td>
-                        <td class="py-3 px-4">{{ asset.amc_vendor.name|default:"-" }}</td>
-                        <td class="py-3 px-4">{{ asset.amc_end_date|date:"Y-m-d" }}</td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-red-600">{{ asset.amc_end_date|timesince }} ago</span>
+                        <td class="py-3 px-4">
+                            <span class="font-medium text-foreground">{{ asset.name }}</span>
                         </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="py-8 text-center text-muted-foreground">No expired AMCs</td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-muted-foreground">{{ asset.category.name|default:"N/A" }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="text-sm">{{ asset.amc_end_date|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                {{ asset.amc_end_date|timesince }} ago
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            {% if asset.amc_cost %}
+                            <span class="font-semibold text-foreground">${{ asset.amc_cost|floatformat:2|intcomma }}</span>
+                            {% else %}
+                            <span class="text-muted-foreground">-</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    {% endif %}
+
+    <!-- No AMC Assets -->
+    {% if no_amc %}
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="x-circle" class="w-5 h-5 text-gray-600"></i>
+                Assets Without AMC ({{ no_amc|length }})
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">Assets that do not have AMC (showing up to 20)</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Purchase Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in no_amc %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'assets:asset_detail' asset.pk %}" class="font-medium text-primary hover:underline">
+                                {{ asset.asset_tag }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-medium text-foreground">{{ asset.name }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-muted-foreground">{{ asset.category.name|default:"N/A" }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="text-sm">{{ asset.purchase_date|date:"M d, Y"|default:"N/A" }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
 </div>
 {% endblock %}

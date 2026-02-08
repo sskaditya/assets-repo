@@ -1,14 +1,16 @@
 {% extends "base_sidebar.html" %}
+{% load humanize %}
 
-{% block title %}Depreciation Schedule Report - Assetz{% endblock %}
+{% block title %}Depreciation Report - Assetz{% endblock %}
+{% block page_title %}Depreciation Report{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-foreground">Depreciation Schedule Report</h1>
-            <p class="text-muted-foreground mt-1">Detailed depreciation schedule for all assets</p>
+            <h1 class="text-3xl font-bold text-foreground">Depreciation Report</h1>
+            <p class="text-muted-foreground mt-1">Asset depreciation schedule and analysis</p>
         </div>
         <div class="flex gap-2">
             <a href="?export=excel" class="btn btn-primary">
@@ -22,86 +24,173 @@
         </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Total Original Value</p>
-                    <p class="text-2xl font-bold text-foreground mt-1">₹{{ total_original_value|floatformat:2 }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <i data-lucide="dollar-sign" class="w-6 h-6 text-blue-600"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Accumulated Depreciation</p>
-                    <p class="text-2xl font-bold text-foreground mt-1">₹{{ total_accumulated_depreciation|floatformat:2 }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <i data-lucide="trending-down" class="w-6 h-6 text-orange-600"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Current Book Value</p>
-                    <p class="text-2xl font-bold text-foreground mt-1">₹{{ total_book_value|floatformat:2 }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Depreciation Table -->
+    {% if showing_all_companies %}
+    <!-- Company-wise Depreciation Summary Table for Super Admin -->
     <div class="card">
         <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground">Depreciation Schedule</h3>
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="trending-down" class="w-5 h-5 text-blue-600"></i>
+                Company-wise Depreciation Summary
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">Depreciation analysis across all companies</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
-                    <tr class="border-b border-border">
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Asset Count</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Original Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Book Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Depreciation</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Depreciation %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in company_data %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <div>
+                                <p class="font-semibold text-foreground">{{ data.company.name }}</p>
+                                <p class="text-xs text-muted-foreground">{{ data.company.code }}</p>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-lg font-bold text-foreground">{{ data.asset_count|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-blue-600">${{ data.total_original_value|floatformat:0|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-green-600">${{ data.total_book_value|floatformat:0|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-orange-600">${{ data.total_accumulated_depreciation|floatformat:0|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-lg font-bold text-red-600">{{ data.depreciation_percentage }}%</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3"></i>
+                            <p>No depreciation data available</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Company-specific Depreciation Tables -->
+    {% if company %}
+    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div class="flex items-center gap-2">
+            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <div>
+                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-sm text-green-700">Depreciation analysis for {{ company.name }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary Table -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i>
+                Depreciation Summary
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Metric</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Total Original Value</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-blue-600">${{ total_original_value|floatformat:0|intcomma }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Total Book Value</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-green-600">${{ total_book_value|floatformat:0|intcomma }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Total Accumulated Depreciation</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-orange-600">${{ total_accumulated_depreciation|floatformat:0|intcomma }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Detailed Depreciation Schedule -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="list" class="w-5 h-5 text-orange-600"></i>
+                Depreciation Schedule
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">Detailed asset-wise depreciation breakdown</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border bg-muted/30">
                         <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
                         <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
                         <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
                         <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Original Value</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Rate %</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Years Owned</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Annual Depr.</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Accumulated</th>
                         <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Book Value</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Depreciation</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Purchase Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in page_obj %}
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-3 px-4">
-                            <a href="{% url 'assets:asset_detail' item.asset.pk %}" class="text-primary hover:underline">
+                            <a href="{% url 'assets:asset_detail' item.asset.pk %}" class="font-medium text-primary hover:underline">
                                 {{ item.asset.asset_tag }}
                             </a>
                         </td>
-                        <td class="py-3 px-4">{{ item.asset.name }}</td>
-                        <td class="py-3 px-4">{{ item.asset.category.name|default:"-" }}</td>
-                        <td class="py-3 px-4 text-right">₹{{ item.original_value|floatformat:2 }}</td>
-                        <td class="py-3 px-4 text-right">{{ item.depreciation_rate|floatformat:2 }}%</td>
-                        <td class="py-3 px-4 text-right">{{ item.years_owned }}</td>
-                        <td class="py-3 px-4 text-right">₹{{ item.annual_depreciation|floatformat:2 }}</td>
-                        <td class="py-3 px-4 text-right text-orange-600">₹{{ item.accumulated_depreciation|floatformat:2 }}</td>
-                        <td class="py-3 px-4 text-right font-semibold text-green-600">₹{{ item.book_value|floatformat:2 }}</td>
+                        <td class="py-3 px-4">
+                            <span class="font-medium text-foreground">{{ item.asset.name }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-muted-foreground">{{ item.asset.category.name|default:"N/A" }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-blue-600">${{ item.original_value|floatformat:2|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-green-600">${{ item.book_value|floatformat:2|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="font-semibold text-orange-600">${{ item.accumulated_depreciation|floatformat:2|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="text-sm">{{ item.asset.purchase_date|date:"M d, Y"|default:"N/A" }}</span>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="py-12 text-center text-muted-foreground">
-                            No depreciation data available
+                        <td colspan="7" class="py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3"></i>
+                            <p>No depreciation data available</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -111,21 +200,28 @@
 
         <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-        <div class="p-6 border-t border-border flex items-center justify-between">
+        <div class="p-4 border-t border-border flex items-center justify-between">
             <div class="text-sm text-muted-foreground">
-                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} assets
             </div>
             <div class="flex gap-2">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">Previous</a>
+                <a href="?page=1" class="btn btn-sm btn-outline">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline">Previous</a>
                 {% endif %}
-                <span class="px-4 py-2 text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                <span class="flex items-center px-3 text-sm text-foreground">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">Next</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-outline">Last</a>
                 {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}

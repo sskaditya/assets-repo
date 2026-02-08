@@ -1,6 +1,8 @@
 {% extends "base_sidebar.html" %}
+{% load humanize %}
 
-{% block title %}Asset Movement Report - Assetz{% endblock %}
+{% block title %}Movement Report - Assetz{% endblock %}
+{% block page_title %}Movement Report{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -8,7 +10,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-foreground">Asset Movement Report</h1>
-            <p class="text-muted-foreground mt-1">Track asset movements, transfers, and location changes</p>
+            <p class="text-muted-foreground mt-1">Track asset movements and history</p>
         </div>
         <div class="flex gap-2">
             <a href="?export=excel&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-primary">
@@ -23,151 +25,221 @@
     </div>
 
     <!-- Date Range Filter -->
-    <div class="card p-6">
-        <form method="get" class="flex flex-wrap items-end gap-4">
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm font-medium text-foreground mb-2">Start Date</label>
-                <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
-            </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm font-medium text-foreground mb-2">End Date</label>
-                <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i data-lucide="filter" class="w-4 h-4"></i>
-                Apply Filter
-            </button>
-        </form>
+    <div class="card">
+        <div class="p-6">
+            <form method="get" class="flex items-end gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-foreground mb-2">Start Date</label>
+                    <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" 
+                           class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-foreground mb-2">End Date</label>
+                    <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" 
+                           class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    Apply Filter
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Total Movements</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">{{ total_movements }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i>
-                </div>
+    {% if showing_all_companies %}
+    <!-- Company-wise Movement Summary Table for Super Admin -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="activity" class="w-5 h-5 text-blue-600"></i>
+                Company-wise Movement Summary
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">
+                Asset movements from {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
+            </p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Movements</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Location Changes</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Assignments</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Status Changes</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Transfers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in company_data %}
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4">
+                            <div>
+                                <p class="font-semibold text-foreground">{{ data.company.name }}</p>
+                                <p class="text-xs text-muted-foreground">{{ data.company.code }}</p>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-lg font-bold text-foreground">{{ data.total_movements|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-sm font-semibold text-blue-600">{{ data.location_changes|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-sm font-semibold text-green-600">{{ data.assignments|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-sm font-semibold text-orange-600">{{ data.status_changes|intcomma }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-sm font-semibold text-purple-600">{{ data.transfers|intcomma }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3"></i>
+                            <p>No movement data available for this period</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Company-specific Movement Tables -->
+    {% if company %}
+    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div class="flex items-center gap-2">
+            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <div>
+                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-sm text-green-700">
+                    Movement report for {{ company.name }} from {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
+                </p>
             </div>
         </div>
+    </div>
+    {% endif %}
 
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Location Changes</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">{{ location_changes }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <i data-lucide="map-pin" class="w-6 h-6 text-purple-600"></i>
-                </div>
-            </div>
+    <!-- Movement Summary Table -->
+    <div class="card">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i>
+                Movement Summary
+            </h3>
         </div>
-
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Assignments</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">{{ assignments }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i data-lucide="user-check" class="w-6 h-6 text-green-600"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="card p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-muted-foreground">Transfers</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">{{ transfers }}</p>
-                </div>
-                <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <i data-lucide="arrow-right-left" class="w-6 h-6 text-orange-600"></i>
-                </div>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Type</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Total Movements</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-foreground">{{ total_movements|intcomma }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Location Changes</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-blue-600">{{ location_changes|intcomma }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Assignments</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-green-600">{{ assignments|intcomma }}</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-border hover:bg-muted/20">
+                        <td class="py-3 px-4 font-medium text-foreground">Transfers</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-2xl font-bold text-purple-600">{{ transfers|intcomma }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- Movement History Table -->
     <div class="card">
         <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground">Movement History</h3>
-            <p class="text-sm text-muted-foreground mt-1">
-                Showing movements from {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
-            </p>
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="list" class="w-5 h-5 text-orange-600"></i>
+                Movement History
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">Detailed movement records</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
-                    <tr class="border-b border-border">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date & Time</th>
+                    <tr class="border-b border-border bg-muted/30">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date</th>
                         <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Action Type</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">From</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">To</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Performed By</th>
+                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Action</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Details</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">User</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for movement in page_obj %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 text-sm">
-                            {{ movement.action_date|date:"M d, Y H:i" }}
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-foreground">{{ movement.action_date|date:"M d, Y" }}</span>
+                            <br>
+                            <span class="text-xs text-muted-foreground">{{ movement.action_date|time:"h:i A" }}</span>
                         </td>
                         <td class="py-3 px-4">
-                            {% if movement.asset %}
-                            <a href="{% url 'assets:asset_detail' movement.asset.pk %}" class="text-primary hover:underline">
-                                {{ movement.asset.asset_tag }}
-                            </a>
-                            <div class="text-sm text-muted-foreground">{{ movement.asset.name }}</div>
-                            {% else %}
-                            -
-                            {% endif %}
+                            <div>
+                                <a href="{% url 'assets:asset_detail' movement.asset.pk %}" class="font-medium text-primary hover:underline">
+                                    {{ movement.asset.asset_tag }}
+                                </a>
+                                <p class="text-xs text-muted-foreground">{{ movement.asset.name }}</p>
+                            </div>
                         </td>
-                        <td class="py-3 px-4">
-                            <span class="px-2 py-1 text-xs rounded-full 
-                                {% if movement.action_type == 'CREATED' %}bg-blue-100 text-blue-600
-                                {% elif movement.action_type == 'TRANSFERRED' %}bg-purple-100 text-purple-600
-                                {% elif movement.action_type == 'ASSIGNED' %}bg-green-100 text-green-600
-                                {% elif movement.action_type == 'LOCATION_CHANGED' %}bg-orange-100 text-orange-600
-                                {% else %}bg-gray-100 text-gray-600{% endif %}">
-                                {{ movement.action_type }}
+                        <td class="py-3 px-4 text-center">
+                            {% if movement.action_type == 'LOCATION_CHANGED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                Location Change
                             </span>
-                        </td>
-                        <td class="py-3 px-4 text-sm">
-                            {% if movement.from_location %}
-                            <div>{{ movement.from_location.name }}</div>
-                            {% endif %}
-                            {% if movement.from_user %}
-                            <div class="text-muted-foreground">{{ movement.from_user.get_full_name }}</div>
-                            {% endif %}
-                            {% if not movement.from_location and not movement.from_user %}
-                            -
-                            {% endif %}
-                        </td>
-                        <td class="py-3 px-4 text-sm">
-                            {% if movement.to_location %}
-                            <div>{{ movement.to_location.name }}</div>
-                            {% endif %}
-                            {% if movement.to_user %}
-                            <div class="text-muted-foreground">{{ movement.to_user.get_full_name }}</div>
-                            {% endif %}
-                            {% if not movement.to_location and not movement.to_user %}
-                            -
+                            {% elif movement.action_type == 'ASSIGNED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                Assigned
+                            </span>
+                            {% elif movement.action_type == 'TRANSFERRED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                                Transferred
+                            </span>
+                            {% elif movement.action_type == 'STATUS_CHANGED' %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
+                                Status Change
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                {{ movement.action_type|title }}
+                            </span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-sm">
-                            {{ movement.performed_by.get_full_name|default:"-" }}
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-foreground">{{ movement.description|default:"No description" }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-foreground">{{ movement.performed_by.get_full_name|default:movement.performed_by.username }}</span>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="py-12 text-center text-muted-foreground">
-                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 text-muted-foreground"></i>
-                            <p>No movements found for the selected date range</p>
+                        <td colspan="5" class="py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3"></i>
+                            <p>No movement data available for this period</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -177,21 +249,28 @@
 
         <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-        <div class="p-6 border-t border-border flex items-center justify-between">
+        <div class="p-4 border-t border-border flex items-center justify-between">
             <div class="text-sm text-muted-foreground">
-                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} movements
             </div>
             <div class="flex gap-2">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline btn-sm">Previous</a>
+                <a href="?page=1&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Previous</a>
                 {% endif %}
-                <span class="px-4 py-2 text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                <span class="flex items-center px-3 text-sm text-foreground">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline btn-sm">Next</a>
+                <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Last</a>
                 {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}

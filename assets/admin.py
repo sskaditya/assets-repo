@@ -14,8 +14,8 @@ class AssetCategoryAdmin:
 
 @admin.register(AssetType)
 class AssetTypeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'category', 'category_type', 'requires_calibration', 'requires_insurance', 'is_active')
-    list_filter = ('category_type', 'is_active', 'requires_calibration', 'requires_insurance', 'created_at')
+    list_display = ('code', 'name', 'category', 'requires_calibration', 'requires_insurance', 'is_active')
+    list_filter = ('category', 'is_active', 'requires_calibration', 'requires_insurance', 'created_at')
     search_fields = ('name', 'code', 'description')
     raw_id_fields = ('category',)
     list_per_page = 25

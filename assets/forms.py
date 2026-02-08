@@ -155,7 +155,7 @@ class AssetTypeForm(forms.ModelForm):
     class Meta:
         model = AssetType
         fields = [
-            'code', 'name', 'description', 'category', 'category_type',
+            'code', 'name', 'description', 'category',
             'requires_calibration', 'requires_insurance', 'is_active'
         ]
         widgets = {
@@ -163,7 +163,6 @@ class AssetTypeForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Type Name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Type description...'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
-            'category_type': forms.Select(attrs={'class': 'form-select'}),
             'requires_calibration': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'requires_insurance': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

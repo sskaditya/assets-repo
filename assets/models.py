@@ -32,21 +32,11 @@ class AssetCategory(BaseModel):
 
 class AssetType(BaseModel):
     """Specific asset types under categories"""
-    CATEGORY_CHOICES = [
-        ('ELECTRONIC', 'Electronic Assets'),
-        ('IT_TECH', 'IT & Technology Assets'),
-        ('FURNITURE', 'Furniture & Office Assets'),
-        ('MACHINERY', 'Plant, Machinery & Industrial Assets'),
-        ('FACILITY', 'Facility & Infrastructure Assets'),
-        ('VEHICLE', 'Vehicles & Transportation Assets'),
-        ('SOFTWARE', 'Software & Intangible Assets'),
-    ]
     
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='asset_types')
     category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE, related_name='asset_types')
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=50)
-    category_type = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     description = models.TextField(blank=True, null=True)
     requires_calibration = models.BooleanField(default=False)
     requires_insurance = models.BooleanField(default=False)

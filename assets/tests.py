@@ -80,7 +80,6 @@ class BaseTestCase(TestCase):
             category=self.category,
             name="Laptop",
             code="LAP-001",
-            category_type="IT_TECH"
         )
         
         # Create test vendor
@@ -206,7 +205,6 @@ class AssetTypeModelTest(BaseTestCase):
             category=self.category,
             name="Desktop Computer",
             code="DESK-001",
-            category_type="IT_TECH",
             requires_calibration=False,
             requires_insurance=True
         )
@@ -459,7 +457,6 @@ class TypeViewsTest(BaseTestCase):
             'code': 'NEW-TYPE-001',
             'name': 'New Type',
             'category': self.category.id,
-            'category_type': 'IT_TECH',
             'requires_calibration': False,
             'requires_insurance': True,
             'is_active': True
@@ -561,7 +558,6 @@ class TypeFormTest(BaseTestCase):
             'code': 'FORM-TYPE-001',
             'name': 'Form Test Type',
             'category': self.category.id,
-            'category_type': 'IT_TECH',
             'is_active': True
         }
         

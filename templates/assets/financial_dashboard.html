@@ -1,6 +1,7 @@
 {% extends "base_sidebar.html" %}
 
 {% block title %}Financial Dashboard - Assetz{% endblock %}
+{% block page_title %}Financial Dashboard{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -55,6 +56,9 @@
                     <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
                 </div>
             </div>
+            <p class="text-xs text-muted-foreground">
+                {{ current_value_percentage }}% of original value
+            </p>
             <p class="text-xs text-muted-foreground">Current value after depreciation</p>
         </div>
 
@@ -69,11 +73,7 @@
                 </div>
             </div>
             <p class="text-xs text-muted-foreground">
-                {% if total_purchase_value > 0 %}
-                {{ total_depreciation|floatformat:0|divide:total_purchase_value|multiply:100|floatformat:1 }}% of original value
-                {% else %}
-                0% of original value
-                {% endif %}
+                {{ depreciation_percentage }}% of original value
             </p>
         </div>
     </div>
@@ -128,7 +128,7 @@
                         {% endif %}
                         <td class="py-3 px-4">{{ item.asset.category.name|default:"-" }}</td>
                         <td class="py-3 px-4 text-right">₹{{ item.asset.purchase_price|floatformat:2 }}</td>
-                        <td class="py-3 px-4 text-right">₹{{ item.asset.purchase_price|subtract:item.asset.purchase_price|multiply:item.depreciation_pct|divide:100|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right">₹{{ item.depreciation_amount|floatformat:2 }}</td>
                         <td class="py-3 px-4 text-right">
                             <span class="px-2 py-1 text-xs rounded-full 
                                 {% if item.depreciation_pct >= 80 %}bg-red-100 text-red-600
@@ -190,8 +190,5 @@
         </a>
     </div>
 </div>
-
-<!-- Custom template filters if needed -->
-{% load custom_filters %}
 
 {% endblock %}

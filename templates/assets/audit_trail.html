@@ -1,6 +1,7 @@
 {% extends "base_sidebar.html" %}
 
 {% block title %}Audit Trail - Assetz{% endblock %}
+{% block page_title %}Audit Trail{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -14,10 +15,6 @@
             <button onclick="exportAudit()" class="btn btn-outline">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export to Excel
-            </button>
-            <button onclick="printAudit()" class="btn btn-outline">
-                <i data-lucide="printer" class="w-4 h-4"></i>
-                Print
             </button>
         </div>
     </div>
@@ -222,8 +219,13 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                            {% if entry.performed_by %}
                             <div class="text-sm text-foreground">{{ entry.performed_by.get_full_name|default:entry.performed_by.username }}</div>
                             <div class="text-xs text-muted-foreground">{{ entry.performed_by.username }}</div>
+                            {% else %}
+                            <div class="text-sm text-muted-foreground italic">System</div>
+                            <div class="text-xs text-muted-foreground">Automated</div>
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4">
                             {% if entry.action_type == 'LOCATION_CHANGED' %}

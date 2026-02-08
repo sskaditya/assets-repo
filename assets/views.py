@@ -802,16 +802,27 @@ def financial_dashboard(request):
     total_current_value = sum(calculate_current_book_value(asset) for asset in assets)
     total_depreciation = total_purchase_value - total_current_value
     
+    # Calculate percentages
+    if total_purchase_value > 0:
+        depreciation_percentage = round((total_depreciation / total_purchase_value) * 100, 1)
+        current_value_percentage = round((total_current_value / total_purchase_value) * 100, 1)
+    else:
+        depreciation_percentage = 0
+        current_value_percentage = 0
+    
     # Assets with high depreciation
     high_depreciation_assets = []
     for asset in assets:
         if asset.purchase_price:
             current_value = calculate_current_book_value(asset)
+            depreciation_amount = asset.purchase_price - current_value
             depreciation_pct = ((asset.purchase_price - current_value) / asset.purchase_price) * 100
             if depreciation_pct > 50:
                 high_depreciation_assets.append({
                     'asset': asset,
-                    'depreciation_pct': round(depreciation_pct, 2)
+                    'depreciation_pct': round(depreciation_pct, 2),
+                    'depreciation_amount': round(depreciation_amount, 2),
+                    'current_value': round(current_value, 2)
                 })
     
     # Sort by depreciation percentage
@@ -821,6 +832,8 @@ def financial_dashboard(request):
         'total_purchase_value': total_purchase_value,
         'total_current_value': total_current_value,
         'total_depreciation': total_depreciation,
+        'depreciation_percentage': depreciation_percentage,
+        'current_value_percentage': current_value_percentage,
         'high_depreciation_assets': high_depreciation_assets[:10],
         'company': company,
         'showing_all_companies': not company,
@@ -852,12 +865,14 @@ def asset_depreciation(request, pk):
 
 @login_required
 def monitoring_dashboard(request):
-    """Real-time asset monitoring dashboard"""
+    """Real-time asset monitoring dashboard with detailed breakdowns"""
     from django.utils import timezone
     from datetime import datetime, timedelta
+    from django.db.models import Q, Sum, Avg
     
     # Get current company
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     # Base queryset
     if company:
@@ -866,60 +881,136 @@ def monitoring_dashboard(request):
         # Super admin or no company context - show all assets
         base_assets = Asset.objects.filter(is_deleted=False)
     
-    # Assets by status
-    assets_by_status = base_assets.values('status').annotate(count=Count('id'))
+    # Company-wise summary (for super admin)
+    if not company:
+        company_summary = base_assets.values(
+            'company__id',
+            'company__name',
+            'company__code'
+        ).annotate(
+            total_assets=Count('id'),
+            planning=Count('id', filter=Q(status='PLANNING')),
+            ordered=Count('id', filter=Q(status='ORDERED')),
+            in_transit=Count('id', filter=Q(status='IN_TRANSIT')),
+            received=Count('id', filter=Q(status='RECEIVED')),
+            available=Count('id', filter=Q(status='AVAILABLE')),
+            deployed=Count('id', filter=Q(status='DEPLOYED')),
+            in_use=Count('id', filter=Q(status='IN_USE')),
+            under_maintenance=Count('id', filter=Q(status='UNDER_MAINTENANCE')),
+            retired=Count('id', filter=Q(status='RETIRED')),
+            disposed=Count('id', filter=Q(status='DISPOSED')),
+            lost=Count('id', filter=Q(status='LOST')),
+            stolen=Count('id', filter=Q(status='STOLEN')),
+            critical_assets=Count('id', filter=Q(is_critical=True)),
+            total_value=Sum('purchase_price'),
+            avg_value=Avg('purchase_price')
+        ).order_by('-total_assets')
+    else:
+        company_summary = None
     
-    # Critical assets
-    critical_assets = base_assets.filter(is_critical=True).count()
+    # Asset Type breakdown
+    asset_type_summary = base_assets.values(
+        'asset_type__id',
+        'asset_type__name',
+        'asset_type__code',
+        'category__name'
+    ).annotate(
+        total_count=Count('id'),
+        planning=Count('id', filter=Q(status='PLANNING')),
+        available=Count('id', filter=Q(status='AVAILABLE')),
+        deployed=Count('id', filter=Q(status='DEPLOYED')),
+        in_use=Count('id', filter=Q(status='IN_USE')),
+        under_maintenance=Count('id', filter=Q(status='UNDER_MAINTENANCE')),
+        critical=Count('id', filter=Q(is_critical=True)),
+        total_value=Sum('purchase_price')
+    ).order_by('-total_count')
+    
+    if company:
+        # Add company info for single company view
+        for item in asset_type_summary:
+            item['company_name'] = company.name
+    else:
+        # For super admin, add company name to each type
+        for item in asset_type_summary:
+            # Get company from first asset of this type
+            first_asset = base_assets.filter(asset_type__id=item['asset_type__id']).select_related('company').first()
+            if first_asset:
+                item['company_name'] = first_asset.company.name if first_asset.company else 'N/A'
+    
+    # Procurement Status (Planning, Ordered, In Transit)
+    procurement_assets = base_assets.filter(
+        status__in=['PLANNING', 'ORDERED', 'IN_TRANSIT', 'RECEIVED']
+    ).select_related('company', 'asset_type', 'category', 'vendor')
+    
+    # Critical Assets Detail
+    critical_assets_detail = base_assets.filter(
+        is_critical=True
+    ).select_related('company', 'asset_type', 'location', 'assigned_to').order_by('-purchase_price')
+    
+    # Status Summary with percentage calculation
+    total_assets_count = base_assets.count()
+    status_summary = base_assets.values('status').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    # Add percentage to status summary
+    for item in status_summary:
+        if total_assets_count > 0:
+            item['percentage'] = round((item['count'] / total_assets_count) * 100, 1)
+        else:
+            item['percentage'] = 0
     
     # Assets under maintenance
-    under_maintenance = base_assets.filter(status='UNDER_MAINTENANCE').select_related('location', 'company')[:10]
+    under_maintenance = base_assets.filter(
+        status='UNDER_MAINTENANCE'
+    ).select_related('location', 'company', 'asset_type')
     
-    # Upcoming maintenance
+    # Upcoming maintenance, warranty, AMC
+    today = timezone.now().date()
     if company:
         maintenance_due = get_assets_due_for_maintenance(company, days_ahead=7)
         warranty_expiring = get_assets_warranty_expiring(company, days_ahead=30)
         amc_expiring = get_assets_amc_expiring(company, days_ahead=30)
     else:
-        # For super admin, get all assets
-        today = timezone.now().date()
         maintenance_due = base_assets.filter(
             warranty_end_date__gte=today,
             warranty_end_date__lte=today + timedelta(days=7)
-        ).select_related('category', 'location', 'company')[:10]
+        ).select_related('category', 'location', 'company')
         
         warranty_expiring = base_assets.filter(
             warranty_end_date__gte=today,
             warranty_end_date__lte=today + timedelta(days=30)
-        ).select_related('category', 'location', 'company')[:10]
+        ).select_related('category', 'location', 'company', 'asset_type')
         
         amc_expiring = base_assets.filter(
             amc_end_date__gte=today,
             amc_end_date__lte=today + timedelta(days=30)
-        ).select_related('category', 'location', 'amc_vendor', 'company')[:10]
+        ).select_related('category', 'location', 'amc_vendor', 'company', 'asset_type')
     
-    # Recent asset movements (from history)
+    # Recent asset activities
     if company:
-        recent_movements = AssetHistory.objects.filter(
-            asset__company=company,
-            action_type='LOCATION_CHANGED'
-        ).select_related('asset', 'from_location', 'to_location', 'performed_by').order_by('-action_date')[:10]
+        recent_activities = AssetHistory.objects.filter(
+            asset__company=company
+        ).select_related('asset', 'asset__asset_type', 'performed_by').order_by('-action_date')[:20]
     else:
-        recent_movements = AssetHistory.objects.filter(
-            action_type='LOCATION_CHANGED'
-        ).select_related('asset', 'asset__company', 'from_location', 'to_location', 'performed_by').order_by('-action_date')[:10]
+        recent_activities = AssetHistory.objects.select_related(
+            'asset', 'asset__company', 'asset__asset_type', 'performed_by'
+        ).order_by('-action_date')[:20]
     
     context = {
-        'assets_by_status': assets_by_status,
-        'critical_assets': critical_assets,
+        'company_summary': company_summary,
+        'asset_type_summary': asset_type_summary,
+        'procurement_assets': procurement_assets,
+        'critical_assets_detail': critical_assets_detail,
+        'status_summary': status_summary,
         'under_maintenance': under_maintenance,
         'maintenance_due': maintenance_due,
         'warranty_expiring': warranty_expiring,
         'amc_expiring': amc_expiring,
         'recent_activities': recent_activities,
-        'recent_movements': recent_movements,
         'company': company,
         'showing_all_companies': not company,
+        'is_super_admin': is_super_admin,
     }
     
     return render(request, 'assets/monitoring_dashboard.html', context)
@@ -1295,20 +1386,51 @@ def reports_dashboard(request):
 def report_asset_summary(request):
     """Asset Summary Report"""
     from .reports import AssetSummaryReport
+    from django.db.models import Count, Sum, Avg, Q
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = AssetSummaryReport(company=company)
         return report.export_to_excel()
     
-    report = AssetSummaryReport(company=company)
-    data = report.generate()
-    
-    context = {
-        'report_data': data,
-        'report_title': 'Asset Summary Report',
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        
+        company_data = []
+        for comp in companies:
+            assets = Asset.objects.filter(company=comp, is_deleted=False)
+            if assets.exists():
+                company_data.append({
+                    'company': comp,
+                    'total_assets': assets.count(),
+                    'critical_assets': assets.filter(is_critical=True).count(),
+                    'total_value': assets.aggregate(total=Sum('purchase_price'))['total'] or 0,
+                    'avg_value': assets.aggregate(avg=Avg('purchase_price'))['avg'] or 0,
+                    'by_status': assets.values('status').annotate(count=Count('id')).order_by('-count')[:5],
+                    'by_condition': assets.values('condition').annotate(count=Count('id')).order_by('-count')[:3],
+                })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = AssetSummaryReport(company=company)
+        data = report.generate()
+        
+        context = {
+            'report_data': data,
+            'report_title': 'Asset Summary Report',
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_asset_summary.html', context)
 
@@ -1319,6 +1441,7 @@ def report_asset_list(request):
     from .reports import AssetListReport
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     # Get filter options
     filters = {
@@ -1343,13 +1466,13 @@ def report_asset_list(request):
     
     # Get filter dropdowns
     if company:
-        categories = AssetCategory.objects.filter(company=company)
-        locations = Location.objects.filter(company=company)
-        departments = Department.objects.filter(company=company)
+        categories = AssetCategory.objects.filter(company=company, is_deleted=False)
+        locations = Location.objects.filter(company=company, is_deleted=False)
+        departments = Department.objects.filter(company=company, is_deleted=False)
     else:
-        categories = AssetCategory.objects.all()
-        locations = Location.objects.all()
-        departments = Department.objects.all()
+        categories = AssetCategory.objects.filter(is_deleted=False)
+        locations = Location.objects.filter(is_deleted=False)
+        departments = Department.objects.filter(is_deleted=False)
     
     context = {
         'page_obj': page_obj,
@@ -1357,6 +1480,9 @@ def report_asset_list(request):
         'locations': locations,
         'departments': departments,
         'filters': filters,
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'showing_all_companies': not company and is_super_admin,
     }
     
     return render(request, 'assets/report_asset_list.html', context)
@@ -1368,6 +1494,7 @@ def report_financial(request):
     from .reports import FinancialReport
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = FinancialReport(company=company)
@@ -1386,6 +1513,9 @@ def report_financial(request):
         'total_purchase_value': data['total_purchase_value'],
         'total_book_value': data['total_book_value'],
         'total_depreciation': data['total_depreciation'],
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'showing_all_companies': not company and is_super_admin,
     }
     
     return render(request, 'assets/report_financial.html', context)
@@ -1397,6 +1527,7 @@ def report_maintenance(request):
     from .reports import MaintenanceReport
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = MaintenanceReport(company=company)
@@ -1412,6 +1543,9 @@ def report_maintenance(request):
         'amc_expired': data['amc_expired'][:10],  # Limit to 10
         'under_warranty': data['under_warranty'],
         'under_amc': data['under_amc'],
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'showing_all_companies': not company and is_super_admin,
     }
     
     return render(request, 'assets/report_maintenance.html', context)
@@ -1424,6 +1558,7 @@ def report_transfer(request):
     from datetime import datetime, timedelta
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     # Date range
     start_date = request.GET.get('start_date')
@@ -1459,6 +1594,9 @@ def report_transfer(request):
         'rejected_count': data['rejected_count'],
         'start_date': start_date,
         'end_date': end_date,
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'showing_all_companies': not company and is_super_admin,
     }
     
     return render(request, 'assets/report_transfer.html', context)
@@ -1471,6 +1609,7 @@ def report_disposal(request):
     from datetime import datetime, timedelta
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     # Date range
     start_date = request.GET.get('start_date')
@@ -1505,6 +1644,9 @@ def report_disposal(request):
         'total_disposal_cost': data['total_disposal_cost'],
         'start_date': start_date,
         'end_date': end_date,
+        'company': company,
+        'is_super_admin': is_super_admin,
+        'showing_all_companies': not company and is_super_admin,
     }
     
     return render(request, 'assets/report_disposal.html', context)
@@ -1514,21 +1656,55 @@ def report_disposal(request):
 def report_by_category(request):
     """Asset by Category Report"""
     from .reports import AssetByCategoryReport
+    from django.db.models import Count, Sum, Q
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = AssetByCategoryReport(company=company)
         return report.export_to_excel()
     
-    report = AssetByCategoryReport(company=company)
-    data = report.generate()
-    
-    context = {
-        'categories': data['categories'],
-        'total_assets': data['total_assets'],
-        'total_value': data['total_value'],
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        # Company-wise category summary
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        
+        company_data = []
+        for comp in companies:
+            categories = AssetCategory.objects.filter(company=comp, is_deleted=False).annotate(
+                asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+                total_value=Sum('assets__purchase_price', filter=Q(assets__is_deleted=False))
+            ).filter(asset_count__gt=0).order_by('-asset_count')
+            
+            if categories.exists():
+                company_data.append({
+                    'company': comp,
+                    'categories': categories,
+                    'total_assets': sum(c.asset_count for c in categories),
+                    'total_value': sum(c.total_value or 0 for c in categories),
+                    'category_count': categories.count()
+                })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = AssetByCategoryReport(company=company)
+        data = report.generate()
+        
+        context = {
+            'categories': data['categories'],
+            'total_assets': data['total_assets'],
+            'total_value': data['total_value'],
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_by_category.html', context)
 
@@ -1537,21 +1713,55 @@ def report_by_category(request):
 def report_by_location(request):
     """Asset by Location Report"""
     from .reports import AssetByLocationReport
+    from django.db.models import Count, Sum, Q
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = AssetByLocationReport(company=company)
         return report.export_to_excel()
     
-    report = AssetByLocationReport(company=company)
-    data = report.generate()
-    
-    context = {
-        'locations': data['locations'],
-        'total_assets': data['total_assets'],
-        'total_value': data['total_value'],
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        # Company-wise location summary
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        
+        company_data = []
+        for comp in companies:
+            locations = Location.objects.filter(company=comp, is_deleted=False).annotate(
+                asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+                total_value=Sum('assets__purchase_price', filter=Q(assets__is_deleted=False))
+            ).filter(asset_count__gt=0).order_by('-asset_count')
+            
+            if locations.exists():
+                company_data.append({
+                    'company': comp,
+                    'locations': locations,
+                    'total_assets': sum(l.asset_count for l in locations),
+                    'total_value': sum(l.total_value or 0 for l in locations),
+                    'location_count': locations.count()
+                })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = AssetByLocationReport(company=company)
+        data = report.generate()
+        
+        context = {
+            'locations': data['locations'],
+            'total_assets': data['total_assets'],
+            'total_value': data['total_value'],
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_by_location.html', context)
 
@@ -1560,27 +1770,63 @@ def report_by_location(request):
 def report_depreciation(request):
     """Depreciation Schedule Report"""
     from .reports import DepreciationScheduleReport
+    from django.db.models import Sum, Count
+    from assets.utils import calculate_current_book_value
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = DepreciationScheduleReport(company=company)
         return report.export_to_excel()
     
-    report = DepreciationScheduleReport(company=company)
-    data = report.generate()
-    
-    # Pagination
-    paginator = Paginator(data['schedule'], 50)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'total_original_value': data['total_original_value'],
-        'total_accumulated_depreciation': data['total_accumulated_depreciation'],
-        'total_book_value': data['total_book_value'],
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        from core.models import Company
+        from decimal import Decimal
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        
+        company_data = []
+        for comp in companies:
+            assets = Asset.objects.filter(company=comp, is_deleted=False, purchase_price__isnull=False)
+            if assets.exists():
+                total_purchase = assets.aggregate(total=Sum('purchase_price'))['total'] or 0
+                total_current = sum(calculate_current_book_value(asset) for asset in assets)
+                total_depreciation = Decimal(str(total_purchase)) - Decimal(str(total_current))
+                
+                company_data.append({
+                    'company': comp,
+                    'asset_count': assets.count(),
+                    'total_original_value': total_purchase,
+                    'total_book_value': total_current,
+                    'total_accumulated_depreciation': total_depreciation,
+                    'depreciation_percentage': round((float(total_depreciation) / float(total_purchase) * 100), 2) if total_purchase > 0 else 0
+                })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = DepreciationScheduleReport(company=company)
+        data = report.generate()
+        
+        # Pagination
+        paginator = Paginator(data['schedule'], 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context = {
+            'page_obj': page_obj,
+            'total_original_value': data['total_original_value'],
+            'total_accumulated_depreciation': data['total_accumulated_depreciation'],
+            'total_book_value': data['total_book_value'],
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_depreciation.html', context)
 
@@ -1589,24 +1835,67 @@ def report_depreciation(request):
 def report_warranty(request):
     """Warranty Report"""
     from .reports import WarrantyReport
+    from django.db.models import Count, Sum, Q
+    from django.utils import timezone
+    from datetime import timedelta
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = WarrantyReport(company=company)
         return report.export_to_excel()
     
-    report = WarrantyReport(company=company)
-    data = report.generate()
-    
-    context = {
-        'under_warranty': data['under_warranty'],
-        'expiring_30_days': data['expiring_30_days'],
-        'expiring_60_days': data['expiring_60_days'],
-        'expiring_90_days': data['expiring_90_days'],
-        'expired': data['expired'][:20],  # Limit to 20
-        'no_warranty': data['no_warranty'][:20],  # Limit to 20
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        today = timezone.now().date()
+        thirty_days = today + timedelta(days=30)
+        
+        company_data = []
+        for comp in companies:
+            assets = Asset.objects.filter(company=comp, is_deleted=False)
+            under_warranty = assets.filter(warranty_start_date__lte=today, warranty_end_date__gte=today).count()
+            expiring_30 = assets.filter(warranty_end_date__gte=today, warranty_end_date__lte=thirty_days).count()
+            expired = assets.filter(warranty_end_date__lt=today).count()
+            no_warranty = assets.filter(warranty_end_date__isnull=True).count()
+            warranty_value = assets.filter(warranty_start_date__lte=today, warranty_end_date__gte=today).aggregate(
+                total=Sum('purchase_price')
+            )['total'] or 0
+            
+            # Include company even if all values are 0 to show complete picture
+            company_data.append({
+                'company': comp,
+                'under_warranty': under_warranty,
+                'expiring_30_days': expiring_30,
+                'expired': expired,
+                'no_warranty': no_warranty,
+                'total_warranty_value': warranty_value,
+                'total_assets': assets.count()
+            })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = WarrantyReport(company=company)
+        data = report.generate()
+        
+        context = {
+            'under_warranty': data['under_warranty'],
+            'expiring_30_days': data['expiring_30_days'],
+            'expiring_60_days': data['expiring_60_days'],
+            'expiring_90_days': data['expiring_90_days'],
+            'expired': data['expired'][:20],  # Limit to 20
+            'no_warranty': data['no_warranty'][:20],  # Limit to 20
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_warranty.html', context)
 
@@ -1615,25 +1904,68 @@ def report_warranty(request):
 def report_amc(request):
     """AMC Report"""
     from .reports import AMCReport
+    from django.db.models import Count, Sum, Q
+    from django.utils import timezone
+    from datetime import timedelta
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = AMCReport(company=company)
         return report.export_to_excel()
     
-    report = AMCReport(company=company)
-    data = report.generate()
-    
-    context = {
-        'under_amc': data['under_amc'],
-        'expiring_30_days': data['expiring_30_days'],
-        'expiring_60_days': data['expiring_60_days'],
-        'expiring_90_days': data['expiring_90_days'],
-        'expired': data['expired'][:20],  # Limit to 20
-        'no_amc': data['no_amc'][:20],  # Limit to 20
-        'total_amc_cost': data['total_amc_cost'],
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        today = timezone.now().date()
+        thirty_days = today + timedelta(days=30)
+        
+        company_data = []
+        for comp in companies:
+            assets = Asset.objects.filter(company=comp, is_deleted=False)
+            under_amc = assets.filter(amc_start_date__lte=today, amc_end_date__gte=today).count()
+            expiring_30 = assets.filter(amc_end_date__gte=today, amc_end_date__lte=thirty_days).count()
+            expired = assets.filter(amc_end_date__lt=today).count()
+            no_amc = assets.filter(amc_end_date__isnull=True).count()
+            total_amc_cost = assets.filter(amc_start_date__lte=today, amc_end_date__gte=today).aggregate(
+                total=Sum('amc_cost')
+            )['total'] or 0
+            
+            if under_amc > 0 or expiring_30 > 0 or expired > 0:
+                company_data.append({
+                    'company': comp,
+                    'under_amc': under_amc,
+                    'expiring_30_days': expiring_30,
+                    'expired': expired,
+                    'no_amc': no_amc,
+                    'total_amc_cost': total_amc_cost,
+                    'total_assets': assets.count()
+                })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = AMCReport(company=company)
+        data = report.generate()
+        
+        context = {
+            'under_amc': data['under_amc'],
+            'expiring_30_days': data['expiring_30_days'],
+            'expiring_60_days': data['expiring_60_days'],
+            'expiring_90_days': data['expiring_90_days'],
+            'expired': data['expired'][:20],  # Limit to 20
+            'no_amc': data['no_amc'][:20],  # Limit to 20
+            'total_amc_cost': data['total_amc_cost'],
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_amc.html', context)
 
@@ -1642,22 +1974,55 @@ def report_amc(request):
 def report_assignment(request):
     """Asset Assignment Report"""
     from .reports import AssignmentReport
+    from django.db.models import Count, Q
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     if request.GET.get('export') == 'excel':
         report = AssignmentReport(company=company)
         return report.export_to_excel()
     
-    report = AssignmentReport(company=company)
-    data = report.generate()
-    
-    context = {
-        'assignments': data['assignments'],
-        'total_assigned': data['total_assigned'],
-        'total_unassigned': data['total_unassigned'],
-        'unassigned_assets': data['unassigned_assets'][:20],  # Limit to 20
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        
+        company_data = []
+        for comp in companies:
+            assets = Asset.objects.filter(company=comp, is_deleted=False)
+            assigned = assets.filter(assigned_to__isnull=False).count()
+            unassigned = assets.filter(assigned_to__isnull=True).count()
+            custodian_assets = assets.filter(custodian__isnull=False).count()
+            
+            company_data.append({
+                'company': comp,
+                'total_assigned': assigned,
+                'total_unassigned': unassigned,
+                'custodian_assets': custodian_assets,
+                'total_assets': assets.count(),
+                'assignment_percentage': round((assigned / assets.count() * 100), 2) if assets.count() > 0 else 0
+            })
+        
+        context = {
+            'company_data': company_data,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = AssignmentReport(company=company)
+        data = report.generate()
+        
+        context = {
+            'assignments': data['assignments'],
+            'total_assigned': data['total_assigned'],
+            'total_unassigned': data['total_unassigned'],
+            'unassigned_assets': data['unassigned_assets'][:20],  # Limit to 20
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_assignment.html', context)
 
@@ -1667,8 +2032,10 @@ def report_movement(request):
     """Asset Movement Report"""
     from .reports import MovementReport
     from datetime import datetime, timedelta
+    from django.db.models import Count, Q
     
     company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
     
     # Date range
     start_date = request.GET.get('start_date')
@@ -1688,22 +2055,57 @@ def report_movement(request):
         report = MovementReport(company=company, start_date=start_date, end_date=end_date)
         return report.export_to_excel()
     
-    report = MovementReport(company=company, start_date=start_date, end_date=end_date)
-    data = report.generate()
-    
-    # Pagination
-    paginator = Paginator(data['all_movements'], 50)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'total_movements': data['total_movements'],
-        'location_changes': data['location_changes'],
-        'assignments': data['assignments'],
-        'transfers': data['transfers'],
-        'start_date': start_date,
-        'end_date': end_date,
-    }
+    # For super admin, show company-wise breakdown
+    if is_super_admin and not company:
+        from core.models import Company
+        companies = Company.objects.filter(is_deleted=False, is_active=True)
+        
+        company_data = []
+        for comp in companies:
+            movements = AssetHistory.objects.filter(
+                asset__company=comp,
+                action_date__date__gte=start_date,
+                action_date__date__lte=end_date
+            )
+            
+            if movements.exists():
+                company_data.append({
+                    'company': comp,
+                    'total_movements': movements.count(),
+                    'location_changes': movements.filter(action_type='LOCATION_CHANGED').count(),
+                    'assignments': movements.filter(action_type='ASSIGNED').count(),
+                    'status_changes': movements.filter(action_type='STATUS_CHANGED').count(),
+                    'transfers': movements.filter(action_type='TRANSFERRED').count(),
+                })
+        
+        context = {
+            'company_data': company_data,
+            'start_date': start_date,
+            'end_date': end_date,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': True,
+        }
+    else:
+        # Regular report for specific company
+        report = MovementReport(company=company, start_date=start_date, end_date=end_date)
+        data = report.generate()
+        
+        # Pagination
+        paginator = Paginator(data['all_movements'], 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context = {
+            'page_obj': page_obj,
+            'total_movements': data['total_movements'],
+            'location_changes': data['location_changes'],
+            'assignments': data['assignments'],
+            'transfers': data['transfers'],
+            'start_date': start_date,
+            'end_date': end_date,
+            'company': company,
+            'is_super_admin': is_super_admin,
+            'showing_all_companies': False,
+        }
     
     return render(request, 'assets/report_movement.html', context)

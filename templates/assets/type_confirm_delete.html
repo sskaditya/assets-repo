@@ -1,6 +1,7 @@
 {% extends "base_sidebar.html" %}
 
 {% block title %}Delete {{ asset_type.name }} - Assetz{% endblock %}
+{% block page_title %}Delete Asset Type{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto space-y-6">
@@ -37,8 +38,14 @@
                             <span class="text-sm font-medium text-foreground">{{ asset_type.category.name }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-sm text-muted-foreground">Type:</span>
-                            <span class="text-sm font-medium text-foreground">{{ asset_type.get_category_type_display }}</span>
+                            <span class="text-sm text-muted-foreground">Status:</span>
+                            <span class="text-sm font-medium text-foreground">
+                                {% if asset_type.is_active %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600">Active</span>
+                                {% else %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Inactive</span>
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
                 </div>

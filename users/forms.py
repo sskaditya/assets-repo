@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import UserProfile, Department, Location
 from core.models import Company
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit
 
 
 class UserCreateForm(UserCreationForm):
@@ -170,3 +172,104 @@ class UserProfileUpdateForm(forms.ModelForm):
             self.fields['location'].queryset = Location.objects.filter(
                 is_deleted=False, is_active=True
             )
+
+
+class DepartmentForm(forms.ModelForm):
+    """Form for creating and updating departments"""
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.filter(is_deleted=False, is_active=True),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        help_text='Select company (for super admin only)'
+    )
+    
+    class Meta:
+        model = Department
+        fields = ['name', 'code', 'description', 'parent_department', 'head', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Department Name'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DEPT-001'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Department description...'}),
+            'parent_department': forms.Select(attrs={'class': 'form-select'}),
+            'head': forms.Select(attrs={'class': 'form-select'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company', None)
+        is_super_admin = kwargs.pop('is_super_admin', False)
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.form_class = 'form-horizontal'
+        
+        # For super admin, show company field; for company admin, hide it
+        if is_super_admin and not company:
+            self.fields['company'].required = True
+            # Filter parent departments and heads - will be filtered by JS on company selection
+            self.fields['parent_department'].queryset = Department.objects.filter(
+                is_deleted=False, is_active=True
+            )
+            self.fields['head'].queryset = User.objects.filter(is_active=True)
+        else:
+            # Remove company field for company admins
+            self.fields.pop('company', None)
+            
+            # Filter by company
+            if company:
+                self.fields['parent_department'].queryset = Department.objects.filter(
+                    company=company, is_deleted=False, is_active=True
+                )
+                self.fields['head'].queryset = User.objects.filter(
+                    profile__company=company, is_active=True
+                )
+            else:
+                self.fields['parent_department'].queryset = Department.objects.filter(
+                    is_deleted=False, is_active=True
+                )
+                self.fields['head'].queryset = User.objects.filter(is_active=True)
+
+
+class LocationForm(forms.ModelForm):
+    """Form for creating and updating locations"""
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.filter(is_deleted=False, is_active=True),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        help_text='Select company (for super admin only)'
+    )
+    
+    class Meta:
+        model = Location
+        fields = [
+            'name', 'code', 'address_line1', 'address_line2', 
+            'city', 'state', 'country', 'postal_code', 
+            'location_type', 'is_active'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Location Name'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'LOC-001'}),
+            'address_line1': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address Line 1'}),
+            'address_line2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address Line 2'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
+            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
+            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
+            'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Postal Code'}),
+            'location_type': forms.Select(attrs={'class': 'form-select'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company', None)
+        is_super_admin = kwargs.pop('is_super_admin', False)
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.form_class = 'form-horizontal'
+        
+        # For super admin without company context, show company field
+        if is_super_admin and not company:
+            self.fields['company'].required = True
+        else:
+            # Remove company field for company admins
+            self.fields.pop('company', None)
