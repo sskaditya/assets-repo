@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout as auth_logout
 
 
 def landing(request):
@@ -30,3 +31,9 @@ def form_example(request):
         })
     
     return render(request, 'form_example.html')
+
+
+def logout_view(request):
+    """Custom logout view that accepts GET requests"""
+    auth_logout(request)
+    return redirect('landing')
