@@ -5,109 +5,109 @@
 {% block page_title %}Asset Summary Report{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Company Context Banner -->
     {% if showing_all_companies %}
-    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div class="flex items-center gap-2">
-            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
-            <div>
-                <h4 class="font-semibold text-blue-900">Viewing All Companies</h4>
-                <p class="text-sm text-blue-700">This report includes data from all companies in the system</p>
+    <div class="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-start gap-2 sm:gap-3">
+            <i data-lucide="globe" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+            <div class="min-w-0 flex-1">
+                <h4 class="text-sm sm:text-base font-semibold text-blue-900">Viewing All Companies</h4>
+                <p class="text-xs sm:text-sm text-blue-700">This report includes data from all companies in the system</p>
             </div>
         </div>
     </div>
     {% elif company %}
-    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-        <div class="flex items-center gap-2">
-            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
-            <div>
-                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
-                <p class="text-sm text-green-700">This report shows data for {{ company.name }} only</p>
+    <div class="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div class="flex items-start gap-2 sm:gap-3">
+            <i data-lucide="building-2" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5"></i>
+            <div class="min-w-0 flex-1">
+                <h4 class="text-sm sm:text-base font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-xs sm:text-sm text-green-700">This report shows data for {{ company.name }} only</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-foreground">{{ report_title|default:"Asset Summary Report" }}</h1>
-            <p class="text-muted-foreground mt-1">Comprehensive overview of all assets with key metrics</p>
+    <div class="flex flex-col gap-3 sm:gap-4">
+        <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">{{ report_title|default:"Asset Summary Report" }}</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Comprehensive overview of all assets with key metrics</p>
         </div>
-        <div class="flex gap-2">
-            <a href="?export=excel" class="btn btn-primary">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="?export=excel" class="btn btn-primary w-full sm:w-auto justify-center">
                 <i data-lucide="download" class="w-4 h-4"></i>
-                Export to Excel
+                <span>Export to Excel</span>
             </a>
-            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline w-full sm:w-auto justify-center">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                Back to Reports
+                <span>Back to Reports</span>
             </a>
         </div>
     </div>
 
     {% if showing_all_companies %}
     <!-- Company-wise Summary Table for Super Admin -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i>
-                Company-wise Asset Summary
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="building-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
+                <span class="truncate">Company-wise Asset Summary</span>
             </h3>
-            <p class="text-sm text-muted-foreground mt-1">Complete asset overview across all companies</p>
+            <p class="text-xs sm:text-sm text-muted-foreground mt-1">Complete asset overview across all companies</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[900px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Assets</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Critical Assets</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Value</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Average Value</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Top Status</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Condition</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Total Assets</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Critical Assets</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Total Value</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Average Value</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Top Status</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Condition</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for data in company_data %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div>
-                                <p class="font-semibold text-foreground">{{ data.company.name }}</p>
+                                <p class="text-sm sm:text-base font-semibold text-foreground">{{ data.company.name }}</p>
                                 <p class="text-xs text-muted-foreground">{{ data.company.code }}</p>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-lg font-bold text-foreground">{{ data.total_assets|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap">
+                            <span class="text-base sm:text-lg font-bold text-foreground">{{ data.total_assets|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap">
                             {% if data.critical_assets > 0 %}
-                            <span class="text-lg font-bold text-red-600">{{ data.critical_assets|intcomma }}</span>
+                            <span class="text-base sm:text-lg font-bold text-red-600">{{ data.critical_assets|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">0</span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="font-semibold text-green-600">${{ data.total_value|floatformat:0|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap">
+                            <span class="text-sm sm:text-base font-semibold text-green-600">${{ data.total_value|floatformat:0|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-sm font-medium text-foreground">${{ data.avg_value|floatformat:0|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap">
+                            <span class="text-xs sm:text-sm font-medium text-foreground">${{ data.avg_value|floatformat:0|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4">
-                            <div class="flex flex-wrap gap-1">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
+                            <div class="flex flex-wrap gap-1 min-w-[150px]">
                                 {% for status in data.by_status|slice:":3" %}
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 whitespace-nowrap">
                                     {{ status.status|title }}: {{ status.count }}
                                 </span>
                                 {% endfor %}
                             </div>
                         </td>
-                        <td class="py-3 px-4">
-                            <div class="flex flex-wrap gap-1">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
+                            <div class="flex flex-wrap gap-1 min-w-[120px]">
                                 {% for cond in data.by_condition|slice:":2" %}
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 whitespace-nowrap">
                                     {{ cond.condition|title }}: {{ cond.count }}
                                 </span>
                                 {% endfor %}
@@ -116,9 +116,9 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="py-12 text-center text-muted-foreground">
-                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3"></i>
-                            <p>No asset data available</p>
+                        <td colspan="7" class="py-8 sm:py-12 text-center text-muted-foreground">
+                            <i data-lucide="inbox" class="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3"></i>
+                            <p class="text-sm sm:text-base">No asset data available</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -130,44 +130,44 @@
     <!-- Company-specific Summary Tables -->
     
     <!-- Overall Statistics Table -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i>
-                Overall Statistics
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
+                <span>Overall Statistics</span>
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Metric</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Value</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Metric</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Total Assets</td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-2xl font-bold text-foreground">{{ report_data.total_assets|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base font-medium text-foreground">Total Assets</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
+                            <span class="text-xl sm:text-2xl font-bold text-foreground">{{ report_data.total_assets|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Critical Assets</td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-2xl font-bold text-red-600">{{ report_data.critical_assets|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base font-medium text-foreground">Critical Assets</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
+                            <span class="text-xl sm:text-2xl font-bold text-red-600">{{ report_data.critical_assets|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Total Value</td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-2xl font-bold text-green-600">${{ report_data.total_value|floatformat:0|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base font-medium text-foreground">Total Value</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
+                            <span class="text-xl sm:text-2xl font-bold text-green-600">${{ report_data.total_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Average Value</td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-2xl font-bold text-foreground">${{ report_data.avg_value|floatformat:0|intcomma }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base font-medium text-foreground">Average Value</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
+                            <span class="text-xl sm:text-2xl font-bold text-foreground">${{ report_data.avg_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                 </tbody>
@@ -176,28 +176,28 @@
     </div>
 
     <!-- Breakdown by Status -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="activity" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Assets by Status
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Status</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in report_data.by_status %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium">{{ item.status|title|default:"Unknown" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ item.count|intcomma }}</span>
                         </td>
                     </tr>
@@ -214,28 +214,28 @@
     </div>
 
     <!-- Breakdown by Category -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="folder" class="w-5 h-5 text-purple-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="folder" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600"></i>
                 Assets by Category
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in report_data.by_category %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium">{{ item.category__name|default:"Uncategorized" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ item.count|intcomma }}</span>
                         </td>
                     </tr>
@@ -252,28 +252,28 @@
     </div>
 
     <!-- Breakdown by Location -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="map-pin" class="w-5 h-5 text-green-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600"></i>
                 Assets by Location
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Location</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Location</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in report_data.by_location %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium">{{ item.location__name|default:"Unassigned" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ item.count|intcomma }}</span>
                         </td>
                     </tr>
@@ -290,28 +290,28 @@
     </div>
 
     <!-- Breakdown by Department -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="building" class="w-5 h-5 text-orange-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="building" class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600"></i>
                 Assets by Department
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Department</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Department</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in report_data.by_department %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium">{{ item.department__name|default:"Unassigned" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ item.count|intcomma }}</span>
                         </td>
                     </tr>
@@ -328,28 +328,28 @@
     </div>
 
     <!-- Breakdown by Condition -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="check-circle" class="w-5 h-5 text-teal-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-teal-600"></i>
                 Assets by Condition
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Condition</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Condition</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in report_data.by_condition %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium">{{ item.condition|title|default:"Unknown" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ item.count|intcomma }}</span>
                         </td>
                     </tr>

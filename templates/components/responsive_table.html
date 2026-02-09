@@ -1,0 +1,200 @@
+{% comment %}
+Responsive Table Component
+
+Usage in templates:
+{% include 'components/responsive_table.html' with items=object_list columns=table_columns %}
+
+Parameters:
+- items: QuerySet or list of objects to display
+- columns: List of column definitions with the following structure:
+  [
+    {'key': 'field_name', 'label': 'Column Header', 'mobile_label': 'Mobile Label (optional)'},
+    ...
+  ]
+- actions: (Optional) List of action buttons for each row
+
+Example:
+{% with table_columns=...|default:default_columns %}
+{% include 'components/responsive_table.html' with items=assets columns=table_columns %}
+{% endwith %}
+{% endcomment %}
+
+<style>
+    /* Mobile Card View */
+    @media (max-width: 767px) {
+        .responsive-table-mobile {
+            display: block;
+        }
+        
+        .responsive-table-mobile .table-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .responsive-table-mobile .table-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .responsive-table-mobile .table-card-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .responsive-table-mobile .table-card-row:first-child {
+            padding-top: 0;
+        }
+        
+        .responsive-table-mobile .table-card-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            margin-bottom: 0.25rem;
+        }
+        
+        .responsive-table-mobile .table-card-value {
+            font-size: 0.875rem;
+            color: #111827;
+            font-weight: 500;
+        }
+        
+        .responsive-table-mobile .table-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
+        }
+        
+        .responsive-table-desktop {
+            display: none;
+        }
+    }
+    
+    /* Desktop Table View */
+    @media (min-width: 768px) {
+        .responsive-table-mobile {
+            display: none;
+        }
+        
+        .responsive-table-desktop {
+            display: block;
+        }
+    }
+</style>
+
+<!-- Desktop Table View -->
+<div class="responsive-table-desktop overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                {% for column in columns %}
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ column.label }}
+                </th>
+                {% endfor %}
+                {% if actions %}
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                </th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for item in items %}
+            <tr class="hover:bg-gray-50 transition-colors">
+                {% for column in columns %}
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {% if column.template %}
+                        {% include column.template with object=item %}
+                    {% else %}
+                        {% with value=item|get_attribute:column.key %}
+                            {{ value|default:"-" }}
+                        {% endwith %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                {% if actions %}
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end gap-2">
+                        {% for action in actions %}
+                        <a href="{{ action.url }}" class="text-{{ action.color|default:'primary' }}-600 hover:text-{{ action.color|default:'primary' }}-900">
+                            <i data-lucide="{{ action.icon }}" class="w-4 h-4"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ columns|length|add:1 }}" class="px-6 py-12 text-center text-sm text-gray-500">
+                    <div class="flex flex-col items-center gap-2">
+                        <i data-lucide="inbox" class="w-12 h-12 text-gray-300"></i>
+                        <p>No items found</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Mobile Card View -->
+<div class="responsive-table-mobile">
+    {% for item in items %}
+    <div class="table-card">
+        {% for column in columns %}
+        <div class="table-card-row">
+            <div class="flex-1">
+                <div class="table-card-label">{{ column.mobile_label|default:column.label }}</div>
+                <div class="table-card-value">
+                    {% if column.template %}
+                        {% include column.template with object=item %}
+                    {% else %}
+                        {% with value=item|get_attribute:column.key %}
+                            {{ value|default:"-" }}
+                        {% endwith %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if actions %}
+        <div class="table-card-actions">
+            {% for action in actions %}
+            <a href="{{ action.url }}" class="btn btn-sm btn-outline flex items-center gap-1.5">
+                <i data-lucide="{{ action.icon }}" class="w-3.5 h-3.5"></i>
+                <span>{{ action.label }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="text-center py-12">
+        <div class="flex flex-col items-center gap-2">
+            <i data-lucide="inbox" class="w-12 h-12 text-gray-300"></i>
+            <p class="text-sm text-gray-500">No items found</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Reinitialize icons after rendering
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>

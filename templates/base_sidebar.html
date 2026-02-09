@@ -3,7 +3,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#C17845">
     <title>{% block title %}Assetz - Asset Management{% endblock %}</title>
     
     <!-- Google Fonts - Inter -->
@@ -351,12 +354,110 @@
             border-radius: 0.5rem;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 1023px) {
+            /* Mobile sidebar overlay */
+            aside {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 50;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            
+            aside.mobile-open {
+                transform: translateX(0);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            
+            /* Mobile backdrop */
+            .mobile-backdrop {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                opacity: 0;
+                transition: opacity 0.3s ease-in-out;
+            }
+            
+            .mobile-backdrop.active {
+                display: block;
+                opacity: 1;
+            }
+        }
+        
+        /* Touch-friendly button sizes */
+        @media (max-width: 767px) {
+            .btn {
+                padding: 0.625rem 1.125rem;
+                min-height: 44px;
+            }
+            
+            .btn-sm {
+                padding: 0.5rem 1rem;
+                min-height: 40px;
+            }
+            
+            /* Larger touch targets */
+            .sidebar-link {
+                padding: 0.75rem;
+                min-height: 44px;
+            }
+            
+            .nav-section-trigger {
+                padding: 0.75rem;
+                min-height: 44px;
+            }
+        }
+        
+        /* Responsive tables */
+        @media (max-width: 767px) {
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+        }
+        
+        /* Mobile-friendly spacing */
+        @media (max-width: 640px) {
+            .p-6 {
+                padding: 1rem !important;
+            }
+            
+            .px-6 {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            .py-6 {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+        }
     </style>
+    
+    <!-- Global Mobile Responsive Enhancements -->
+    {% include 'components/mobile_responsive_styles.html' %}
+    
+    {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50">
+    <!-- Mobile Backdrop -->
+    <div id="mobileBackdrop" class="mobile-backdrop"></div>
+    
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-72 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+        <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 lg:relative lg:translate-x-0">
             <!-- Logo -->
             <div class="px-5 py-6 border-b border-gray-100">
                 <div class="flex items-center gap-3">
@@ -566,16 +667,16 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top Header -->
-            <header class="bg-white border-b border-gray-200 px-6 py-4">
+            <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <button id="mobileSidebarToggle" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
-                            <i data-lucide="menu" class="w-5 h-5"></i>
+                    <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+                        <button id="mobileSidebarToggle" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" aria-label="Open menu">
+                            <i data-lucide="menu" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                         </button>
-                        <div>
-                            <h1 class="text-xl font-semibold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
+                        <div class="min-w-0 flex-1">
+                            <h1 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">{% block page_title %}Dashboard{% endblock %}</h1>
                             {% if request.current_company %}
-                            <p class="text-sm text-gray-500">{{ request.current_company.name }}</p>
+                            <p class="text-xs sm:text-sm text-gray-500 truncate">{{ request.current_company.name }}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -583,14 +684,14 @@
             </header>
             
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-6">
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6">
                 {% if messages %}
-                <div class="mb-6 space-y-2">
+                <div class="mb-4 sm:mb-6 space-y-2">
                     {% for message in messages %}
-                    <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200 text-yellow-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
-                        <div class="flex items-start gap-3">
-                            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
-                            <p class="flex-1">{{ message }}</p>
+                    <div class="p-3 sm:p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200 text-yellow-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+                        <div class="flex items-start gap-2 sm:gap-3">
+                            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></i>
+                            <p class="flex-1 text-sm sm:text-base">{{ message }}</p>
                         </div>
                     </div>
                     {% endfor %}
@@ -611,13 +712,45 @@
         
         // Mobile sidebar toggle
         const sidebarToggle = document.getElementById('mobileSidebarToggle');
-        const sidebar = document.querySelector('aside');
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('mobileBackdrop');
+        
+        function openMobileSidebar() {
+            sidebar.classList.add('mobile-open');
+            backdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMobileSidebar() {
+            sidebar.classList.remove('mobile-open');
+            backdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        }
         
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
+            sidebarToggle.addEventListener('click', openMobileSidebar);
         }
+        
+        if (backdrop) {
+            backdrop.addEventListener('click', closeMobileSidebar);
+        }
+        
+        // Close sidebar when clicking on navigation links on mobile
+        const sidebarLinks = sidebar.querySelectorAll('.sidebar-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+        
+        // Close sidebar on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebar.classList.contains('mobile-open')) {
+                closeMobileSidebar();
+            }
+        });
         
         // Reinitialize icons after any dynamic content
         setTimeout(() => {

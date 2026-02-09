@@ -1,0 +1,314 @@
+{% comment %}
+Mobile Responsive Global Styles
+Include this in templates that need additional mobile responsive support
+
+Usage:
+{% include 'components/mobile_responsive_styles.html' %}
+{% endcomment %}
+
+<style>
+    /* Global Mobile Responsive Enhancements */
+    
+    /* Ensure all images are responsive */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    /* Table Responsiveness */
+    @media (max-width: 767px) {
+        /* Make all tables scrollable on mobile */
+        .table-wrapper,
+        table:not(.mobile-optimized) {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Reduce table cell padding on mobile */
+        table td,
+        table th {
+            padding: 0.5rem !important;
+        }
+        
+        /* Stack table header and data vertically for very small tables */
+        .mobile-stack-table thead {
+            display: none;
+        }
+        
+        .mobile-stack-table tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+        }
+        
+        .mobile-stack-table td {
+            display: block;
+            text-align: left;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .mobile-stack-table td:last-child {
+            border-bottom: none;
+        }
+        
+        .mobile-stack-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+            color: #6b7280;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+    }
+    
+    /* Grid Responsiveness */
+    @media (max-width: 640px) {
+        /* Make grid columns single column on small screens */
+        .grid[class*="grid-cols-"] {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+        
+        /* Exception: Keep 2 columns for certain grids */
+        .grid.grid-cols-2-mobile {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+    
+    /* Typography Responsiveness */
+    @media (max-width: 640px) {
+        h1 {
+            font-size: 1.5rem !important;
+            line-height: 2rem !important;
+        }
+        
+        h2 {
+            font-size: 1.25rem !important;
+            line-height: 1.75rem !important;
+        }
+        
+        h3 {
+            font-size: 1.125rem !important;
+            line-height: 1.5rem !important;
+        }
+    }
+    
+    /* Card Responsiveness */
+    @media (max-width: 640px) {
+        .card {
+            border-radius: 0.75rem;
+        }
+        
+        .card .p-6 {
+            padding: 1rem !important;
+        }
+        
+        .card .px-6 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        .card .py-6 {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+    }
+    
+    /* Button Responsiveness */
+    @media (max-width: 640px) {
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-group .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Touch-friendly button sizing */
+        .btn {
+            min-height: 44px;
+            padding: 0.625rem 1rem;
+        }
+    }
+    
+    /* Form Responsiveness */
+    @media (max-width: 640px) {
+        /* Stack form labels and inputs */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        /* Full width inputs on mobile */
+        input:not([type="checkbox"]):not([type="radio"]),
+        select,
+        textarea {
+            width: 100%;
+        }
+        
+        /* Better spacing for form sections */
+        form .space-y-6 {
+            gap: 1rem;
+        }
+    }
+    
+    /* Flexbox Responsiveness */
+    @media (max-width: 640px) {
+        /* Stack flex items on mobile */
+        .flex-mobile-stack {
+            flex-direction: column;
+        }
+        
+        /* Reverse order on mobile for cancel/submit buttons */
+        .flex-mobile-reverse {
+            flex-direction: column-reverse;
+        }
+    }
+    
+    /* Badge/Status Indicator Responsiveness */
+    @media (max-width: 640px) {
+        .badge {
+            font-size: 0.6875rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+    
+    /* Modal/Dialog Responsiveness */
+    @media (max-width: 640px) {
+        .modal,
+        .dialog {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            margin: 0.5rem;
+        }
+    }
+    
+    /* Stat Card Responsiveness */
+    @media (max-width: 640px) {
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+        }
+    }
+    
+    /* Navigation Breadcrumb Responsiveness */
+    @media (max-width: 640px) {
+        .breadcrumb {
+            font-size: 0.75rem;
+        }
+        
+        .breadcrumb li {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+    
+    /* Dropdown Menu Responsiveness */
+    @media (max-width: 640px) {
+        .dropdown-menu {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: auto;
+            max-width: 100%;
+            border-radius: 1rem 1rem 0 0;
+        }
+    }
+    
+    /* Chart/Graph Container Responsiveness */
+    @media (max-width: 640px) {
+        .chart-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        canvas {
+            max-width: 100%;
+        }
+    }
+    
+    /* Action Button Group Responsiveness */
+    @media (max-width: 640px) {
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .action-buttons .btn {
+            flex: 1 1 auto;
+            min-width: calc(50% - 0.25rem);
+        }
+    }
+    
+    /* Filter Panel Responsiveness */
+    @media (max-width: 640px) {
+        .filter-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 80vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 1rem 1rem 0 0;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .filter-panel.active {
+            transform: translateY(0);
+        }
+    }
+    
+    /* Utility Classes */
+    @media (max-width: 640px) {
+        .hide-mobile {
+            display: none !important;
+        }
+        
+        .show-mobile {
+            display: block !important;
+        }
+    }
+    
+    @media (min-width: 641px) {
+        .hide-desktop {
+            display: none !important;
+        }
+        
+        .show-desktop {
+            display: block !important;
+        }
+    }
+    
+    /* Print Responsiveness */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        /* Expand all collapsed sections for printing */
+        .collapse,
+        .accordion-content {
+            display: block !important;
+        }
+    }
+</style>

@@ -8,105 +8,105 @@
 <!-- SUPER ADMIN DASHBOARD -->
 <div class="space-y-6">
     <!-- Welcome Header -->
-    <div class="bg-gradient-to-r from-primary-600 to-primary-500 rounded-2xl p-8 text-white shadow-xl">
+    <div class="bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-xl">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold mb-2">Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
-                <p class="text-primary-100 text-lg">Super Admin Dashboard - Manage all companies</p>
+            <div class="flex-1 min-w-0">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 truncate">Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
+                <p class="text-primary-100 text-sm sm:text-base md:text-lg">Super Admin Dashboard - Manage all companies</p>
             </div>
-            <div class="hidden lg:block">
-                <div class="h-24 w-24 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                    <i data-lucide="crown" class="w-12 h-12"></i>
+            <div class="hidden lg:block flex-shrink-0 ml-4">
+                <div class="h-20 w-20 xl:h-24 xl:w-24 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <i data-lucide="crown" class="w-10 h-10 xl:w-12 xl:h-12"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Total Companies</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ total_companies }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Companies</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ total_companies }}</h3>
                     <p class="text-xs text-green-600 mt-1">Active companies</p>
                 </div>
-                <div class="h-14 w-14 rounded-xl bg-blue-100 flex items-center justify-center">
-                    <i data-lucide="building-2" class="w-7 h-7 text-blue-600"></i>
+                <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="building-2" class="w-6 h-6 sm:w-7 sm:h-7 text-blue-600"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Active Companies</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ active_companies }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Active Companies</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ active_companies }}</h3>
                     <p class="text-xs text-gray-500 mt-1">Running normally</p>
                 </div>
-                <div class="h-14 w-14 rounded-xl bg-green-100 flex items-center justify-center">
-                    <i data-lucide="check-circle-2" class="w-7 h-7 text-green-600"></i>
+                <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="check-circle-2" class="w-6 h-6 sm:w-7 sm:h-7 text-green-600"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Expiring Soon</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ expiring_soon }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Expiring Soon</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ expiring_soon }}</h3>
                     <p class="text-xs text-amber-600 mt-1">Next 30 days</p>
                 </div>
-                <div class="h-14 w-14 rounded-xl bg-amber-100 flex items-center justify-center">
-                    <i data-lucide="clock" class="w-7 h-7 text-amber-600"></i>
+                <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="clock" class="w-6 h-6 sm:w-7 sm:h-7 text-amber-600"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Total Assets</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ total_assets_all }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Assets</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ total_assets_all }}</h3>
                     <p class="text-xs text-gray-500 mt-1">All companies</p>
                 </div>
-                <div class="h-14 w-14 rounded-xl bg-purple-100 flex items-center justify-center">
-                    <i data-lucide="package" class="w-7 h-7 text-purple-600"></i>
+                <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="package" class="w-6 h-6 sm:w-7 sm:h-7 text-purple-600"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="{% url 'core:company_create' %}" class="flex items-center gap-4 p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary-500 hover:bg-primary-50 transition-all group">
-                <div class="h-12 w-12 rounded-lg bg-primary-100 group-hover:bg-primary-200 flex items-center justify-center transition-colors">
-                    <i data-lucide="plus" class="w-6 h-6 text-primary-600"></i>
+    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <a href="{% url 'core:company_create' %}" class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary-500 hover:bg-primary-50 transition-all group">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary-100 group-hover:bg-primary-200 flex items-center justify-center transition-colors flex-shrink-0">
+                    <i data-lucide="plus" class="w-5 h-5 sm:w-6 sm:h-6 text-primary-600"></i>
                 </div>
-                <div>
-                    <div class="font-semibold text-gray-900 group-hover:text-primary-600">Create Company</div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-primary-600">Create Company</div>
                     <div class="text-xs text-gray-500">Add a new company</div>
                 </div>
             </a>
             
-            <a href="{% url 'core:company_list' %}" class="flex items-center gap-4 p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all group">
-                <div class="h-12 w-12 rounded-lg bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center transition-colors">
-                    <i data-lucide="list" class="w-6 h-6 text-blue-600"></i>
+            <a href="{% url 'core:company_list' %}" class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center transition-colors flex-shrink-0">
+                    <i data-lucide="list" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"></i>
                 </div>
-                <div>
-                    <div class="font-semibold text-gray-900 group-hover:text-blue-600">View All Companies</div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-blue-600">View All Companies</div>
                     <div class="text-xs text-gray-500">Manage companies</div>
                 </div>
             </a>
             
-            <a href="{% url 'assets:company_audit_report' %}" class="flex items-center gap-4 p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-green-500 hover:bg-green-50 transition-all group">
-                <div class="h-12 w-12 rounded-lg bg-green-100 group-hover:bg-green-200 flex items-center justify-center transition-colors">
-                    <i data-lucide="file-bar-chart" class="w-6 h-6 text-green-600"></i>
+            <a href="{% url 'assets:company_audit_report' %}" class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-green-500 hover:bg-green-50 transition-all group">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-green-100 group-hover:bg-green-200 flex items-center justify-center transition-colors flex-shrink-0">
+                    <i data-lucide="file-bar-chart" class="w-5 h-5 sm:w-6 sm:h-6 text-green-600"></i>
                 </div>
-                <div>
-                    <div class="font-semibold text-gray-900 group-hover:text-green-600">Company Reports</div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-green-600">Company Reports</div>
                     <div class="text-xs text-gray-500">View analytics</div>
                 </div>
             </a>
@@ -115,60 +115,60 @@
 
     <!-- Recent Companies -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Recent Companies</h3>
-                <a href="{% url 'core:company_list' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View all →</a>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Recent Companies</h3>
+                <a href="{% url 'core:company_list' %}" class="text-xs sm:text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap">View all →</a>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[640px]">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Company</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Assets</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Users</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Status</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Created</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Actions</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Company</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Assets</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Users</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Status</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Created</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     {% for company in companies_with_stats %}
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
+                        <td class="px-4 sm:px-6 py-3 sm:py-4">
+                            <div class="flex items-center gap-2 sm:gap-3">
                                 {% if company.logo %}
-                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="h-10 w-10 rounded-lg object-cover">
+                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-cover flex-shrink-0">
                                 {% else %}
-                                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{{ company.name|slice:":1" }}</span>
+                                <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold text-xs sm:text-sm">{{ company.name|slice:":1" }}</span>
                                 </div>
                                 {% endif %}
-                                <div>
-                                    <div class="font-semibold text-gray-900">{{ company.name }}</div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-semibold text-gray-900 truncate">{{ company.name }}</div>
                                     <div class="text-xs text-gray-500">{{ company.code }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ company.asset_count }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ company.user_count }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-900 font-medium">{{ company.asset_count }}</td>
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-900 font-medium">{{ company.user_count }}</td>
+                        <td class="px-4 sm:px-6 py-3 sm:py-4">
                             {% if company.is_active %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <span class="w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5"></span>
+                            <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-600 mr-1 sm:mr-1.5"></span>
                                 Active
                             </span>
                             {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                <span class="w-1.5 h-1.5 rounded-full bg-gray-600 mr-1.5"></span>
+                            <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-600 mr-1 sm:mr-1.5"></span>
                                 Inactive
                             </span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">{{ company.created_at|date:"M d, Y" }}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-500 whitespace-nowrap">{{ company.created_at|date:"M d, Y" }}</td>
+                        <td class="px-4 sm:px-6 py-3 sm:py-4">
+                            <div class="flex items-center gap-1 sm:gap-2">
                                 <a href="{% url 'core:company_detail' company.pk %}" class="p-1.5 hover:bg-gray-200 rounded-lg transition-colors" title="View">
                                     <i data-lucide="eye" class="w-4 h-4 text-gray-600"></i>
                                 </a>
@@ -180,7 +180,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
+                        <td colspan="6" class="px-4 sm:px-6 py-8 sm:py-12 text-center">
                             <div class="flex flex-col items-center gap-3">
                                 <div class="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
                                     <i data-lucide="building-2" class="w-8 h-8 text-gray-400"></i>
@@ -205,91 +205,91 @@
 
 {% else %}
 <!-- REGULAR USER DASHBOARD -->
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-gray-600 mt-1">Welcome to Asset Management System</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">Welcome to Asset Management System</p>
         </div>
-        <a href="{% url 'assets:asset_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm">
+        <a href="{% url 'assets:asset_create' %}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm text-sm sm:text-base whitespace-nowrap">
             <i data-lucide="plus" class="w-4 h-4"></i>
-            Add New Asset
+            <span>Add New Asset</span>
         </a>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Total Assets</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ total_assets }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Assets</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ total_assets }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-lg bg-primary-100 flex items-center justify-center">
-                    <i data-lucide="package" class="w-6 h-6 text-primary-600"></i>
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="package" class="w-5 h-5 sm:w-6 sm:h-6 text-primary-600"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Active Assets</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ active_assets }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Active Assets</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ active_assets }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="check-circle" class="w-5 h-5 sm:w-6 sm:h-6 text-green-600"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Under Maintenance</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ under_maintenance }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Under Maintenance</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ under_maintenance }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center">
-                    <i data-lucide="wrench" class="w-6 h-6 text-amber-600"></i>
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="wrench" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-600"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Critical Assets</p>
-                    <h3 class="text-3xl font-bold text-gray-900 mt-2">{{ critical_assets }}</h3>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Critical Assets</p>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{{ critical_assets }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-lg bg-red-100 flex items-center justify-center">
-                    <i data-lucide="alert-circle" class="w-6 h-6 text-red-600"></i>
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="alert-circle" class="w-5 h-5 sm:w-6 sm:h-6 text-red-600"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <!-- Assets by Category -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Assets by Category</h3>
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Assets by Category</h3>
             </div>
-            <div class="p-6">
-                <div class="space-y-4">
+            <div class="p-4 sm:p-6">
+                <div class="space-y-3 sm:space-y-4">
                     {% for category in assets_by_category %}
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                                <i data-lucide="folder" class="w-5 h-5 text-primary-600"></i>
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                            <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="folder" class="w-4 h-4 sm:w-5 sm:h-5 text-primary-600"></i>
                             </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">{{ category.name }}</p>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ category.name }}</p>
                                 <p class="text-xs text-gray-500">{{ category.code }}</p>
                             </div>
                         </div>
-                        <span class="text-sm font-semibold text-gray-900">{{ category.asset_count }}</span>
+                        <span class="text-sm font-semibold text-gray-900 flex-shrink-0">{{ category.asset_count }}</span>
                     </div>
                     {% empty %}
                     <p class="text-sm text-gray-500 text-center py-4">No categories found</p>
@@ -300,23 +300,23 @@
 
         <!-- Warranty Expiring Soon -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Warranty Expiring Soon</h3>
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Warranty Expiring Soon</h3>
             </div>
-            <div class="p-6">
-                <div class="space-y-4">
+            <div class="p-4 sm:p-6">
+                <div class="space-y-3 sm:space-y-4">
                     {% for asset in warranty_expiring %}
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                                <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                            <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-600"></i>
                             </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">{{ asset.asset_tag }}</p>
-                                <p class="text-xs text-gray-500">{{ asset.name }}</p>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ asset.asset_tag }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ asset.name }}</p>
                             </div>
                         </div>
-                        <span class="text-xs text-gray-500">{{ asset.warranty_end_date }}</span>
+                        <span class="text-xs text-gray-500 flex-shrink-0 whitespace-nowrap">{{ asset.warranty_end_date }}</span>
                     </div>
                     {% empty %}
                     <p class="text-sm text-gray-500 text-center py-4">No warranties expiring soon</p>
@@ -327,48 +327,50 @@
     </div>
 
     <!-- Recent Assets -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="p-6 border-b border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Recently Added Assets</h3>
-                <a href="{% url 'assets:asset_list' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View all →</a>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Recently Added Assets</h3>
+                <a href="{% url 'assets:asset_list' %}" class="text-xs sm:text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap">View all →</a>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[640px]">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Asset Tag</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Name</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Category</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Status</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Location</th>
-                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Added</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Asset Tag</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Name</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Category</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Status</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Location</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 sm:px-6 py-3">Added</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     {% for asset in recent_assets %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                             <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-sm font-medium text-primary-600 hover:text-primary-700">
                                 {{ asset.asset_tag }}
                             </a>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ asset.name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ asset.category.name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-900">
+                            <div class="max-w-[200px] truncate">{{ asset.name }}</div>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">{{ asset.category.name }}</td>
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {{ asset.get_status_display }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ asset.location.name|default:"Not assigned" }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ asset.created_at|date:"M d, Y" }}</td>
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">{{ asset.created_at|date:"M d, Y" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">No recent assets</td>
+                        <td colspan="6" class="px-4 sm:px-6 py-6 sm:py-8 text-center text-sm text-gray-500">No recent assets</td>
                     </tr>
                     {% endfor %}
                 </tbody>

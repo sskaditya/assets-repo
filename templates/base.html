@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#C17845">
     <title>{% block title %}Assetz - Asset Management{% endblock %}</title>
     
     <!-- Google Fonts - Inter -->
@@ -186,63 +189,179 @@
                 @apply text-foreground;
             }
         }
+        
+        /* Mobile Navigation Styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            bottom: 0;
+            width: 280px;
+            max-width: 85vw;
+            background: white;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 50;
+            overflow-y: auto;
+        }
+        
+        .mobile-menu.active {
+            right: 0;
+        }
+        
+        .mobile-menu-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .mobile-menu-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* Touch-friendly button sizes */
+        @media (max-width: 767px) {
+            .btn {
+                min-height: 44px;
+                padding-left: 1.125rem;
+                padding-right: 1.125rem;
+            }
+            
+            .btn-ghost {
+                min-height: 40px;
+            }
+        }
+        
+        /* Mobile-friendly spacing */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
     </style>
+    
+    <!-- Global Mobile Responsive Enhancements -->
+    {% include 'components/mobile_responsive_styles.html' %}
     
     {% block extra_css %}{% endblock %}
 </head>
 <body class="antialiased">
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobileMenuBackdrop" class="mobile-menu-backdrop"></div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <span class="text-lg font-bold text-foreground">Menu</span>
+            <button id="closeMobileMenu" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Close menu">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-4 space-y-1">
+            <a href="{% url 'assets:dashboard' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'assets:asset_list' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="package" class="w-5 h-5"></i>
+                <span>Assets</span>
+            </a>
+            <a href="{% url 'assets:qr_scanner' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="scan" class="w-5 h-5"></i>
+                <span>QR Scanner</span>
+            </a>
+            <a href="{% url 'assets:audit_trail' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                <span>Audit</span>
+            </a>
+            <a href="{% url 'assets:reports_dashboard' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                <span>Reports</span>
+            </a>
+            <a href="{% url 'assets:monitoring_dashboard' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="activity" class="w-5 h-5"></i>
+                <span>Monitoring</span>
+            </a>
+            <a href="{% url 'assets:financial_dashboard' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-foreground hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                <span>Financial</span>
+            </a>
+            {% if user.is_authenticated %}
+            <div class="pt-4 mt-4 border-t border-gray-200">
+                <div class="px-3 py-2 text-xs text-muted-foreground font-medium">Account</div>
+                <a href="{% url 'logout' %}" class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
     <!-- Navigation -->
-    <nav class="border-b border-border bg-white">
-        <div class="container mx-auto px-4 py-4">
+    <nav class="border-b border-border bg-white sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 sm:py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-8">
-                    <a href="{% url 'landing' %}" class="text-xl font-bold text-foreground">Assetz <span class="text-xs text-muted-foreground">by Softlogic AI</span></a>
-                    <div class="hidden md:flex space-x-6">
-                        <a href="{% url 'assets:dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">Dashboard</a>
-                        <a href="{% url 'assets:asset_list' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">Assets</a>
-                        <a href="{% url 'assets:qr_scanner' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                            <i data-lucide="scan" class="w-4 h-4 inline"></i> QR Scanner
+                <div class="flex items-center gap-4 sm:gap-8 flex-1 min-w-0">
+                    <a href="{% url 'landing' %}" class="text-lg sm:text-xl font-bold text-foreground truncate">
+                        Assetz 
+                        <span class="hidden sm:inline text-xs text-muted-foreground">by Softlogic AI</span>
+                    </a>
+                    <div class="hidden md:flex space-x-4 lg:space-x-6">
+                        <a href="{% url 'assets:dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">Dashboard</a>
+                        <a href="{% url 'assets:asset_list' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">Assets</a>
+                        <a href="{% url 'assets:qr_scanner' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
+                            <i data-lucide="scan" class="w-4 h-4 inline"></i> <span class="hidden lg:inline">QR Scanner</span>
                         </a>
-                        <a href="{% url 'assets:audit_trail' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                            <i data-lucide="shield-check" class="w-4 h-4 inline"></i> Audit
+                        <a href="{% url 'assets:audit_trail' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
+                            <i data-lucide="shield-check" class="w-4 h-4 inline"></i> <span class="hidden lg:inline">Audit</span>
                         </a>
-                        <a href="{% url 'assets:reports_dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                            <i data-lucide="bar-chart-2" class="w-4 h-4 inline"></i> Reports
+                        <a href="{% url 'assets:reports_dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 inline"></i> <span class="hidden lg:inline">Reports</span>
                         </a>
-                        <a href="{% url 'assets:monitoring_dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">Monitoring</a>
-                        <a href="{% url 'assets:financial_dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors">Financial</a>
+                        <a href="{% url 'assets:monitoring_dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap hidden lg:inline">Monitoring</a>
+                        <a href="{% url 'assets:financial_dashboard' %}" class="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap hidden lg:inline">Financial</a>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                     {% if user.is_authenticated %}
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm text-muted-foreground">{{ user.get_full_name|default:user.username }}</span>
+                    <div class="hidden sm:flex items-center gap-2">
+                        <span class="text-sm text-muted-foreground truncate max-w-[150px]">{{ user.get_full_name|default:user.username }}</span>
                         <a href="{% url 'logout' %}" class="btn btn-ghost">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
                         </a>
                     </div>
                     {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-ghost">
+                    <a href="{% url 'login' %}" class="btn btn-ghost hidden sm:flex">
                         <i data-lucide="user" class="w-4 h-4"></i>
                         <span class="text-sm">Login</span>
                     </a>
                     {% endif %}
+                    <button id="openMobileMenu" class="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Open menu">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {% block content %}
         <!-- Content goes here -->
         {% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-border mt-12 bg-white">
-        <div class="container mx-auto px-4 py-6">
-            <p class="text-sm text-muted-foreground text-center">
+    <footer class="border-t border-border mt-8 sm:mt-12 bg-white">
+        <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            <p class="text-xs sm:text-sm text-muted-foreground text-center">
                 &copy; 2026 Assetz. All rights reserved.
             </p>
         </div>
@@ -250,10 +369,61 @@
 
     {% block extra_js %}{% endblock %}
     
-    <!-- Initialize Lucide icons -->
+    <!-- Initialize Lucide icons and Mobile Menu -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
             lucide.createIcons();
+            
+            // Mobile menu functionality
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+            const openMobileMenuBtn = document.getElementById('openMobileMenu');
+            const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
+            
+            function openMobileMenu() {
+                mobileMenu.classList.add('active');
+                mobileMenuBackdrop.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeMobileMenu() {
+                mobileMenu.classList.remove('active');
+                mobileMenuBackdrop.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            if (openMobileMenuBtn) {
+                openMobileMenuBtn.addEventListener('click', openMobileMenu);
+            }
+            
+            if (closeMobileMenuBtn) {
+                closeMobileMenuBtn.addEventListener('click', closeMobileMenu);
+            }
+            
+            if (mobileMenuBackdrop) {
+                mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+            }
+            
+            // Close menu when clicking on a link
+            const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    closeMobileMenu();
+                });
+            });
+            
+            // Close menu on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Re-initialize icons after dynamic content
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
         });
     </script>
 </body>

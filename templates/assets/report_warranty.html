@@ -5,42 +5,42 @@
 {% block page_title %}Warranty Report{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Company Context Banner -->
     {% if showing_all_companies %}
-    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+            <i data-lucide="globe" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
             <div>
-                <h4 class="font-semibold text-blue-900">Viewing All Companies</h4>
-                <p class="text-sm text-blue-700">This report includes data from all companies in the system</p>
+                <h4 class="text-sm sm:text-base font-semibold text-blue-900">Viewing All Companies</h4>
+                <p class="text-xs sm:text-sm text-blue-700">This report includes data from all companies in the system</p>
             </div>
         </div>
     </div>
     {% elif company %}
-    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <i data-lucide="building-2" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600"></i>
             <div>
-                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
-                <p class="text-sm text-green-700">This report shows data for {{ company.name }} only</p>
+                <h4 class="text-sm sm:text-base font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-xs sm:text-sm text-green-700">This report shows data for {{ company.name }} only</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-foreground">Warranty Report</h1>
-            <p class="text-muted-foreground mt-1">Track warranty status and expiry dates</p>
+    <div class="flex flex-col gap-3 sm:gap-4">
+        <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Warranty Report</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Track warranty status and expiry dates</p>
         </div>
-        <div class="flex gap-2">
-            <a href="?export=excel" class="btn btn-primary">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="?export=excel" class="btn btn-primary w-full sm:w-auto justify-center">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export to Excel
             </a>
-            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline w-full sm:w-auto justify-center">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Back to Reports
             </a>
@@ -49,60 +49,60 @@
 
     {% if showing_all_companies %}
     <!-- Company-wise Warranty Summary Table for Super Admin -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Company-wise Warranty Summary
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Warranty status across all companies</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Under Warranty</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Expiring (30 Days)</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Expired</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">No Warranty</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Warranty Value</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Assets</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Under Warranty</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Expiring (30 Days)</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Expired</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">No Warranty</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Warranty Value</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Total Assets</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for data in company_data %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div>
                                 <p class="font-semibold text-foreground">{{ data.company.name }}</p>
                                 <p class="text-xs text-muted-foreground">{{ data.company.code }}</p>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-green-600">{{ data.under_warranty|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if data.expiring_30_days > 0 %}
                             <span class="text-lg font-semibold text-orange-600">{{ data.expiring_30_days|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">0</span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if data.expired > 0 %}
                             <span class="text-lg font-semibold text-red-600">{{ data.expired|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">0</span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-sm text-muted-foreground">{{ data.no_warranty|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="font-semibold text-blue-600">${{ data.total_warranty_value|floatformat:0|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-sm font-medium text-foreground">{{ data.total_assets|intcomma }}</span>
                         </td>
                     </tr>
@@ -122,55 +122,55 @@
     <!-- Company-specific Warranty Tables -->
     
     <!-- Warranty Summary Table -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Warranty Summary
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Status</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Under Warranty</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Under Warranty</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-green-600">{{ under_warranty }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Expiring in 30 Days</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Expiring in 30 Days</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-orange-600">{{ expiring_30_days }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Expiring in 60 Days</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Expiring in 60 Days</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-yellow-600">{{ expiring_60_days }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Expiring in 90 Days</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Expiring in 90 Days</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-blue-600">{{ expiring_90_days }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Expired</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Expired</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-red-600">{{ expired|length }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">No Warranty</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">No Warranty</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-gray-600">{{ no_warranty|length }}</span>
                         </td>
                     </tr>
@@ -181,43 +181,43 @@
 
     <!-- Expired Warranties -->
     {% if expired %}
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-red-600"></i>
                 Expired Warranties ({{ expired|length }})
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Recently expired warranties (showing up to 20)</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Expired On</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Days Ago</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Expired On</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Days Ago</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for asset in expired %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <a href="{% url 'assets:asset_detail' asset.pk %}" class="font-medium text-primary hover:underline">
                                 {{ asset.asset_tag }}
                             </a>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium text-foreground">{{ asset.name }}</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-muted-foreground">{{ asset.category.name|default:"N/A" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             <span class="text-sm">{{ asset.warranty_end_date|date:"M d, Y" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
                                 {{ asset.warranty_end_date|timesince }} ago
                             </span>
@@ -232,39 +232,39 @@
 
     <!-- No Warranty Assets -->
     {% if no_warranty %}
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="x-circle" class="w-5 h-5 text-gray-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="x-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600"></i>
                 Assets Without Warranty ({{ no_warranty|length }})
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Assets that do not have warranty information (showing up to 20)</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Purchase Date</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Purchase Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for asset in no_warranty %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <a href="{% url 'assets:asset_detail' asset.pk %}" class="font-medium text-primary hover:underline">
                                 {{ asset.asset_tag }}
                             </a>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="font-medium text-foreground">{{ asset.name }}</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-muted-foreground">{{ asset.category.name|default:"N/A" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             <span class="text-sm">{{ asset.purchase_date|date:"M d, Y"|default:"N/A" }}</span>
                         </td>
                     </tr>

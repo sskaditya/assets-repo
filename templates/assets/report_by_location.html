@@ -5,19 +5,19 @@
 {% block page_title %}Assets by Location Report{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-foreground">Assets by Location Report</h1>
-            <p class="text-muted-foreground mt-1">Location-wise asset distribution</p>
+    <div class="flex flex-col gap-3 sm:gap-4">
+        <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Assets by Location Report</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Location-wise asset distribution</p>
         </div>
-        <div class="flex gap-2">
-            <a href="?export=excel" class="btn btn-primary">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="?export=excel" class="btn btn-primary w-full sm:w-auto justify-center">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export to Excel
             </a>
-            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline w-full sm:w-auto justify-center">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Back to Reports
             </a>
@@ -26,44 +26,44 @@
 
     {% if showing_all_companies %}
     <!-- Company-wise Location Summary Table for Super Admin -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Company-wise Location Summary
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Asset distribution across locations for all companies</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Locations</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Assets</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Value</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Top Locations</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Locations</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Total Assets</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Total Value</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Top Locations</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for data in company_data %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div>
                                 <p class="font-semibold text-foreground">{{ data.company.name }}</p>
                                 <p class="text-xs text-muted-foreground">{{ data.company.code }}</p>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-bold text-foreground">{{ data.location_count }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ data.total_assets|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="font-semibold text-green-600">${{ data.total_value|floatformat:0|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="flex flex-wrap gap-2">
                                 {% for location in data.locations|slice:":5" %}
                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
@@ -93,43 +93,43 @@
     {% else %}
     <!-- Company-specific view -->
     {% if company %}
-    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <i data-lucide="building-2" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600"></i>
             <div>
-                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
-                <p class="text-sm text-green-700">Location distribution for {{ company.name }}</p>
+                <h4 class="text-sm sm:text-base font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-xs sm:text-sm text-green-700">Location distribution for {{ company.name }}</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Summary Table -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Summary Statistics
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Metric</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Value</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Metric</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Total Assets</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Total Assets</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-foreground">{{ total_assets|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 font-medium text-foreground">Total Value</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Total Value</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-2xl font-bold text-green-600">${{ total_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
@@ -139,26 +139,26 @@
     </div>
 
     <!-- Location Breakdown Table -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="map-pin" class="w-5 h-5 text-green-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600"></i>
                 Location Breakdown
             </h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Location</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Asset Count</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Value</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Location</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Asset Count</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Total Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for loc_data in locations %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div>
                                 <p class="font-semibold text-foreground">{{ loc_data.location.name }}</p>
                                 {% if loc_data.location.address_line1 %}
@@ -166,10 +166,10 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-semibold text-foreground">{{ loc_data.count|intcomma }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="font-semibold text-green-600">${{ loc_data.total_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>

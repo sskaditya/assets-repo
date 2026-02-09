@@ -5,42 +5,42 @@
 {% block page_title %}Transfer Report{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Company Context Banner -->
     {% if showing_all_companies %}
-    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+            <i data-lucide="globe" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
             <div>
-                <h4 class="font-semibold text-blue-900">Viewing All Companies</h4>
-                <p class="text-sm text-blue-700">This report includes data from all companies in the system</p>
+                <h4 class="text-sm sm:text-base font-semibold text-blue-900">Viewing All Companies</h4>
+                <p class="text-xs sm:text-sm text-blue-700">This report includes data from all companies in the system</p>
             </div>
         </div>
     </div>
     {% elif company %}
-    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <i data-lucide="building-2" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600"></i>
             <div>
-                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
-                <p class="text-sm text-green-700">This report shows data for {{ company.name }} only</p>
+                <h4 class="text-sm sm:text-base font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-xs sm:text-sm text-green-700">This report shows data for {{ company.name }} only</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-foreground">Asset Transfer Report</h1>
-            <p class="text-muted-foreground mt-1">Track asset transfers and movements</p>
+    <div class="flex flex-col gap-3 sm:gap-4">
+        <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Asset Transfer Report</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Track asset transfers and movements</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
             <a href="?export=excel&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-primary">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export to Excel
             </a>
-            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline w-full sm:w-auto justify-center">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Back to Reports
             </a>
@@ -117,66 +117,66 @@
     </div>
 
     <!-- Transfers Table -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="arrow-right-left" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="arrow-right-left" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Transfer History
             </h3>
             <p class="text-sm text-muted-foreground mt-1">
                 Showing transfers from {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
             </p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Asset</th>
                         {% if showing_all_companies %}
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Company</th>
                         {% endif %}
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">From</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">To</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Requested By</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Date</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">From</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">To</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Requested By</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Date</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for transfer in page_obj %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <a href="{% url 'assets:asset_detail' transfer.asset.pk %}" class="font-medium text-primary hover:underline">
                                 {{ transfer.asset.asset_tag }}
                             </a>
                             <p class="text-sm text-muted-foreground">{{ transfer.asset.name }}</p>
                         </td>
                         {% if showing_all_companies %}
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm font-medium text-blue-600">{{ transfer.asset.company.name|default:"N/A" }}</span>
                         </td>
                         {% endif %}
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="text-sm">
                                 <p class="font-medium text-foreground">{{ transfer.from_location.name|default:"N/A" }}</p>
                                 <p class="text-muted-foreground">{{ transfer.from_department.name|default:"N/A" }}</p>
                             </div>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="text-sm">
                                 <p class="font-medium text-foreground">{{ transfer.to_location.name|default:"N/A" }}</p>
                                 <p class="text-muted-foreground">{{ transfer.to_department.name|default:"N/A" }}</p>
                             </div>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-foreground">
                                 {{ transfer.requested_by.get_full_name|default:transfer.requested_by.username }}
                             </span>
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             <span class="text-sm">{{ transfer.request_date|date:"M d, Y" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             {% if transfer.status == 'PENDING' %}
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
                                 Pending
@@ -221,7 +221,7 @@
             <div class="text-sm text-muted-foreground">
                 Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} transfers
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
                 {% if page_obj.has_previous %}
                 <a href="?page=1&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">First</a>
                 <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline">Previous</a>

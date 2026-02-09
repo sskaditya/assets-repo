@@ -5,28 +5,28 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-4xl mx-auto space-y-4 sm:space-y-6">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-foreground">{{ title }}</h1>
-            <p class="text-muted-foreground mt-1">{% if asset %}Update asset details{% else %}Add a new asset to the system{% endif %}</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">{{ title }}</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">{% if asset %}Update asset details{% else %}Add a new asset to the system{% endif %}</p>
         </div>
-        <a href="{% if asset %}{% url 'assets:asset_detail' asset.pk %}{% else %}{% url 'assets:asset_list' %}{% endif %}" class="btn btn-outline">
+        <a href="{% if asset %}{% url 'assets:asset_detail' asset.pk %}{% else %}{% url 'assets:asset_list' %}{% endif %}" class="btn btn-outline whitespace-nowrap w-full sm:w-auto justify-center">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Back
+            <span>Back</span>
         </a>
     </div>
 
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-4 sm:space-y-6">
         {% csrf_token %}
         
         <!-- Basic Information -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Basic Information</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Basic Information</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Asset Tag *</label>
                     {{ form.asset_tag }}
@@ -50,10 +50,10 @@
 
         <!-- Classification -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Classification</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Classification</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Category *</label>
                     {{ form.category }}
@@ -67,10 +67,10 @@
 
         <!-- Asset Details -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Asset Details</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Asset Details</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Make/Manufacturer</label>
                     {{ form.make }}
@@ -100,10 +100,10 @@
 
         <!-- Location & Assignment -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Location & Assignment</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Location & Assignment</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Location</label>
                     {{ form.location }}
@@ -125,10 +125,10 @@
 
         <!-- Procurement -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Procurement Information</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Procurement Information</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Vendor</label>
                     {{ form.vendor }}
@@ -158,10 +158,10 @@
 
         <!-- Warranty -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Warranty Information</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Warranty Information</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Start Date</label>
                     {{ form.warranty_start_date }}
@@ -179,10 +179,10 @@
 
         <!-- AMC -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">AMC Information</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">AMC Information</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">AMC Vendor</label>
                     {{ form.amc_vendor }}
@@ -204,10 +204,10 @@
 
         <!-- Depreciation -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Depreciation</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Depreciation</h3>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                     <label class="text-sm font-medium text-foreground mb-2 block">Depreciation Rate (%)</label>
                     {{ form.depreciation_rate }}
@@ -225,11 +225,11 @@
 
         <!-- Insurance & Other -->
         <div class="card">
-            <div class="p-6 border-b border-border">
-                <h3 class="text-lg font-semibold text-foreground">Insurance & Additional Information</h3>
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Insurance & Additional Information</h3>
             </div>
-            <div class="p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div class="flex items-center gap-2">
                         {{ form.is_critical }}
                         <label class="text-sm font-medium text-foreground">Is Critical Asset</label>
@@ -239,7 +239,7 @@
                         <label class="text-sm font-medium text-foreground">Is Insured</label>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                         <label class="text-sm font-medium text-foreground mb-2 block">Insurance Policy Number</label>
                         {{ form.insurance_policy_number }}
@@ -257,13 +257,13 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="flex items-center justify-end gap-3">
-            <a href="{% if asset %}{% url 'assets:asset_detail' asset.pk %}{% else %}{% url 'assets:asset_list' %}{% endif %}" class="btn btn-outline">
-                Cancel
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3">
+            <a href="{% if asset %}{% url 'assets:asset_detail' asset.pk %}{% else %}{% url 'assets:asset_list' %}{% endif %}" class="btn btn-outline w-full sm:w-auto justify-center">
+                <span>Cancel</span>
             </a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary w-full sm:w-auto justify-center">
                 <i data-lucide="save" class="w-4 h-4"></i>
-                {% if asset %}Update Asset{% else %}Create Asset{% endif %}
+                <span>{% if asset %}Update Asset{% else %}Create Asset{% endif %}</span>
             </button>
         </div>
     </form>

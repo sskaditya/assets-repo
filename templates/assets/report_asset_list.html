@@ -5,42 +5,42 @@
 {% block page_title %}Asset List Report{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Company Context Banner -->
     {% if showing_all_companies %}
-    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+            <i data-lucide="globe" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
             <div>
-                <h4 class="font-semibold text-blue-900">Viewing All Companies</h4>
-                <p class="text-sm text-blue-700">This report includes data from all companies in the system</p>
+                <h4 class="text-sm sm:text-base font-semibold text-blue-900">Viewing All Companies</h4>
+                <p class="text-xs sm:text-sm text-blue-700">This report includes data from all companies in the system</p>
             </div>
         </div>
     </div>
     {% elif company %}
-    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
         <div class="flex items-center gap-2">
-            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+            <i data-lucide="building-2" class="w-4 h-4 sm:w-5 sm:h-5 text-green-600"></i>
             <div>
-                <h4 class="font-semibold text-green-900">{{ company.name }}</h4>
-                <p class="text-sm text-green-700">This report shows data for {{ company.name }} only</p>
+                <h4 class="text-sm sm:text-base font-semibold text-green-900">{{ company.name }}</h4>
+                <p class="text-xs sm:text-sm text-green-700">This report shows data for {{ company.name }} only</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-foreground">Asset List Report</h1>
-            <p class="text-muted-foreground mt-1">Detailed listing of all assets with filtering options</p>
+    <div class="flex flex-col gap-3 sm:gap-4">
+        <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Asset List Report</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Detailed listing of all assets with filtering options</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
             <a href="?export=excel{% for key, value in filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-primary">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export to Excel
             </a>
-            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline">
+            <a href="{% url 'assets:reports_dashboard' %}" class="btn btn-outline w-full sm:w-auto justify-center">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Back to Reports
             </a>
@@ -49,8 +49,8 @@
 
     <!-- Filters -->
     <div class="card p-6">
-        <h3 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <i data-lucide="filter" class="w-5 h-5 text-blue-600"></i>
+        <h3 class="text-base sm:text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <i data-lucide="filter" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
             Filter Assets
         </h3>
         <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -126,7 +126,7 @@
                     <i data-lucide="search" class="w-4 h-4"></i>
                     Apply Filters
                 </button>
-                <a href="{% url 'assets:report_asset_list' %}" class="btn btn-outline">
+                <a href="{% url 'assets:report_asset_list' %}" class="btn btn-outline w-full sm:w-auto justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                     Clear Filters
                 </a>
@@ -135,42 +135,42 @@
     </div>
 
     <!-- Asset List Table -->
-    <div class="card">
-        <div class="p-6 border-b border-border">
-            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
-                <i data-lucide="list" class="w-5 h-5 text-blue-600"></i>
+    <div class="card overflow-hidden">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <i data-lucide="list" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i>
                 Asset Details
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Complete listing with asset information</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[600px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Asset Tag</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Asset Tag</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Name</th>
                         {% if showing_all_companies %}
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Company</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Company</th>
                         {% endif %}
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Type</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Location</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Department</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Condition</th>
-                        <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Purchase Price</th>
-                        <th class="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Purchase Date</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Category</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Type</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Location</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Department</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Status</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Condition</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Purchase Price</th>
+                        <th class="text-center py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Purchase Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for asset in page_obj %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <a href="{% url 'assets:asset_detail' asset.pk %}" class="font-medium text-primary hover:underline">
                                 {{ asset.asset_tag }}
                             </a>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div>
                                 <p class="font-medium text-foreground">{{ asset.name }}</p>
                                 {% if asset.serial_number %}
@@ -179,25 +179,25 @@
                             </div>
                         </td>
                         {% if showing_all_companies %}
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm font-medium text-blue-600">
                                 {{ asset.company.name|default:"N/A" }}
                             </span>
                         </td>
                         {% endif %}
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-foreground">{{ asset.category.name|default:"N/A" }}</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-muted-foreground">{{ asset.asset_type.name|default:"N/A" }}</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-foreground">{{ asset.location.name|default:"N/A" }}</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <span class="text-sm text-foreground">{{ asset.department.name|default:"N/A" }}</span>
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             {% if asset.status == 'PLANNING' %}
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">Planning</span>
                             {% elif asset.status == 'ORDERED' %}
@@ -226,7 +226,7 @@
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{{ asset.status|title }}</span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             {% if asset.condition == 'EXCELLENT' %}
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Excellent</span>
                             {% elif asset.condition == 'GOOD' %}
@@ -241,14 +241,14 @@
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{{ asset.condition|title }}</span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if asset.purchase_price %}
                             <span class="font-semibold text-foreground">${{ asset.purchase_price|floatformat:2|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}
                         </td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             {% if asset.purchase_date %}
                             <span class="text-sm">{{ asset.purchase_date|date:"M d, Y" }}</span>
                             {% else %}
@@ -277,7 +277,7 @@
             <div class="text-sm text-muted-foreground">
                 Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} assets
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
                 {% if page_obj.has_previous %}
                 <a href="?page=1{% for key, value in filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-sm btn-outline">First</a>
                 <a href="?page={{ page_obj.previous_page_number }}{% for key, value in filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-sm btn-outline">Previous</a>
