@@ -9,7 +9,10 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from .models import Asset, AssetCategory, AssetType, Vendor, AssetDocument, AssetHistory
-from .forms import AssetForm, AssetFilterForm, AssetDocumentForm, AssetCategoryForm, AssetTypeForm, VendorForm
+from .forms import (
+    AssetForm, AssetFilterForm, AssetDocumentForm, AssetCategoryForm, 
+    AssetTypeForm, VendorForm, AssetExcelImportForm
+)
 from users.models import Department, Location
 from .utils import (
     calculate_current_book_value, 
@@ -180,6 +183,10 @@ def asset_list(request):
         department = filter_form.cleaned_data.get('department')
         if department:
             assets = assets.filter(department=department)
+        
+        assigned_to = filter_form.cleaned_data.get('assigned_to')
+        if assigned_to:
+            assets = assets.filter(assigned_to=assigned_to)
     
     # Pagination
     paginator = Paginator(assets, 25)
@@ -255,6 +262,79 @@ def asset_create(request):
     }
     
     return render(request, 'assets/asset_form.html', context)
+
+
+@login_required
+def asset_import_excel(request):
+    """Import assets from Excel file"""
+    from .excel_import import AssetExcelImporter, generate_import_template
+    from django.http import HttpResponse
+    
+    company = getattr(request, 'current_company', None)
+    
+    if not company:
+        messages.error(request, 'Company context is required for importing assets.')
+        return redirect('assets:asset_list')
+    
+    # Handle template download
+    if request.GET.get('download_template'):
+        output = generate_import_template()
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="asset_import_template.xlsx"'
+        return response
+    
+    # Handle import
+    if request.method == 'POST':
+        form = AssetExcelImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = request.FILES['excel_file']
+            
+            # Process import
+            importer = AssetExcelImporter(excel_file, company, request.user)
+            result = importer.import_assets()
+            
+            # Display results
+            if result['success']:
+                messages.success(
+                    request,
+                    f"Successfully imported {result['success_count']} asset(s). "
+                    f"Skipped: {result['skip_count']}"
+                )
+            
+            if result['errors']:
+                for error in result['errors'][:5]:  # Show first 5 errors
+                    messages.error(request, error)
+                if len(result['errors']) > 5:
+                    messages.warning(request, f"...and {len(result['errors']) - 5} more errors")
+            
+            if result['warnings']:
+                for warning in result['warnings'][:3]:  # Show first 3 warnings
+                    messages.warning(request, warning)
+                if len(result['warnings']) > 3:
+                    messages.info(request, f"...and {len(result['warnings']) - 3} more warnings")
+            
+            if result['success_count'] > 0:
+                return redirect('assets:asset_list')
+    else:
+        form = AssetExcelImportForm()
+    
+    # Get statistics for display
+    categories_count = AssetCategory.objects.filter(company=company, is_deleted=False).count()
+    types_count = AssetType.objects.filter(company=company, is_deleted=False).count()
+    locations_count = Location.objects.filter(company=company, is_deleted=False).count()
+    
+    context = {
+        'form': form,
+        'title': 'Import Assets from Excel',
+        'categories_count': categories_count,
+        'types_count': types_count,
+        'locations_count': locations_count,
+    }
+    
+    return render(request, 'assets/asset_import_excel.html', context)
 
 
 @login_required
@@ -343,6 +423,78 @@ def asset_delete(request, pk):
     }
     
     return render(request, 'assets/asset_confirm_delete.html', context)
+
+
+@login_required
+def asset_transfer_create(request, pk):
+    """Create an asset transfer request"""
+    from .forms import AssetTransferForm
+    from datetime import datetime
+    
+    asset = get_object_or_404(Asset, pk=pk, is_deleted=False)
+    company = getattr(request, 'current_company', None)
+    
+    # Ensure user has access to this asset's company
+    if company and asset.company != company:
+        messages.error(request, 'You do not have permission to transfer this asset.')
+        return redirect('assets:asset_detail', pk=pk)
+    
+    if request.method == 'POST':
+        form = AssetTransferForm(request.POST, company=company, asset=asset)
+        if form.is_valid():
+            transfer = form.save(commit=False)
+            transfer.asset = asset
+            transfer.requested_by = request.user
+            transfer.from_user = asset.assigned_to
+            transfer.from_location = asset.location
+            transfer.from_department = asset.department
+            transfer.status = 'PENDING'
+            
+            # Generate transfer number
+            today = datetime.now()
+            prefix = f"TR-{today.strftime('%Y%m')}"
+            last_transfer = AssetTransfer.objects.filter(
+                transfer_number__startswith=prefix
+            ).order_by('-transfer_number').first()
+            
+            if last_transfer:
+                last_number = int(last_transfer.transfer_number.split('-')[-1])
+                new_number = last_number + 1
+            else:
+                new_number = 1
+            
+            transfer.transfer_number = f"{prefix}-{new_number:04d}"
+            transfer.save()
+            
+            # Create history entry
+            AssetHistory.objects.create(
+                asset=asset,
+                action_type='TRANSFER_INITIATED',
+                performed_by=request.user,
+                remarks=f'Transfer request {transfer.transfer_number} created',
+                from_user=transfer.from_user,
+                to_user=transfer.to_user,
+                from_location=transfer.from_location,
+                to_location=transfer.to_location,
+                from_department=transfer.from_department,
+                to_department=transfer.to_department
+            )
+            
+            messages.success(
+                request,
+                f'Transfer request {transfer.transfer_number} created successfully and is pending approval.'
+            )
+            return redirect('assets:asset_detail', pk=pk)
+    else:
+        form = AssetTransferForm(company=company, asset=asset)
+    
+    context = {
+        'form': form,
+        'asset': asset,
+        'title': 'Transfer Asset',
+    }
+    
+    return render(request, 'assets/asset_transfer_form.html', context)
 
 
 @login_required

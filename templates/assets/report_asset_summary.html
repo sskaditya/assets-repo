@@ -90,10 +90,10 @@
                             {% endif %}
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap">
-                            <span class="text-sm sm:text-base font-semibold text-green-600">${{ data.total_value|floatformat:0|intcomma }}</span>
+                            <span class="text-sm sm:text-base font-semibold text-green-600">K{{ data.total_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap">
-                            <span class="text-xs sm:text-sm font-medium text-foreground">${{ data.avg_value|floatformat:0|intcomma }}</span>
+                            <span class="text-xs sm:text-sm font-medium text-foreground">K{{ data.avg_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="flex flex-wrap gap-1 min-w-[150px]">
@@ -161,13 +161,13 @@
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base font-medium text-foreground">Total Value</td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="text-xl sm:text-2xl font-bold text-green-600">${{ report_data.total_value|floatformat:0|intcomma }}</span>
+                            <span class="text-xl sm:text-2xl font-bold text-green-600">K{{ report_data.total_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base font-medium text-foreground">Average Value</td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="text-xl sm:text-2xl font-bold text-foreground">${{ report_data.avg_value|floatformat:0|intcomma }}</span>
+                            <span class="text-xl sm:text-2xl font-bold text-foreground">K{{ report_data.avg_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                 </tbody>

@@ -61,7 +61,7 @@
                             <span class="text-lg font-semibold text-foreground">{{ data.total_assets|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-green-600">${{ data.total_value|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-green-600">K{{ data.total_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="flex flex-wrap gap-2">
@@ -122,10 +122,10 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-muted-foreground">Total Value</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">${{ total_value|floatformat:0|intcomma }}</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">K{{ total_value|floatformat:0|intcomma }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                    <i data-lucide="coins" class="w-6 h-6 text-green-600"></i>
                 </div>
             </div>
         </div>
@@ -164,7 +164,7 @@
                             <span class="text-lg font-semibold text-foreground">{{ cat_data.count|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-green-600">${{ cat_data.total_value|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-green-600">K{{ cat_data.total_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="flex flex-wrap gap-2">

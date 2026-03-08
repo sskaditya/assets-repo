@@ -1,0 +1,115 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Request Maintenance - {{ asset.asset_tag }} - Assetz{% endblock %}
+{% block page_title %}Request Maintenance{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Request Maintenance</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Create a maintenance request for {{ asset.asset_tag }}</p>
+        </div>
+        <a href="{% url 'assets:asset_detail' asset.pk %}" class="btn btn-outline w-full sm:w-auto justify-center">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Asset</span>
+        </a>
+    </div>
+
+    <!-- Asset Information -->
+    <div class="card">
+        <div class="p-4 sm:p-6 border-b border-border bg-blue-50">
+            <div class="flex items-start gap-3">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-blue-200 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="package" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-700"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="text-base sm:text-lg font-semibold text-blue-900">{{ asset.name }}</h3>
+                    <p class="text-xs sm:text-sm text-blue-700">Tag: {{ asset.asset_tag }} | Type: {{ asset.asset_type.name }}</p>
+                    {% if asset.location %}
+                    <p class="text-xs sm:text-sm text-blue-600 mt-1">
+                        <i data-lucide="map-pin" class="w-3 h-3 inline"></i>
+                        {{ asset.location.name }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Request Form -->
+    <form method="post" class="space-y-4 sm:space-y-6">
+        {% csrf_token %}
+        
+        <div class="card">
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Request Details</h3>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Maintenance Type *</label>
+                        {{ form.maintenance_type }}
+                        {% if form.maintenance_type.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.maintenance_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Request Type *</label>
+                        {{ form.request_type }}
+                        {% if form.request_type.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.request_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Priority *</label>
+                        {{ form.priority }}
+                        {% if form.priority.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.priority.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Issue Description *</label>
+                    {{ form.issue_description }}
+                    {% if form.issue_description.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.issue_description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Impact on Operations</label>
+                    {{ form.impact_description }}
+                    {% if form.impact_description.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.impact_description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Preferred Vendor</label>
+                        {{ form.vendor }}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Estimated Cost</label>
+                        {{ form.estimated_cost }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3">
+            <a href="{% url 'assets:asset_detail' asset.pk %}" class="btn btn-outline w-full sm:w-auto justify-center">
+                <span>Cancel</span>
+            </a>
+            <button type="submit" class="btn btn-primary w-full sm:w-auto justify-center">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Submit Request</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

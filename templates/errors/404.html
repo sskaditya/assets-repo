@@ -1,0 +1,35 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Page Not Found - Assetz{% endblock %}
+{% block page_title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+    <div class="max-w-md w-full text-center space-y-6">
+        <div class="flex justify-center">
+            <div class="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-yellow-100 flex items-center justify-center">
+                <i data-lucide="search-x" class="w-10 h-10 sm:w-12 sm:h-12 text-yellow-600"></i>
+            </div>
+        </div>
+        
+        <div class="space-y-2">
+            <h1 class="text-3xl sm:text-4xl font-bold text-foreground">404</h1>
+            <h2 class="text-xl sm:text-2xl font-semibold text-foreground">Page Not Found</h2>
+            <p class="text-sm sm:text-base text-muted-foreground">
+                The page you're looking for doesn't exist or has been moved.
+            </p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="javascript:history.back()" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Go Back</span>
+            </a>
+            <a href="{% url 'assets:dashboard' %}" class="btn btn-primary">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>Go to Dashboard</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

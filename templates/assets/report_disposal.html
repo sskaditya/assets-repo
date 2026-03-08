@@ -71,7 +71,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-muted-foreground">Total Book Value</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">${{ total_book_value|floatformat:0|intcomma }}</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">K{{ total_book_value|floatformat:0|intcomma }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
                     <i data-lucide="trending-down" class="w-6 h-6 text-blue-600"></i>
@@ -83,10 +83,10 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-muted-foreground">Disposal Value</p>
-                    <p class="text-3xl font-bold text-green-600 mt-1">${{ total_disposal_value|floatformat:0|intcomma }}</p>
+                    <p class="text-3xl font-bold text-green-600 mt-1">K{{ total_disposal_value|floatformat:0|intcomma }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                    <i data-lucide="coins" class="w-6 h-6 text-green-600"></i>
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-muted-foreground">Disposal Cost</p>
-                    <p class="text-3xl font-bold text-orange-600 mt-1">${{ total_disposal_cost|floatformat:0|intcomma }}</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-1">K{{ total_disposal_cost|floatformat:0|intcomma }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
                     <i data-lucide="receipt" class="w-6 h-6 text-orange-600"></i>
@@ -160,21 +160,21 @@
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if disposal.book_value %}
-                            <span class="font-semibold text-foreground">${{ disposal.book_value|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-foreground">K{{ disposal.book_value|floatformat:2|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if disposal.disposal_value %}
-                            <span class="font-semibold text-green-600">${{ disposal.disposal_value|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-green-600">K{{ disposal.disposal_value|floatformat:2|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if disposal.disposal_cost %}
-                            <span class="font-semibold text-orange-600">${{ disposal.disposal_cost|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-orange-600">K{{ disposal.disposal_cost|floatformat:2|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}

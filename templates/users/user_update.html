@@ -4,33 +4,49 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-4xl mx-auto space-y-4 sm:space-y-6">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
-            <p class="text-gray-500 mt-1">Update user account and profile information</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
+            <p class="text-sm sm:text-base text-gray-500 mt-1">Update user account and profile information</p>
         </div>
-        <a href="{% url 'users:user_detail' user_obj.pk %}" class="btn btn-outline">
+        <a href="{% url 'users:user_detail' user_obj.pk %}" class="btn btn-outline w-full sm:w-auto justify-center">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Back to User
+            <span>Back to User</span>
         </a>
     </div>
 
     <!-- Form -->
-    <form method="post" class="space-y-6">
+    <form method="post" class="space-y-4 sm:space-y-6">
         {% csrf_token %}
         
         <!-- Account Information -->
         <div class="card">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Account Information</h3>
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Account Information</h3>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-4 sm:p-6 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                    <input type="text" value="{{ user_obj.username }}" disabled class="form-control">
-                    <p class="text-xs text-gray-500 mt-1">Username cannot be changed</p>
+                    <label for="{{ user_form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Username *
+                    </label>
+                    {{ user_form.username }}
+                    {% if user_form.username.help_text %}
+                    <p class="text-xs text-gray-500 mt-1">{{ user_form.username.help_text }}</p>
+                    {% endif %}
+                    {% if user_form.username.errors %}
+                    <div class="mt-2 p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5"></i>
+                            <div class="text-sm text-red-800">
+                                {% for error in user_form.username.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -76,10 +92,10 @@
 
         <!-- Profile Information -->
         <div class="card">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Profile Information</h3>
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Profile Information</h3>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-4 sm:p-6 space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="{{ profile_form.employee_id.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
@@ -137,10 +153,10 @@
 
         <!-- Permissions -->
         <div class="card">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Permissions & Roles</h3>
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Permissions & Roles</h3>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-4 sm:p-6 space-y-4">
                 <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                     {{ profile_form.is_company_admin }}
                     <label for="{{ profile_form.is_company_admin.id_for_label }}" class="text-sm font-medium text-gray-900">
@@ -168,11 +184,13 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="flex items-center justify-end gap-3">
-            <a href="{% url 'users:user_detail' user_obj.pk %}" class="btn btn-outline">Cancel</a>
-            <button type="submit" class="btn btn-primary">
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3">
+            <a href="{% url 'users:user_detail' user_obj.pk %}" class="btn btn-outline w-full sm:w-auto justify-center">
+                <span>Cancel</span>
+            </a>
+            <button type="submit" class="btn btn-primary w-full sm:w-auto justify-center">
                 <i data-lucide="save" class="w-4 h-4"></i>
-                Update User
+                <span>Update User</span>
             </button>
         </div>
     </form>

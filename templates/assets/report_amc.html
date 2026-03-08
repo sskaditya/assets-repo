@@ -100,7 +100,7 @@
                             <span class="text-sm text-muted-foreground">{{ data.no_amc|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-blue-600">${{ data.total_amc_cost|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-blue-600">K{{ data.total_amc_cost|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-sm font-medium text-foreground">{{ data.total_assets|intcomma }}</span>
@@ -177,7 +177,7 @@
                     <tr class="border-b border-border hover:bg-muted/20 bg-blue-50">
                         <td class="py-2 sm:py-3 px-3 sm:px-4 font-semibold text-foreground">Total AMC Cost</td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="text-2xl font-bold text-blue-600">${{ total_amc_cost|floatformat:0|intcomma }}</span>
+                            <span class="text-2xl font-bold text-blue-600">K{{ total_amc_cost|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                 </tbody>
@@ -231,7 +231,7 @@
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if asset.amc_cost %}
-                            <span class="font-semibold text-foreground">${{ asset.amc_cost|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-foreground">K{{ asset.amc_cost|floatformat:2|intcomma }}</span>
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}

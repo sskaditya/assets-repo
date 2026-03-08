@@ -10,9 +10,11 @@ urlpatterns = [
     # Asset CRUD
     path('assets/', views.asset_list, name='asset_list'),
     path('assets/create/', views.asset_create, name='asset_create'),
+    path('assets/import-excel/', views.asset_import_excel, name='asset_import_excel'),
     path('assets/<int:pk>/', views.asset_detail, name='asset_detail'),
     path('assets/<int:pk>/update/', views.asset_update, name='asset_update'),
     path('assets/<int:pk>/delete/', views.asset_delete, name='asset_delete'),
+    path('assets/<int:pk>/transfer/', views.asset_transfer_create, name='asset_transfer_create'),
     
     # QR Code & Scanning
     path('qr-scanner/', views.qr_scanner, name='qr_scanner'),

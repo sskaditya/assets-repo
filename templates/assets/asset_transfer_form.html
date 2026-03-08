@@ -1,0 +1,121 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Transfer Asset - {{ asset.asset_tag }} - Assetz{% endblock %}
+{% block page_title %}Transfer Asset{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Transfer Asset</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Request transfer for {{ asset.asset_tag }}</p>
+        </div>
+        <a href="{% url 'assets:asset_detail' asset.pk %}" class="btn btn-outline w-full sm:w-auto justify-center">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Asset</span>
+        </a>
+    </div>
+
+    <!-- Asset Information -->
+    <div class="card">
+        <div class="p-4 sm:p-6 border-b border-border bg-blue-50">
+            <div class="flex items-start gap-3">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-blue-200 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="package" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-700"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="text-base sm:text-lg font-semibold text-blue-900">{{ asset.name }}</h3>
+                    <p class="text-xs sm:text-sm text-blue-700">Tag: {{ asset.asset_tag }} | Type: {{ asset.asset_type.name }}</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-xs sm:text-sm text-blue-600">
+                            <strong>Current User:</strong> {{ asset.assigned_to.get_full_name|default:"Unassigned" }}
+                        </p>
+                        <p class="text-xs sm:text-sm text-blue-600">
+                            <strong>Current Location:</strong> {{ asset.location.name|default:"Not assigned" }}
+                        </p>
+                        {% if asset.department %}
+                        <p class="text-xs sm:text-sm text-blue-600">
+                            <strong>Current Department:</strong> {{ asset.department.name }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Request Form -->
+    <form method="post" class="space-y-4 sm:space-y-6">
+        {% csrf_token %}
+        
+        <div class="card">
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Transfer Destination</h3>
+                <p class="text-xs sm:text-sm text-muted-foreground mt-1">Specify at least a recipient user or destination location</p>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Transfer To (User)</label>
+                        {{ form.to_user }}
+                        {% if form.to_user.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.to_user.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-foreground mb-2 block">Transfer To (Location)</label>
+                        {{ form.to_location }}
+                        {% if form.to_location.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ form.to_location.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Department</label>
+                    {{ form.to_department }}
+                    {% if form.to_department.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.to_department.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="text-sm font-medium text-foreground mb-2 block">Transfer Reason *</label>
+                    {{ form.reason }}
+                    {% if form.reason.help_text %}
+                    <p class="text-xs text-muted-foreground mt-1">{{ form.reason.help_text }}</p>
+                    {% endif %}
+                    {% if form.reason.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ form.reason.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                {% if form.non_field_errors %}
+                <div class="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                        <div class="text-sm text-red-800">
+                            {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3">
+            <a href="{% url 'assets:asset_detail' asset.pk %}" class="btn btn-outline w-full sm:w-auto justify-center">
+                <span>Cancel</span>
+            </a>
+            <button type="submit" class="btn btn-primary w-full sm:w-auto justify-center">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Submit Transfer Request</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

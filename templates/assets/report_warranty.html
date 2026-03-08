@@ -100,7 +100,7 @@
                             <span class="text-sm text-muted-foreground">{{ data.no_warranty|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-blue-600">${{ data.total_warranty_value|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-blue-600">K{{ data.total_warranty_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-sm font-medium text-foreground">{{ data.total_assets|intcomma }}</span>

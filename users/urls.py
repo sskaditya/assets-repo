@@ -11,6 +11,10 @@ urlpatterns = [
     path('<int:pk>/update/', views.user_update, name='user_update'),
     path('<int:pk>/delete/', views.user_delete, name='user_delete'),
     
+    # Password Management
+    path('change-password/', views.user_change_password, name='user_change_password'),
+    path('<int:pk>/reset-password/', views.admin_reset_user_password, name='admin_reset_password'),
+    
     # Departments & Locations
     path('departments/', views.department_list, name='department_list'),
     path('departments/create/', views.department_create, name='department_create'),

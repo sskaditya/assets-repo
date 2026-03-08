@@ -37,3 +37,18 @@ def logout_view(request):
     """Custom logout view that accepts GET requests"""
     auth_logout(request)
     return redirect('landing')
+
+
+def error_403(request, exception=None):
+    """Custom 403 error handler - displays within app UI"""
+    return render(request, 'errors/403.html', status=403)
+
+
+def error_404(request, exception=None):
+    """Custom 404 error handler - displays within app UI"""
+    return render(request, 'errors/404.html', status=404)
+
+
+def error_500(request):
+    """Custom 500 error handler - displays within app UI"""
+    return render(request, 'errors/500.html', status=500)

@@ -5,36 +5,65 @@
 
 {% block content %}
 <div class="space-y-4 sm:space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">Asset Management</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">Assets</span>
+    </nav>
+
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div class="min-w-0 flex-1">
             <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Assets</h1>
             <p class="text-sm sm:text-base text-muted-foreground mt-1">Manage all your assets</p>
         </div>
-        <a href="{% url 'assets:asset_create' %}" class="btn btn-primary whitespace-nowrap">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Add New Asset</span>
-        </a>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="{% url 'assets:dashboard' %}" class="btn btn-outline w-full sm:w-auto justify-center">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back</span>
+            </a>
+            <a href="{% url 'assets:asset_import_excel' %}" class="btn btn-secondary w-full sm:w-auto justify-center whitespace-nowrap">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>Import Excel</span>
+            </a>
+            <a href="{% url 'assets:asset_create' %}" class="btn btn-primary w-full sm:w-auto justify-center whitespace-nowrap">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Add New Asset</span>
+            </a>
+        </div>
     </div>
 
     <!-- Filters -->
     <div class="card p-4 sm:p-6">
         <form method="get" action="{% url 'assets:asset_list' %}" class="space-y-3 sm:space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
-                <div class="sm:col-span-2 lg:col-span-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div class="sm:col-span-2 lg:col-span-3">
                     {{ filter_form.search }}
                 </div>
-                <div class="sm:col-span-1">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div>
                     {{ filter_form.category }}
                 </div>
-                <div class="sm:col-span-1">
+                <div>
                     {{ filter_form.asset_type }}
                 </div>
-                <div class="sm:col-span-1 lg:col-span-1">
+                <div>
                     {{ filter_form.status }}
                 </div>
-                <div class="sm:col-span-1 lg:col-span-1">
+                <div>
                     {{ filter_form.location }}
+                </div>
+                <div>
+                    {{ filter_form.department }}
+                </div>
+                <div>
+                    {{ filter_form.assigned_to }}
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-2">

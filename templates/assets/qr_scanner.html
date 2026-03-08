@@ -91,6 +91,10 @@
                         <i data-lucide="wrench" class="w-4 h-4"></i>
                         Request Maintenance
                     </button>
+                    <button onclick="transferAsset()" class="btn btn-outline btn-sm justify-start">
+                        <i data-lucide="move" class="w-4 h-4"></i>
+                        Transfer Asset
+                    </button>
                     <button onclick="viewFullDetails()" class="btn btn-outline btn-sm justify-start">
                         <i data-lucide="external-link" class="w-4 h-4"></i>
                         View Full Details
@@ -165,6 +169,31 @@
     let html5QrCode;
     let currentAsset = null;
     let recentScans = [];
+
+    // Load recent scans from localStorage on page load
+    function loadRecentScans() {
+        try {
+            const saved = localStorage.getItem('recentScans');
+            if (saved) {
+                recentScans = JSON.parse(saved);
+                updateRecentScansTable();
+            }
+        } catch (e) {
+            console.error('Error loading recent scans:', e);
+        }
+    }
+
+    // Save recent scans to localStorage
+    function saveRecentScans() {
+        try {
+            localStorage.setItem('recentScans', JSON.stringify(recentScans));
+        } catch (e) {
+            console.error('Error saving recent scans:', e);
+        }
+    }
+
+    // Load recent scans when page loads
+    loadRecentScans();
 
     // Initialize QR Scanner
     document.getElementById('start-scan').addEventListener('click', function() {
@@ -310,6 +339,7 @@
         }
         
         updateRecentScansTable();
+        saveRecentScans();
     }
 
     function updateRecentScansTable() {
@@ -357,7 +387,15 @@
     }
 
     function requestMaintenance() {
-        alert('Request maintenance feature - to be implemented');
+        if (currentAsset) {
+            window.location.href = `/maintenance/request/${currentAsset.id}/`;
+        }
+    }
+
+    function transferAsset() {
+        if (currentAsset) {
+            window.location.href = `/app/assets/${currentAsset.id}/transfer/`;
+        }
     }
 
     function viewFullDetails() {

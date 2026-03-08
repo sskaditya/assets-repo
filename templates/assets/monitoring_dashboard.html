@@ -37,88 +37,88 @@
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Complete overview of all assets across all companies by status</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[1400px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase sticky left-0 bg-muted/30">Company</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Total Assets</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Planning</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Ordered</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">In Transit</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Received</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Available</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Deployed</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">In Use</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Maintenance</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Retired</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Critical</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Total Value</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase sticky left-0 bg-muted/30 min-w-[150px]">Company</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[100px] whitespace-nowrap">Total Assets</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Planning</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Ordered</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[90px] whitespace-nowrap">In Transit</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Received</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Available</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Deployed</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px] whitespace-nowrap">In Use</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[100px]">Maintenance</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Retired</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Critical</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[120px] whitespace-nowrap">Total Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for company_data in company_summary %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4 sticky left-0 bg-background">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 sticky left-0 bg-background">
                             <div>
-                                <p class="font-medium text-foreground">{{ company_data.company__name }}</p>
+                                <p class="font-medium text-foreground text-sm">{{ company_data.company__name }}</p>
                                 <p class="text-xs text-muted-foreground">{{ company_data.company__code }}</p>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right font-bold text-foreground text-lg">{{ company_data.total_assets }}</td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right font-bold text-foreground text-base sm:text-lg">{{ company_data.total_assets }}</td>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.planning > 0 %}
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{{ company_data.planning }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.ordered > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">{{ company_data.ordered }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 whitespace-nowrap">{{ company_data.ordered }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.in_transit > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">{{ company_data.in_transit }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">{{ company_data.in_transit }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.available > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-teal-100 text-teal-700">{{ company_data.available }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-teal-100 text-teal-700 whitespace-nowrap">{{ company_data.available }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.available > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">{{ company_data.available }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 whitespace-nowrap">{{ company_data.available }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.deployed > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">{{ company_data.deployed }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 whitespace-nowrap">{{ company_data.deployed }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.in_use > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">{{ company_data.in_use }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700 whitespace-nowrap">{{ company_data.in_use }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.under_maintenance > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">{{ company_data.under_maintenance }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700 whitespace-nowrap">{{ company_data.under_maintenance }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.retired > 0 %}
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-600">{{ company_data.retired }}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-600 whitespace-nowrap">{{ company_data.retired }}</span>
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             {% if company_data.critical_assets > 0 %}
-                            <span class="px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">{{ company_data.critical_assets }}</span>
+                            <span class="px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 whitespace-nowrap">{{ company_data.critical_assets }}</span>
                             {% else %}<span class="text-muted-foreground">0</span>{% endif %}
                         </td>
-                        <td class="py-3 px-4 text-right font-semibold text-foreground">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right font-semibold text-foreground whitespace-nowrap">
                             {% if company_data.total_value %}
-                            ${{ company_data.total_value|floatformat:0|intcomma }}
+                            K{{ company_data.total_value|floatformat:0|intcomma }}
                             {% else %}<span class="text-muted-foreground">-</span>{% endif %}
                         </td>
                     </tr>
@@ -137,20 +137,20 @@
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Complete breakdown of your company's assets by status</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <table class="w-full min-w-[500px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Status</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Count</th>
-                        <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Percentage</th>
-                        <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase">Visual</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase">Status</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase">Count</th>
+                        <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase">Percentage</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase">Visual</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for status_data in status_summary %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="flex items-center gap-2">
                                 {% if status_data.status == 'PLANNING' %}
                                 <div class="h-3 w-3 rounded-full bg-gray-500"></div>
@@ -194,13 +194,13 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-2xl font-bold text-foreground">{{ status_data.count }}</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
+                            <span class="text-xl sm:text-2xl font-bold text-foreground">{{ status_data.count }}</span>
                         </td>
-                        <td class="py-3 px-4 text-right">
-                            <span class="text-lg font-semibold text-muted-foreground">{{ status_data.percentage }}%</span>
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
+                            <span class="text-base sm:text-lg font-semibold text-muted-foreground whitespace-nowrap">{{ status_data.percentage }}%</span>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4">
                             <div class="w-full bg-gray-200 rounded-full h-3">
                                 <div class="h-3 rounded-full {% if status_data.status == 'PLANNING' %}bg-gray-500{% elif status_data.status == 'ORDERED' %}bg-blue-500{% elif status_data.status == 'IN_TRANSIT' %}bg-yellow-500{% elif status_data.status == 'AVAILABLE' %}bg-green-500{% elif status_data.status == 'DEPLOYED' %}bg-blue-600{% elif status_data.status == 'IN_USE' %}bg-purple-500{% elif status_data.status == 'UNDER_MAINTENANCE' %}bg-orange-500{% else %}bg-gray-400{% endif %}" style="width: {{ status_data.percentage }}%"></div>
                             </div>
@@ -267,7 +267,7 @@
                         </td>
                         <td class="py-3 px-4 text-right text-sm font-medium">
                             {% if type_data.total_value %}
-                            ${{ type_data.total_value|floatformat:0|intcomma }}
+                            K{{ type_data.total_value|floatformat:0|intcomma }}
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}
@@ -340,7 +340,7 @@
                         <td class="py-3 px-4 text-sm text-muted-foreground">{{ asset.vendor.name|default:"-" }}</td>
                         <td class="py-3 px-4 text-right text-sm font-medium">
                             {% if asset.purchase_price %}
-                            ${{ asset.purchase_price|floatformat:2|intcomma }}
+                            K{{ asset.purchase_price|floatformat:2|intcomma }}
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}
@@ -402,7 +402,7 @@
                         <td class="py-3 px-4 text-sm text-muted-foreground">{{ asset.assigned_to.get_full_name|default:"-" }}</td>
                         <td class="py-3 px-4 text-right text-sm font-medium">
                             {% if asset.purchase_price %}
-                            ${{ asset.purchase_price|floatformat:2|intcomma }}
+                            K{{ asset.purchase_price|floatformat:2|intcomma }}
                             {% else %}
                             <span class="text-muted-foreground">-</span>
                             {% endif %}

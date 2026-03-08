@@ -255,14 +255,14 @@
                         <i data-lucide="upload" class="w-4 h-4"></i>
                         Upload Document
                     </a>
-                    <button class="btn btn-outline w-full justify-start">
+                    <a href="{% url 'maintenance:request_create' asset.pk %}" class="btn btn-outline w-full justify-start">
                         <i data-lucide="wrench" class="w-4 h-4"></i>
                         Request Maintenance
-                    </button>
-                    <button class="btn btn-outline w-full justify-start">
+                    </a>
+                    <a href="{% url 'assets:asset_transfer_create' asset.pk %}" class="btn btn-outline w-full justify-start">
                         <i data-lucide="move" class="w-4 h-4"></i>
                         Transfer Asset
-                    </button>
+                    </a>
                 </div>
             </div>
 

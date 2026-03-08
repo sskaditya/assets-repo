@@ -1,9 +1,34 @@
 from django import forms
-from .models import Asset, AssetCategory, AssetType, Vendor, AssetDocument
+from .models import Asset, AssetCategory, AssetType, Vendor, AssetDocument, AssetTransfer
 from users.models import Department, Location
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Field
 from django.contrib.auth.models import User
+
+
+class AssetExcelImportForm(forms.Form):
+    """Form for importing assets from Excel"""
+    excel_file = forms.FileField(
+        label='Excel File',
+        help_text='Upload an Excel file (.xlsx) with asset data',
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.xlsx,.xls'
+        })
+    )
+    
+    def clean_excel_file(self):
+        file = self.cleaned_data.get('excel_file')
+        if file:
+            # Check file extension
+            if not file.name.endswith(('.xlsx', '.xls')):
+                raise forms.ValidationError('Please upload a valid Excel file (.xlsx or .xls)')
+            
+            # Check file size (max 10MB)
+            if file.size > 10 * 1024 * 1024:
+                raise forms.ValidationError('File size must be less than 10MB')
+        
+        return file
 
 
 class AssetFilterForm(forms.Form):
@@ -40,6 +65,13 @@ class AssetFilterForm(forms.Form):
         required=False,
         empty_label="All Departments",
         widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    assigned_to = forms.ModelChoiceField(
+        queryset=User.objects.filter(is_active=True),
+        required=False,
+        empty_label="All Users",
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Assigned User"
     )
 
 
@@ -214,3 +246,83 @@ class VendorForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.form_class = 'form-horizontal'
+
+
+class AssetTransferForm(forms.ModelForm):
+    """Form for creating asset transfer requests"""
+    
+    class Meta:
+        model = AssetTransfer
+        fields = [
+            'to_user',
+            'to_location',
+            'to_department',
+            'reason',
+        ]
+        widgets = {
+            'to_user': forms.Select(attrs={'class': 'form-select'}),
+            'to_location': forms.Select(attrs={'class': 'form-select'}),
+            'to_department': forms.Select(attrs={'class': 'form-select'}),
+            'reason': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Provide a detailed reason for this transfer...'
+            }),
+        }
+        labels = {
+            'to_user': 'Transfer to User',
+            'to_location': 'Transfer to Location',
+            'to_department': 'Transfer to Department',
+            'reason': 'Reason for Transfer',
+        }
+        help_texts = {
+            'to_user': 'Select the user to transfer this asset to (optional)',
+            'to_location': 'Select the location to transfer this asset to (optional)',
+            'to_department': 'Select the department to transfer this asset to (optional)',
+            'reason': 'Explain why this asset needs to be transferred',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company', None)
+        super().__init__(*args, **kwargs)
+        
+        # Filter users, locations, departments by company
+        if company:
+            from django.contrib.auth.models import User
+            from users.models import Location, Department
+            
+            # Get users from the same company
+            self.fields['to_user'].queryset = User.objects.filter(
+                profile__company=company,
+                is_active=True
+            ).order_by('first_name', 'last_name')
+            
+            self.fields['to_location'].queryset = Location.objects.filter(
+                company=company,
+                is_deleted=False,
+                is_active=True
+            ).order_by('name')
+            
+            self.fields['to_department'].queryset = Department.objects.filter(
+                company=company,
+                is_deleted=False,
+                is_active=True
+            ).order_by('name')
+        
+        # Make fields optional (except reason)
+        self.fields['to_user'].required = False
+        self.fields['to_location'].required = False
+        self.fields['to_department'].required = False
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        to_user = cleaned_data.get('to_user')
+        to_location = cleaned_data.get('to_location')
+        
+        # At least one destination must be specified
+        if not to_user and not to_location:
+            raise forms.ValidationError(
+                'Please specify at least a recipient user or destination location for the transfer.'
+            )
+        
+        return cleaned_data

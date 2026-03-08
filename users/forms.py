@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm as DjangoPasswordChangeForm
 from .models import UserProfile, Department, Location
 from core.models import Company
 from crispy_forms.helper import FormHelper
@@ -114,6 +114,11 @@ class UserCreateForm(UserCreationForm):
 
 class UserUpdateForm(forms.ModelForm):
     """Form for updating user information"""
+    username = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'username'}),
+        help_text='Username for login (can be changed by admins)'
+    )
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
     first_name = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -124,7 +129,14 @@ class UserUpdateForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'is_active']
+        fields = ['username', 'email', 'first_name', 'last_name', 'is_active']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Make username field read-only visually (admins can override)
+        if self.instance and self.instance.pk:
+            self.fields['username'].widget.attrs['data-original'] = self.instance.username
 
 
 class UserProfileUpdateForm(forms.ModelForm):
@@ -172,6 +184,77 @@ class UserProfileUpdateForm(forms.ModelForm):
             self.fields['location'].queryset = Location.objects.filter(
                 is_deleted=False, is_active=True
             )
+
+
+class UserPasswordChangeForm(DjangoPasswordChangeForm):
+    """Custom password change form with better styling"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Update widget attributes for consistent styling
+        self.fields['old_password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter current password',
+            'autocomplete': 'current-password'
+        })
+        self.fields['new_password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password'
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password'
+        })
+        
+        # Update labels
+        self.fields['old_password'].label = 'Current Password'
+        self.fields['new_password1'].label = 'New Password'
+        self.fields['new_password2'].label = 'Confirm New Password'
+        
+        # Add help text
+        self.fields['new_password1'].help_text = 'Password must be at least 8 characters and cannot be entirely numeric.'
+
+
+class AdminPasswordResetForm(forms.Form):
+    """Form for admins to reset user passwords"""
+    new_password1 = forms.CharField(
+        label='New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password'
+        }),
+        help_text='Password must be at least 8 characters and cannot be entirely numeric.'
+    )
+    new_password2 = forms.CharField(
+        label='Confirm New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password'
+        })
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('new_password1')
+        password2 = cleaned_data.get('new_password2')
+        
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError("The two password fields didn't match.")
+            
+            # Validate password strength
+            if len(password1) < 8:
+                raise forms.ValidationError("Password must be at least 8 characters long.")
+            
+            if password1.isdigit():
+                raise forms.ValidationError("Password cannot be entirely numeric.")
+        
+        return cleaned_data
 
 
 class DepartmentForm(forms.ModelForm):

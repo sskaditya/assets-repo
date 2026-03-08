@@ -1,0 +1,214 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Import Assets from Excel - Assetz{% endblock %}
+{% block page_title %}Import Assets{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:asset_list' %}" class="text-muted-foreground hover:text-foreground transition-colors">Assets</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">Import from Excel</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Import Assets from Excel</h1>
+            <p class="text-sm sm:text-base text-muted-foreground mt-1">Bulk import assets from an Excel spreadsheet</p>
+        </div>
+        <a href="{% url 'assets:asset_list' %}" class="btn btn-outline w-full sm:w-auto justify-center">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Assets</span>
+        </a>
+    </div>
+
+    <!-- Download Template Card -->
+    <div class="card">
+        <div class="p-4 sm:p-6 border-b border-border bg-blue-50">
+            <div class="flex items-start gap-3">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-blue-200 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="download" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-700"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="text-base sm:text-lg font-semibold text-blue-900">Step 1: Download Template</h3>
+                    <p class="text-xs sm:text-sm text-blue-700 mt-1">Start by downloading our Excel template with example data and instructions</p>
+                    <a href="?download_template=1" class="btn btn-primary mt-3 w-full sm:w-auto justify-center">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <span>Download Excel Template</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prerequisites Check -->
+    <div class="card">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground">Prerequisites</h3>
+            <p class="text-xs sm:text-sm text-muted-foreground mt-1">Ensure these are configured before importing</p>
+        </div>
+        <div class="p-4 sm:p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="flex items-center gap-3 p-3 sm:p-4 rounded-lg border {% if categories_count > 0 %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
+                    <i data-lucide="{% if categories_count > 0 %}check-circle{% else %}alert-circle{% endif %}" class="w-5 h-5 sm:w-6 sm:h-6 {% if categories_count > 0 %}text-green-600{% else %}text-red-600{% endif %} flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold {% if categories_count > 0 %}text-green-900{% else %}text-red-900{% endif %}">Categories</p>
+                        <p class="text-xs {% if categories_count > 0 %}text-green-700{% else %}text-red-700{% endif %}">{{ categories_count }} available</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 p-3 sm:p-4 rounded-lg border {% if types_count > 0 %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
+                    <i data-lucide="{% if types_count > 0 %}check-circle{% else %}alert-circle{% endif %}" class="w-5 h-5 sm:w-6 sm:h-6 {% if types_count > 0 %}text-green-600{% else %}text-red-600{% endif %} flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold {% if types_count > 0 %}text-green-900{% else %}text-red-900{% endif %}">Asset Types</p>
+                        <p class="text-xs {% if types_count > 0 %}text-green-700{% else %}text-red-700{% endif %}">{{ types_count }} available</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 p-3 sm:p-4 rounded-lg border {% if locations_count > 0 %}border-green-200 bg-green-50{% else %}border-yellow-200 bg-yellow-50{% endif %}">
+                    <i data-lucide="{% if locations_count > 0 %}check-circle{% else %}info{% endif %}" class="w-5 h-5 sm:w-6 sm:h-6 {% if locations_count > 0 %}text-green-600{% else %}text-yellow-600{% endif %} flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold {% if locations_count > 0 %}text-green-900{% else %}text-yellow-900{% endif %}">Locations</p>
+                        <p class="text-xs {% if locations_count > 0 %}text-green-700{% else %}text-yellow-700{% endif %}">{{ locations_count }} available (optional)</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if categories_count == 0 or types_count == 0 %}
+            <div class="mt-4 p-3 sm:p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <div class="flex items-start gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0 mt-0.5"></i>
+                    <div class="text-xs sm:text-sm text-orange-800">
+                        <p class="font-semibold mb-1">Action Required</p>
+                        <p>You need to create at least one Category and Asset Type before importing assets.</p>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            {% if categories_count == 0 %}
+                            <a href="{% url 'assets:category_create' %}" class="text-xs font-medium text-orange-900 underline hover:no-underline">Create Category</a>
+                            {% endif %}
+                            {% if types_count == 0 %}
+                            <a href="{% url 'assets:type_create' %}" class="text-xs font-medium text-orange-900 underline hover:no-underline">Create Asset Type</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-4 sm:space-y-6">
+        {% csrf_token %}
+        
+        <div class="card">
+            <div class="p-4 sm:p-6 border-b border-border">
+                <h3 class="text-base sm:text-lg font-semibold text-foreground">Step 2: Upload Excel File</h3>
+                <p class="text-xs sm:text-sm text-muted-foreground mt-1">Fill the template with your asset data and upload it</p>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4">
+                <div>
+                    <label for="{{ form.excel_file.id_for_label }}" class="text-sm font-medium text-foreground mb-2 block">
+                        Excel File *
+                    </label>
+                    {{ form.excel_file }}
+                    {% if form.excel_file.help_text %}
+                    <p class="text-xs text-muted-foreground mt-1">{{ form.excel_file.help_text }}</p>
+                    {% endif %}
+                    {% if form.excel_file.errors %}
+                    <div class="mt-2 p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5"></i>
+                            <div class="text-sm text-red-800">
+                                {% for error in form.excel_file.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Import Guidelines -->
+                <div class="p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="info" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 flex-shrink-0 mt-0.5"></i>
+                        <div class="text-xs sm:text-sm text-gray-700">
+                            <p class="font-semibold mb-2">Import Guidelines:</p>
+                            <ul class="space-y-1 ml-4 list-disc">
+                                <li>Asset Tag must be unique within your company</li>
+                                <li>Category and Asset Type names must match exactly</li>
+                                <li>Duplicate asset tags will be skipped</li>
+                                <li>Invalid data will be ignored with warnings</li>
+                                <li>Maximum file size: 10MB</li>
+                                <li>Format: .xlsx or .xls</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3">
+            <a href="{% url 'assets:asset_list' %}" class="btn btn-outline w-full sm:w-auto justify-center">
+                <span>Cancel</span>
+            </a>
+            <button type="submit" class="btn btn-primary w-full sm:w-auto justify-center" {% if categories_count == 0 or types_count == 0 %}disabled{% endif %}>
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Import Assets</span>
+            </button>
+        </div>
+    </form>
+
+    <!-- Expected Format Reference -->
+    <div class="card">
+        <div class="p-4 sm:p-6 border-b border-border">
+            <h3 class="text-base sm:text-lg font-semibold text-foreground">Expected Excel Format</h3>
+        </div>
+        <div class="p-4 sm:p-6">
+            <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+                <table class="w-full min-w-[800px] text-xs sm:text-sm border border-gray-200">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="px-3 py-2 text-left font-semibold">Asset Tag</th>
+                            <th class="px-3 py-2 text-left font-semibold">Asset Name</th>
+                            <th class="px-3 py-2 text-left font-semibold">Category</th>
+                            <th class="px-3 py-2 text-left font-semibold">Asset Type</th>
+                            <th class="px-3 py-2 text-left font-semibold">Status</th>
+                            <th class="px-3 py-2 text-left font-semibold">Location</th>
+                            <th class="px-3 py-2 text-left font-semibold">...</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2">AST-001</td>
+                            <td class="px-3 py-2">Dell Laptop</td>
+                            <td class="px-3 py-2">IT Equipment</td>
+                            <td class="px-3 py-2">Laptop</td>
+                            <td class="px-3 py-2">DEPLOYED</td>
+                            <td class="px-3 py-2">Head Office</td>
+                            <td class="px-3 py-2 text-muted-foreground">more columns...</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2">AST-002</td>
+                            <td class="px-3 py-2">Office Chair</td>
+                            <td class="px-3 py-2">Furniture</td>
+                            <td class="px-3 py-2">Chair</td>
+                            <td class="px-3 py-2">IN_USE</td>
+                            <td class="px-3 py-2">Head Office</td>
+                            <td class="px-3 py-2 text-muted-foreground">more columns...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-muted-foreground mt-3">Download the template to see all available columns and detailed instructions.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

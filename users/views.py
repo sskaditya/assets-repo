@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from .models import UserProfile, Department, Location
-from .forms import UserCreateForm, UserUpdateForm, UserProfileUpdateForm
+from .forms import (
+    UserCreateForm, UserUpdateForm, UserProfileUpdateForm,
+    DepartmentForm, LocationForm, UserPasswordChangeForm, AdminPasswordResetForm
+)
 from core.models import Company
 from core.audit_utils import log_create, log_update, log_delete
 
@@ -266,7 +270,7 @@ def user_delete(request, pk):
 
 
 @login_required
-@user_passes_test(is_super_admin)
+@user_passes_test(is_company_admin_check)
 def department_list(request):
     """List all departments"""
     company = getattr(request, 'current_company', None)
@@ -291,7 +295,7 @@ def department_list(request):
 
 
 @login_required
-@user_passes_test(is_super_admin)
+@user_passes_test(is_company_admin_check)
 def location_list(request):
     """List all locations"""
     company = getattr(request, 'current_company', None)
@@ -417,3 +421,92 @@ def location_create(request):
     }
     
     return render(request, 'users/location_form.html', context)
+
+
+@login_required
+def user_change_password(request):
+    """Allow users to change their own password"""
+    if request.method == 'POST':
+        form = UserPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Update the session so the user doesn't get logged out
+            update_session_auth_hash(request, user)
+            
+            # Log the password change
+            log_update(
+                request,
+                user.profile,
+                user.profile,
+                metadata={'action': 'password_changed', 'changed_by_self': True}
+            )
+            
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('assets:dashboard')
+    else:
+        form = UserPasswordChangeForm(request.user)
+    
+    context = {
+        'form': form,
+        'title': 'Change Password',
+    }
+    
+    return render(request, 'users/password_change.html', context)
+
+
+@login_required
+@user_passes_test(is_company_admin_check)
+def admin_reset_user_password(request, pk):
+    """Allow admins to reset a user's password"""
+    user = get_object_or_404(User, pk=pk)
+    company = getattr(request, 'current_company', None)
+    is_super_admin = getattr(request, 'is_super_admin', False)
+    
+    # Check permission
+    if not is_super_admin and company:
+        try:
+            if user.profile.company != company:
+                messages.error(request, 'You do not have permission to reset this user\'s password.')
+                return redirect('users:user_list')
+        except:
+            messages.error(request, 'User profile not found.')
+            return redirect('users:user_list')
+    
+    # Prevent resetting super admin passwords by company admins
+    if user.is_superuser and not is_super_admin:
+        messages.error(request, 'You do not have permission to reset this user\'s password.')
+        return redirect('users:user_list')
+    
+    if request.method == 'POST':
+        form = AdminPasswordResetForm(request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data['new_password1']
+            user.set_password(new_password)
+            user.save()
+            
+            # Log the password reset
+            log_update(
+                request,
+                user.profile,
+                user.profile,
+                metadata={
+                    'action': 'password_reset_by_admin',
+                    'reset_by': request.user.username
+                }
+            )
+            
+            messages.success(
+                request,
+                f'Password for {user.get_full_name()} has been reset successfully!'
+            )
+            return redirect('users:user_detail', pk=user.pk)
+    else:
+        form = AdminPasswordResetForm()
+    
+    context = {
+        'form': form,
+        'user_obj': user,
+        'title': 'Reset User Password',
+    }
+    
+    return render(request, 'users/admin_password_reset.html', context)

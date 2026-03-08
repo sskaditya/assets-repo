@@ -59,13 +59,13 @@
                             <span class="text-lg font-bold text-foreground">{{ data.asset_count|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-blue-600">${{ data.total_original_value|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-blue-600">K{{ data.total_original_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-green-600">${{ data.total_book_value|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-green-600">K{{ data.total_book_value|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-orange-600">${{ data.total_accumulated_depreciation|floatformat:0|intcomma }}</span>
+                            <span class="font-semibold text-orange-600">K{{ data.total_accumulated_depreciation|floatformat:0|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
                             <span class="text-lg font-bold text-red-600">{{ data.depreciation_percentage }}%</span>
@@ -117,19 +117,19 @@
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Total Original Value</td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="text-2xl font-bold text-blue-600">${{ total_original_value|floatformat:0|intcomma }}</span>
+                            <span class="text-2xl font-bold text-blue-600">K{{ total_original_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Total Book Value</td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="text-2xl font-bold text-green-600">${{ total_book_value|floatformat:0|intcomma }}</span>
+                            <span class="text-2xl font-bold text-green-600">K{{ total_book_value|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                     <tr class="border-b border-border hover:bg-muted/20">
                         <td class="py-2 sm:py-3 px-3 sm:px-4 font-medium text-foreground">Total Accumulated Depreciation</td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="text-2xl font-bold text-orange-600">${{ total_accumulated_depreciation|floatformat:0|intcomma }}</span>
+                            <span class="text-2xl font-bold text-orange-600">K{{ total_accumulated_depreciation|floatformat:0|intcomma }}</span>
                         </td>
                     </tr>
                 </tbody>
@@ -174,13 +174,13 @@
                             <span class="text-sm text-muted-foreground">{{ item.asset.category.name|default:"N/A" }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-blue-600">${{ item.original_value|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-blue-600">K{{ item.original_value|floatformat:2|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-green-600">${{ item.book_value|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-green-600">K{{ item.book_value|floatformat:2|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-right">
-                            <span class="font-semibold text-orange-600">${{ item.accumulated_depreciation|floatformat:2|intcomma }}</span>
+                            <span class="font-semibold text-orange-600">K{{ item.accumulated_depreciation|floatformat:2|intcomma }}</span>
                         </td>
                         <td class="py-2 sm:py-3 px-3 sm:px-4 text-center">
                             <span class="text-sm">{{ item.asset.purchase_date|date:"M d, Y"|default:"N/A" }}</span>
