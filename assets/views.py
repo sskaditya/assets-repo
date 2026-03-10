@@ -3,10 +3,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
+from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
-# CSRF disabled - import removed
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import Asset, AssetCategory, AssetType, Vendor, AssetDocument, AssetHistory
 from .forms import (
@@ -235,24 +238,34 @@ def asset_detail_by_qr(request, qr_code):
 @login_required
 def asset_create(request):
     """Create new asset"""
+    company = getattr(request, 'current_company', None)
+    
+    if not company:
+        messages.error(request, 'Please select a specific company from the Company View selector before creating an asset.')
+        return redirect('assets:asset_list')
+    
     if request.method == 'POST':
         form = AssetForm(request.POST, request.FILES)
         if form.is_valid():
-            asset = form.save(commit=False)
-            # Set company from current user context
-            asset.company = getattr(request, 'current_company', None)
-            asset.save()
-            
-            # Create history entry
-            AssetHistory.objects.create(
-                asset=asset,
-                action_type='CREATED',
-                performed_by=request.user,
-                remarks=f'Asset {asset.asset_tag} created'
-            )
-            
-            messages.success(request, f'Asset {asset.asset_tag} created successfully!')
-            return redirect('assets:asset_detail', pk=asset.pk)
+            try:
+                asset = form.save(commit=False)
+                asset.company = company
+                asset.save()
+                
+                AssetHistory.objects.create(
+                    asset=asset,
+                    action_type='CREATED',
+                    performed_by=request.user,
+                    remarks=f'Asset {asset.asset_tag} created'
+                )
+                
+                messages.success(request, f'Asset {asset.asset_tag} created successfully!')
+                return redirect('assets:asset_detail', pk=asset.pk)
+            except IntegrityError:
+                form.add_error(None, 'An asset with this tag or serial number already exists in this company.')
+            except Exception as e:
+                logger.error(f"Error creating asset: {e}")
+                form.add_error(None, 'An unexpected error occurred while saving the asset. Please try again.')
     else:
         form = AssetForm()
     
@@ -345,48 +358,50 @@ def asset_update(request, pk):
     if request.method == 'POST':
         form = AssetForm(request.POST, request.FILES, instance=asset)
         if form.is_valid():
-            # Store old values for history
-            old_status = asset.status
-            old_location = asset.location
-            old_assigned_to = asset.assigned_to
-            
-            asset = form.save()
-            
-            # Create history entry for status change
-            if old_status != asset.status:
-                AssetHistory.objects.create(
-                    asset=asset,
-                    action_type='STATUS_CHANGED',
-                    performed_by=request.user,
-                    old_value=old_status,
-                    new_value=asset.status,
-                    remarks=f'Status changed from {old_status} to {asset.status}'
-                )
-            
-            # Create history entry for location change
-            if old_location != asset.location:
-                AssetHistory.objects.create(
-                    asset=asset,
-                    action_type='LOCATION_CHANGED',
-                    performed_by=request.user,
-                    from_location=old_location,
-                    to_location=asset.location,
-                    remarks=f'Location changed'
-                )
-            
-            # Create history entry for assignment change
-            if old_assigned_to != asset.assigned_to:
-                AssetHistory.objects.create(
-                    asset=asset,
-                    action_type='ASSIGNED',
-                    performed_by=request.user,
-                    from_user=old_assigned_to,
-                    to_user=asset.assigned_to,
-                    remarks=f'Asset assigned to {asset.assigned_to.get_full_name() if asset.assigned_to else "Unassigned"}'
-                )
-            
-            messages.success(request, f'Asset {asset.asset_tag} updated successfully!')
-            return redirect('assets:asset_detail', pk=asset.pk)
+            try:
+                old_status = asset.status
+                old_location = asset.location
+                old_assigned_to = asset.assigned_to
+                
+                asset = form.save()
+                
+                if old_status != asset.status:
+                    AssetHistory.objects.create(
+                        asset=asset,
+                        action_type='STATUS_CHANGED',
+                        performed_by=request.user,
+                        old_value=old_status,
+                        new_value=asset.status,
+                        remarks=f'Status changed from {old_status} to {asset.status}'
+                    )
+                
+                if old_location != asset.location:
+                    AssetHistory.objects.create(
+                        asset=asset,
+                        action_type='LOCATION_CHANGED',
+                        performed_by=request.user,
+                        from_location=old_location,
+                        to_location=asset.location,
+                        remarks=f'Location changed'
+                    )
+                
+                if old_assigned_to != asset.assigned_to:
+                    AssetHistory.objects.create(
+                        asset=asset,
+                        action_type='ASSIGNED',
+                        performed_by=request.user,
+                        from_user=old_assigned_to,
+                        to_user=asset.assigned_to,
+                        remarks=f'Asset assigned to {asset.assigned_to.get_full_name() if asset.assigned_to else "Unassigned"}'
+                    )
+                
+                messages.success(request, f'Asset {asset.asset_tag} updated successfully!')
+                return redirect('assets:asset_detail', pk=asset.pk)
+            except IntegrityError:
+                form.add_error(None, 'An asset with this tag or serial number already exists in this company.')
+            except Exception as e:
+                logger.error(f"Error updating asset {asset.pk}: {e}")
+                form.add_error(None, 'An unexpected error occurred while saving the asset. Please try again.')
     else:
         form = AssetForm(instance=asset)
     
@@ -622,18 +637,24 @@ def category_create(request):
     """Create new asset category"""
     company = getattr(request, 'current_company', None)
     
+    if not company:
+        messages.error(request, 'Please select a specific company from the Company View selector before creating a category.')
+        return redirect('assets:category_list')
+    
     if request.method == 'POST':
         form = AssetCategoryForm(request.POST, company=company)
         if form.is_valid():
-            category = form.save(commit=False)
-            # Set company from current user context
-            category.company = company
-            if not category.company and request.user.is_superuser:
-                messages.error(request, 'Super admin must have a company context to create categories.')
+            try:
+                category = form.save(commit=False)
+                category.company = company
+                category.save()
+                messages.success(request, f'Category "{category.name}" created successfully!')
                 return redirect('assets:category_list')
-            category.save()
-            messages.success(request, f'Category "{category.name}" created successfully!')
-            return redirect('assets:category_list')
+            except IntegrityError:
+                form.add_error(None, 'A category with this code or name already exists for this company.')
+            except Exception as e:
+                logger.error(f"Error creating category: {e}")
+                form.add_error(None, 'An unexpected error occurred. Please try again.')
     else:
         form = AssetCategoryForm(company=company)
     
@@ -691,18 +712,24 @@ def type_create(request):
     """Create new asset type"""
     company = getattr(request, 'current_company', None)
     
+    if not company:
+        messages.error(request, 'Please select a specific company from the Company View selector before creating an asset type.')
+        return redirect('assets:type_list')
+    
     if request.method == 'POST':
         form = AssetTypeForm(request.POST, company=company)
         if form.is_valid():
-            asset_type = form.save(commit=False)
-            # Set company from current user context
-            asset_type.company = company
-            if not asset_type.company and request.user.is_superuser:
-                messages.error(request, 'Super admin must have a company context to create asset types.')
+            try:
+                asset_type = form.save(commit=False)
+                asset_type.company = company
+                asset_type.save()
+                messages.success(request, f'Asset type "{asset_type.name}" created successfully!')
                 return redirect('assets:type_list')
-            asset_type.save()
-            messages.success(request, f'Asset type "{asset_type.name}" created successfully!')
-            return redirect('assets:type_list')
+            except IntegrityError:
+                form.add_error(None, 'An asset type with this code or name already exists for this company.')
+            except Exception as e:
+                logger.error(f"Error creating asset type: {e}")
+                form.add_error(None, 'An unexpected error occurred. Please try again.')
     else:
         form = AssetTypeForm(company=company)
     
@@ -758,18 +785,26 @@ def type_delete(request, pk):
 @login_required
 def vendor_create(request):
     """Create new vendor"""
+    company = getattr(request, 'current_company', None)
+    
+    if not company:
+        messages.error(request, 'Please select a specific company from the Company View selector before creating a vendor.')
+        return redirect('assets:vendor_list')
+    
     if request.method == 'POST':
         form = VendorForm(request.POST)
         if form.is_valid():
-            vendor = form.save(commit=False)
-            # Set company from current user context
-            vendor.company = getattr(request, 'current_company', None)
-            if not vendor.company and request.user.is_superuser:
-                messages.error(request, 'Super admin must have a company context to create vendors.')
+            try:
+                vendor = form.save(commit=False)
+                vendor.company = company
+                vendor.save()
+                messages.success(request, f'Vendor "{vendor.name}" created successfully!')
                 return redirect('assets:vendor_list')
-            vendor.save()
-            messages.success(request, f'Vendor "{vendor.name}" created successfully!')
-            return redirect('assets:vendor_list')
+            except IntegrityError:
+                form.add_error(None, 'A vendor with this code or name already exists for this company.')
+            except Exception as e:
+                logger.error(f"Error creating vendor: {e}")
+                form.add_error(None, 'An unexpected error occurred. Please try again.')
     else:
         form = VendorForm()
     
@@ -893,6 +928,48 @@ def locations_api(request):
     """API endpoint to get all locations"""
     locations = Location.objects.filter(is_deleted=False, is_active=True).values('id', 'name', 'code')
     return JsonResponse({'locations': list(locations)})
+
+
+@login_required
+def update_asset_condition(request):
+    """Update asset condition via API"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST method required'})
+    
+    try:
+        data = json.loads(request.body)
+        asset_id = data.get('asset_id')
+        condition = data.get('condition')
+        remarks = data.get('remarks', '')
+        
+        if not asset_id or not condition:
+            return JsonResponse({'success': False, 'message': 'Asset ID and condition are required'})
+        
+        valid_conditions = [c[0] for c in Asset.CONDITION_CHOICES]
+        if condition not in valid_conditions:
+            return JsonResponse({'success': False, 'message': 'Invalid condition value'})
+        
+        asset = get_object_or_404(Asset, pk=asset_id, is_deleted=False)
+        old_condition = asset.condition
+        asset.condition = condition
+        asset.save()
+        
+        AssetHistory.objects.create(
+            asset=asset,
+            action_type='UPDATED',
+            performed_by=request.user,
+            old_value=old_condition,
+            new_value=condition,
+            remarks=remarks or f'Condition updated to {asset.get_condition_display()} by {request.user.get_full_name()}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Condition updated successfully',
+            'condition': asset.get_condition_display()
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
 
 
 @login_required

@@ -71,4 +71,5 @@ urlpatterns = [
     path('api/asset-lookup/', views.asset_lookup_api, name='asset_lookup_api'),
     path('api/locations/', views.locations_api, name='locations_api'),
     path('api/record-movement/', views.record_asset_movement, name='record_movement_api'),
+    path('api/update-condition/', views.update_asset_condition, name='update_condition_api'),
 ]

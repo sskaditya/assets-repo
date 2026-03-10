@@ -5,6 +5,17 @@
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:asset_list' %}" class="text-muted-foreground hover:text-foreground transition-colors">Assets</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">{{ asset.asset_tag }}</span>
+    </nav>
+
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -25,7 +36,11 @@
             </div>
             <p class="text-muted-foreground mt-1">{{ asset.name }}</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'assets:asset_list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Assets
+            </a>
             {% if asset.qr_code_image %}
             <a href="{% url 'assets:asset_qr_code' asset.pk %}" class="btn btn-outline" target="_blank">
                 <i data-lucide="qr-code" class="w-4 h-4"></i>
@@ -146,7 +161,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-muted-foreground">Purchase Price</p>
-                            <p class="text-sm font-medium text-foreground">{% if asset.purchase_price %}₹{{ asset.purchase_price }}{% else %}N/A{% endif %}</p>
+                            <p class="text-sm font-medium text-foreground">{% if asset.purchase_price %}K{{ asset.purchase_price }}{% else %}N/A{% endif %}</p>
                         </div>
                         <div>
                             <p class="text-sm text-muted-foreground">PO Number</p>
@@ -192,7 +207,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-muted-foreground">AMC Cost</p>
-                                <p class="text-sm font-medium text-foreground">{% if asset.amc_cost %}₹{{ asset.amc_cost }}{% else %}N/A{% endif %}</p>
+                                <p class="text-sm font-medium text-foreground">{% if asset.amc_cost %}K{{ asset.amc_cost }}{% else %}N/A{% endif %}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-muted-foreground">Start Date</p>

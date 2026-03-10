@@ -4,7 +4,20 @@
 {% block page_title %}Delete Company{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
+<div class="max-w-    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-muted-foreground">Administration</span>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-muted-foreground">Companies</span>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">Delete</span>
+    </nav>
+
+2xl mx-auto">
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <!-- Warning Header -->
         <div class="bg-red-50 border-b border-red-200 p-6">

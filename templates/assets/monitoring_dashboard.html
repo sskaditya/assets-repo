@@ -6,6 +6,17 @@
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-muted-foreground">Operations</span>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">Asset Monitoring</span>
+    </nav>
+
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -37,11 +48,11 @@
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Complete overview of all assets across all companies by status</p>
         </div>
-        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+        <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
             <table class="w-full min-w-[1400px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">
-                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase sticky left-0 bg-muted/30 min-w-[150px]">Company</th>
+                        <th class="text-left py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase sticky left-0 z-10 bg-gray-50 min-w-[150px] border-r border-gray-200">Company</th>
                         <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[100px] whitespace-nowrap">Total Assets</th>
                         <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Planning</th>
                         <th class="text-right py-2 sm:py-3 px-3 sm:px-4 text-xs font-medium text-muted-foreground uppercase min-w-[80px]">Ordered</th>
@@ -59,7 +70,7 @@
                 <tbody>
                     {% for company_data in company_summary %}
                     <tr class="border-b border-border hover:bg-muted/20">
-                        <td class="py-2 sm:py-3 px-3 sm:px-4 sticky left-0 bg-background">
+                        <td class="py-2 sm:py-3 px-3 sm:px-4 sticky left-0 z-10 bg-white border-r border-gray-200">
                             <div>
                                 <p class="font-medium text-foreground text-sm">{{ company_data.company__name }}</p>
                                 <p class="text-xs text-muted-foreground">{{ company_data.company__code }}</p>
@@ -137,7 +148,7 @@
             </h3>
             <p class="text-sm text-muted-foreground mt-1">Complete breakdown of your company's assets by status</p>
         </div>
-        <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+        <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
             <table class="w-full min-w-[500px]">
                 <thead>
                     <tr class="border-b border-border bg-muted/30">

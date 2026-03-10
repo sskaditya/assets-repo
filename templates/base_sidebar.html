@@ -151,10 +151,13 @@
             display: grid;
             grid-template-rows: 0fr;
             transition: grid-template-rows 0.2s ease;
+            pointer-events: none;
+            overflow: hidden;
         }
         
         .nav-section-content[data-state="open"] {
             grid-template-rows: 1fr;
+            pointer-events: auto;
         }
         
         .nav-section-content > div {
@@ -524,7 +527,7 @@
                                 <a href="{% url 'assets:monitoring_dashboard' %}" class="sidebar-link {% if 'monitoring' in request.path %}active{% endif %}">
                                     <span>Monitoring</span>
                                 </a>
-                                <a href="{% url 'assets:audit_trail' %}" class="sidebar-link {% if 'audit' in request.path %}active{% endif %}">
+                                <a href="{% url 'assets:audit_trail' %}" class="sidebar-link {% if 'app/audit' in request.path and 'company-report' not in request.path %}active{% endif %}">
                                     <span>Audit Trail</span>
                                 </a>
                             </div>

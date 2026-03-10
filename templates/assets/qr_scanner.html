@@ -18,6 +18,17 @@
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-muted-foreground">Operations</span>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">QR Scanner</span>
+    </nav>
+
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -157,6 +168,44 @@
             <div class="flex gap-2">
                 <button type="button" onclick="closeMovementModal()" class="btn btn-outline flex-1">Cancel</button>
                 <button type="submit" class="btn btn-primary flex-1">Save Movement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Condition Modal -->
+<div id="condition-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Update Asset Condition</h3>
+            <button type="button" onclick="closeConditionModal()" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+            </button>
+        </div>
+        <div id="condition-asset-info" class="p-3 bg-gray-50 rounded-lg mb-4 text-sm text-gray-600"></div>
+        <form id="condition-form" class="space-y-4">
+            <div>
+                <label class="text-sm font-medium mb-2 block">Condition <span class="text-red-500">*</span></label>
+                <select id="condition-select" class="form-select w-full" required>
+                    <option value="">Select condition...</option>
+                    <option value="EXCELLENT">Excellent</option>
+                    <option value="GOOD">Good</option>
+                    <option value="FAIR">Fair</option>
+                    <option value="POOR">Poor</option>
+                    <option value="NOT_WORKING">Not Working</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-sm font-medium mb-2 block">Remarks</label>
+                <textarea id="condition-remarks" class="form-control" rows="3" placeholder="Optional notes about the condition..."></textarea>
+            </div>
+            <div id="condition-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
+            <div class="flex gap-2">
+                <button type="button" onclick="closeConditionModal()" class="btn btn-outline flex-1">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-1">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Update Condition
+                </button>
             </div>
         </form>
     </div>
@@ -315,7 +364,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-muted-foreground">Condition</p>
-                    <p class="text-sm font-medium">${asset.condition || 'N/A'}</p>
+                    <p class="text-sm font-medium condition-display">${asset.condition || 'N/A'}</p>
                 </div>
             </div>
         `;
@@ -383,7 +432,107 @@
     }
 
     function updateCondition() {
-        alert('Update condition feature - to be implemented');
+        if (!currentAsset) return;
+        
+        const infoEl = document.getElementById('condition-asset-info');
+        infoEl.textContent = `Asset: ${currentAsset.asset_tag} — ${currentAsset.name}`;
+        
+        // Pre-select current condition
+        const conditionMap = {
+            'Excellent': 'EXCELLENT',
+            'Good': 'GOOD',
+            'Fair': 'FAIR',
+            'Poor': 'POOR',
+            'Not Working': 'NOT_WORKING'
+        };
+        const select = document.getElementById('condition-select');
+        select.value = conditionMap[currentAsset.condition] || '';
+        
+        document.getElementById('condition-remarks').value = '';
+        document.getElementById('condition-error').classList.add('hidden');
+        document.getElementById('condition-modal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeConditionModal() {
+        document.getElementById('condition-modal').classList.add('hidden');
+    }
+
+    document.getElementById('condition-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const condition = document.getElementById('condition-select').value;
+        const remarks = document.getElementById('condition-remarks').value;
+        const errorEl = document.getElementById('condition-error');
+        
+        if (!condition) {
+            errorEl.textContent = 'Please select a condition.';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        
+        errorEl.classList.add('hidden');
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Saving...</span>';
+        
+        fetch('/app/api/update-condition/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                asset_id: currentAsset.id,
+                condition: condition,
+                remarks: remarks
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentAsset.condition = data.condition;
+                closeConditionModal();
+                // Update displayed condition in asset details
+                const conditionEl = document.querySelector('#asset-details .condition-display');
+                if (conditionEl) conditionEl.textContent = data.condition;
+                // Show a brief success message
+                const actionsDiv = document.getElementById('quick-actions');
+                const toast = document.createElement('div');
+                toast.className = 'mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-700';
+                toast.textContent = 'Condition updated successfully!';
+                actionsDiv.insertAdjacentElement('beforebegin', toast);
+                setTimeout(() => toast.remove(), 3000);
+            } else {
+                errorEl.textContent = data.message || 'Failed to update condition.';
+                errorEl.classList.remove('hidden');
+            }
+        })
+        .catch(err => {
+            errorEl.textContent = 'Network error. Please try again.';
+            errorEl.classList.remove('hidden');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Condition';
+            lucide.createIcons();
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
     function requestMaintenance() {

@@ -6,6 +6,17 @@
 
 {% block content %}
 <div class="space-y-4 sm:space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:reports_dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">Reports &amp; Analytics</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">AMC</span>
+    </nav>
+
     <!-- Company Context Banner -->
     {% if showing_all_companies %}
     <div class="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">

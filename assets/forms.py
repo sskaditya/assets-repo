@@ -284,6 +284,7 @@ class AssetTransferForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         company = kwargs.pop('company', None)
+        kwargs.pop('asset', None)
         super().__init__(*args, **kwargs)
         
         # Filter users, locations, departments by company

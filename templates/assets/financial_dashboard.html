@@ -5,6 +5,17 @@
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:reports_dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">Reports & Analytics</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">Financial</span>
+    </nav>
+
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -37,7 +48,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm text-muted-foreground">Total Purchase Value</p>
-                    <p class="text-3xl font-bold text-foreground mt-1">₹{{ total_purchase_value|floatformat:2 }}</p>
+                    <p class="text-3xl font-bold text-foreground mt-1">K{{ total_purchase_value|floatformat:2 }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
                     <i data-lucide="coins" class="w-6 h-6 text-blue-600"></i>
@@ -50,7 +61,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm text-muted-foreground">Current Book Value</p>
-                    <p class="text-3xl font-bold text-green-600 mt-1">₹{{ total_current_value|floatformat:2 }}</p>
+                    <p class="text-3xl font-bold text-green-600 mt-1">K{{ total_current_value|floatformat:2 }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
                     <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
@@ -66,7 +77,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm text-muted-foreground">Total Depreciation</p>
-                    <p class="text-3xl font-bold text-orange-600 mt-1">₹{{ total_depreciation|floatformat:2 }}</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-1">K{{ total_depreciation|floatformat:2 }}</p>
                 </div>
                 <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
                     <i data-lucide="trending-down" class="w-6 h-6 text-orange-600"></i>
@@ -127,8 +138,8 @@
                         <td class="py-3 px-4">{{ item.asset.company.name|default:"-" }}</td>
                         {% endif %}
                         <td class="py-3 px-4">{{ item.asset.category.name|default:"-" }}</td>
-                        <td class="py-3 px-4 text-right">₹{{ item.asset.purchase_price|floatformat:2 }}</td>
-                        <td class="py-3 px-4 text-right">₹{{ item.depreciation_amount|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right">K{{ item.asset.purchase_price|floatformat:2 }}</td>
+                        <td class="py-3 px-4 text-right">K{{ item.depreciation_amount|floatformat:2 }}</td>
                         <td class="py-3 px-4 text-right">
                             <span class="px-2 py-1 text-xs rounded-full 
                                 {% if item.depreciation_pct >= 80 %}bg-red-100 text-red-600

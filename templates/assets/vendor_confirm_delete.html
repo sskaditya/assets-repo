@@ -5,6 +5,17 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:vendor_list' %}" class="text-muted-foreground hover:text-foreground transition-colors">Vendors</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">Delete</span>
+    </nav>
+
     <!-- Page Header -->
     <div>
         <h1 class="text-3xl font-bold text-foreground">Delete Vendor</h1>

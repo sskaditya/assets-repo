@@ -6,6 +6,17 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{% url 'assets:dashboard' %}" class="text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="home" class="w-4 h-4"></i>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <a href="{% url 'assets:category_list' %}" class="text-muted-foreground hover:text-foreground transition-colors">Categories</a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="text-foreground font-medium">{% if category %}Edit{% else %}Create{% endif %}</span>
+    </nav>
+
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -20,6 +31,19 @@
 
     <form method="post" class="space-y-6">
         {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    {% for error in form.non_field_errors %}
+                    <p class="text-sm text-red-800">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
         
         <!-- Basic Information -->
         <div class="card">
