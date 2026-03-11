@@ -148,20 +148,15 @@
         }
         
         .nav-section-content {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.2s ease;
-            pointer-events: none;
+            max-height: 0;
             overflow: hidden;
+            transition: max-height 0.25s ease;
+            pointer-events: none;
         }
         
         .nav-section-content[data-state="open"] {
-            grid-template-rows: 1fr;
+            max-height: 400px;
             pointer-events: auto;
-        }
-        
-        .nav-section-content > div {
-            overflow: hidden;
         }
         
         .nav-section-content .sidebar-link {
@@ -552,7 +547,7 @@
                                     <span>Financial</span>
                                 </a>
                                 {% if request.is_super_admin or request.is_company_admin %}
-                                <a href="{% url 'core:audit_log_list' %}" class="sidebar-link {% if 'core/audit' in request.path %}active{% endif %}">
+                                <a href="{% url 'core:audit_log_list' %}" class="sidebar-link {% if 'core/audit' in request.path and 'activity' not in request.path %}active{% endif %}">
                                     <span>Audit Logs</span>
                                 </a>
                                 <a href="{% url 'core:user_activity_report' %}" class="sidebar-link {% if 'activity' in request.path %}active{% endif %}">
