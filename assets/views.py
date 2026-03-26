@@ -169,6 +169,7 @@ def dashboard(request):
         total_current_value = sum(calculate_current_book_value(a) for a in depreciable_assets)
         total_depreciation_value = total_purchase_value - total_current_value
         depreciation_pct_overall = round(float(total_depreciation_value / total_purchase_value) * 100, 1) if total_purchase_value else 0
+        retained_pct_overall = round(100 - depreciation_pct_overall, 1)
 
         # Top depreciating assets (highest % depreciated)
         top_depreciating = []
@@ -200,6 +201,7 @@ def dashboard(request):
             'total_current_value': total_current_value,
             'total_depreciation_value': total_depreciation_value,
             'depreciation_pct_overall': depreciation_pct_overall,
+            'retained_pct_overall': retained_pct_overall,
             'top_depreciating': top_depreciating[:5],
         })
     

@@ -315,7 +315,7 @@
                     <span class="font-semibold text-orange-600">{{ depreciation_pct_overall }}% depreciated</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div class="h-3 rounded-full bg-gradient-to-r from-green-400 to-green-500" style="width: {{ 100|add:-depreciation_pct_overall }}%"></div>
+                    <div class="h-3 rounded-full bg-gradient-to-r from-green-400 to-green-500" style="width: {{ retained_pct_overall }}%"></div>
                 </div>
                 <div class="flex justify-between text-xs mt-1 text-gray-400">
                     <span>K{{ total_current_value|floatformat:0 }} retained</span>

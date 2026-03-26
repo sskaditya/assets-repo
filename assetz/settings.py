@@ -48,7 +48,8 @@ DEBUG = ast.literal_eval(DEBUG_GET)
 SECRET_KEY = SECRET_KEY_ENV
 
 
-ALLOWED_HOSTS = ["*"]
+_allowed_hosts = os.environ.get("ALLOWED_HOSTS", "assetz.toystack.dev,assetz-prod.toystack.dev")
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()]
 
 # Both prod hostnames; extend via env for staging (comma-separated full URLs, e.g. https://host)
 _csrf_origins = os.environ.get(
