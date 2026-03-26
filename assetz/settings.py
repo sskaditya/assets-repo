@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
-import ast
 
 from dotenv import load_dotenv
 
@@ -39,28 +38,50 @@ DB_SCHEMA = os.environ.get("DB_SCHEMA")
 ######### CORS #########
 SECRET_KEY_ENV = os.environ.get("SECRET_KEY_ENV")
 
+def _strip_wrapping_quotes(value: str) -> str:
+    """Handle env providers that inject quoted string values."""
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1].strip()
+    return value
+
+
+def _parse_bool_env(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    value = _strip_wrapping_quotes(raw).lower()
+    return value in {"1", "true", "t", "yes", "y", "on"}
+
+
+def _parse_csv_env(name: str, default: str) -> list[str]:
+    raw = os.environ.get(name, default)
+    value = _strip_wrapping_quotes(raw)
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 ######### Debug #########
-DEBUG_GET = os.environ.get("DEBUG")
-DEBUG = ast.literal_eval(DEBUG_GET)
+DEBUG = _parse_bool_env("DEBUG", default=False)
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = SECRET_KEY_ENV
 
 
-_allowed_hosts = os.environ.get("ALLOWED_HOSTS", "assetz.toystack.dev,assetz-prod.toystack.dev")
-ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()]
+ALLOWED_HOSTS = _parse_csv_env(
+    "ALLOWED_HOSTS",
+    "assetz.toystack.dev,assetz-prod.toystack.dev",
+)
 
 # Both prod hostnames; extend via env for staging (comma-separated full URLs, e.g. https://host)
-_csrf_origins = os.environ.get(
+CSRF_TRUSTED_ORIGINS = _parse_csv_env(
     "CSRF_TRUSTED_ORIGINS",
     "https://assetz.toystack.dev,https://assetz-prod.toystack.dev,http://assetz.toystack.dev",
 )
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
 
 # Site configuration for QR codes
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'localhost:8000')
-USE_HTTPS = os.environ.get('USE_HTTPS', 'False') == 'True'
+USE_HTTPS = _parse_bool_env("USE_HTTPS", default=False)
 
 # Application definition
 
