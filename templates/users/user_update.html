@@ -193,6 +193,22 @@
                         <span class="block text-xs text-gray-500 mt-1">Can be assigned as asset custodian</span>
                     </label>
                 </div>
+
+                <div class="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                    {{ profile_form.is_finance_officer }}
+                    <label for="{{ profile_form.is_finance_officer.id_for_label }}" class="text-sm font-medium text-gray-900">
+                        Finance Officer
+                        <span class="block text-xs text-gray-500 mt-1">Can view assets and financial reports (financial dashboard, depreciation)</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-3 p-4 bg-teal-50 rounded-lg border border-teal-100">
+                    {{ profile_form.is_purchase_officer }}
+                    <label for="{{ profile_form.is_purchase_officer.id_for_label }}" class="text-sm font-medium text-gray-900">
+                        Purchase Officer
+                        <span class="block text-xs text-gray-500 mt-1">Can view assets, manage vendors and access procurement reports</span>
+                    </label>
+                </div>
             </div>
         </div>
 

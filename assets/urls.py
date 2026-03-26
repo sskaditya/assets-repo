@@ -34,6 +34,7 @@ urlpatterns = [
     # Categories, Types, Vendors
     path('categories/', views.asset_categories, name='category_list'),
     path('categories/create/', views.category_create, name='category_create'),
+    path('categories/<int:pk>/', views.category_detail, name='category_detail'),
     path('categories/<int:pk>/update/', views.category_update, name='category_update'),
     path('categories/<int:pk>/delete/', views.category_delete, name='category_delete'),
     path('types/', views.asset_types, name='type_list'),

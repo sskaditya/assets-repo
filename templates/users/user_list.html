@@ -145,6 +145,12 @@
                                 {% if user.profile.is_asset_custodian %}
                                 <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-600 font-medium">Custodian</span>
                                 {% endif %}
+                                {% if user.profile.is_finance_officer %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-medium">Finance</span>
+                                {% endif %}
+                                {% if user.profile.is_purchase_officer %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-700 font-medium">Purchase</span>
+                                {% endif %}
                             </div>
                         </td>
                         <td class="py-4 px-6">

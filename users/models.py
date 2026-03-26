@@ -34,9 +34,9 @@ class Location(BaseModel):
     address_line1 = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    country = models.CharField(max_length=100, default='India')
-    postal_code = models.CharField(max_length=20)
+    province = models.CharField(max_length=100)
+    country = models.CharField(max_length=100, default='Papua New Guinea')
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
     location_type = models.CharField(max_length=50, choices=[
         ('OFFICE', 'Office'),
         ('WAREHOUSE', 'Warehouse'),
@@ -74,6 +74,8 @@ class UserProfile(BaseModel):
     is_asset_custodian = models.BooleanField(default=False, help_text="Can this user be assigned as asset custodian?")
     is_asset_approver = models.BooleanField(default=False, help_text="Can this user approve asset requests?")
     is_company_admin = models.BooleanField(default=False, help_text="Is this user a company admin?")
+    is_finance_officer = models.BooleanField(default=False, help_text="Can view assets and financial reports")
+    is_purchase_officer = models.BooleanField(default=False, help_text="Can view assets, vendors and procurement reports")
 
     class Meta:
         db_table = 'user_profiles'

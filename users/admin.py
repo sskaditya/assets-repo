@@ -14,16 +14,16 @@ class DepartmentAdmin:
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'city', 'state', 'location_type', 'is_active', 'created_at')
-    list_filter = ('location_type', 'is_active', 'state', 'created_at')
+    list_display = ('code', 'name', 'city', 'province', 'location_type', 'is_active', 'created_at')
+    list_filter = ('location_type', 'is_active', 'province', 'created_at')
     search_fields = ('name', 'code', 'city', 'address_line1')
     list_per_page = 25
 
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('employee_id', 'user', 'department', 'location', 'designation', 'is_asset_custodian', 'is_asset_approver')
-    list_filter = ('is_asset_custodian', 'is_asset_approver', 'department', 'location', 'created_at')
+    list_display = ('employee_id', 'user', 'department', 'location', 'designation', 'is_company_admin', 'is_finance_officer', 'is_purchase_officer', 'is_asset_custodian', 'is_asset_approver')
+    list_filter = ('is_company_admin', 'is_finance_officer', 'is_purchase_officer', 'is_asset_custodian', 'is_asset_approver', 'department', 'location', 'created_at')
     search_fields = ('employee_id', 'user__username', 'user__first_name', 'user__last_name', 'designation')
     raw_id_fields = ('user', 'department', 'location', 'reporting_manager')
     list_per_page = 25

@@ -173,12 +173,16 @@ class AssetCategoryForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.form_class = 'form-horizontal'
-        
-        # Filter parent category by company if provided
+
+        # Only top-level (root) categories can be parents — one level deep only
+        qs = AssetCategory.objects.filter(is_deleted=False, is_active=True, parent_category__isnull=True)
         if company:
-            self.fields['parent_category'].queryset = AssetCategory.objects.filter(
-                company=company, is_deleted=False, is_active=True
-            )
+            qs = qs.filter(company=company)
+        # Exclude self when editing to prevent circular reference
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        self.fields['parent_category'].queryset = qs
+        self.fields['parent_category'].empty_label = "— None (top-level category) —"
 
 
 class AssetTypeForm(forms.ModelForm):
@@ -221,22 +225,22 @@ class VendorForm(forms.ModelForm):
         model = Vendor
         fields = [
             'code', 'name', 'vendor_type', 'contact_person', 'phone', 'email',
-            'address', 'city', 'state', 'country', 'postal_code',
-            'gstin', 'pan', 'is_active'
+            'address', 'city', 'province', 'country', 'postal_code',
+            'tin', 'pan', 'is_active'
         ]
         widgets = {
             'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'VND-001'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Vendor Name'}),
             'vendor_type': forms.Select(attrs={'class': 'form-select'}),
             'contact_person': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contact Person'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+1234567890'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+675 XXX XXXX'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'vendor@example.com'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Complete address...'}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
-            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State/Province'}),
-            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
+            'province': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Province'}),
+            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Papua New Guinea'}),
             'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Postal Code'}),
-            'gstin': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'GSTIN'}),
+            'tin': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'TIN'}),
             'pan': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'PAN'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

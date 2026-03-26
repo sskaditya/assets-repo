@@ -85,7 +85,7 @@ class LocationModelTest(TestCase):
             code="MAIN-001",
             location_type="OFFICE",
             city="New York",
-            state="NY",
+            province="NY",
             country="USA"
         )
         

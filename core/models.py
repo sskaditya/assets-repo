@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.validators import MaxValueValidator
 import json
 
 
@@ -67,13 +68,13 @@ class Company(BaseModel):
     address_line1 = models.CharField(max_length=255, blank=True, null=True)
     address_line2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    country = models.CharField(max_length=100, default='Sri Lanka')
+    province = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, default='Papua New Guinea')
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     
     # Tax Information
-    tax_id = models.CharField(max_length=50, blank=True, null=True, help_text="Tax ID / Business Registration Number")
-    gstin = models.CharField(max_length=20, blank=True, null=True, verbose_name='GSTIN')
+    ipa_registration = models.CharField(max_length=50, blank=True, null=True, help_text="IPA Registration Number")
+    tin = models.CharField(max_length=20, blank=True, null=True, verbose_name='TIN')
     
     # Branding
     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
@@ -84,8 +85,8 @@ class Company(BaseModel):
     subscription_end_date = models.DateField(blank=True, null=True)
     
     # Limits (optional - for subscription management)
-    max_users = models.IntegerField(default=50, help_text="Maximum number of users allowed")
-    max_assets = models.IntegerField(default=1000, help_text="Maximum number of assets allowed")
+    max_users = models.IntegerField(default=25, validators=[MaxValueValidator(25)], help_text="Maximum number of users allowed (max 25)")
+    max_assets = models.IntegerField(default=1500, validators=[MaxValueValidator(1500)], help_text="Maximum number of assets allowed (max 1500)")
     
     notes = models.TextField(blank=True, null=True)
 

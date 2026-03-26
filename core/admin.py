@@ -7,7 +7,7 @@
 class CompanyAdmin:
     list_display = ('code', 'name', 'email', 'phone', 'city', 'is_active', 'is_subscription_active', 'created_at')
     list_filter = ('is_active', 'country', 'created_at')
-    search_fields = ('name', 'code', 'email', 'tax_id', 'gstin')
+    search_fields = ('name', 'code', 'email', 'ipa_registration', 'tin')
     readonly_fields = ('created_at', 'updated_at')
     list_per_page = 25
     
@@ -19,10 +19,10 @@ class CompanyAdmin:
             'fields': ('email', 'phone', 'website')
         }),
         ('Address', {
-            'fields': ('address_line1', 'address_line2', 'city', 'state', 'country', 'postal_code')
+            'fields': ('address_line1', 'address_line2', 'city', 'province', 'country', 'postal_code')
         }),
         ('Tax Information', {
-            'fields': ('tax_id', 'gstin')
+            'fields': ('ipa_registration', 'tin')
         }),
         ('Subscription', {
             'fields': ('subscription_start_date', 'subscription_end_date', 'max_users', 'max_assets')

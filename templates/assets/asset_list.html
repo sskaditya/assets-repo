@@ -1,4 +1,5 @@
 {% extends "base_sidebar.html" %}
+{% load core_extras %}
 
 {% block title %}Assets - Assetz{% endblock %}
 {% block page_title %}Assets{% endblock %}
@@ -82,7 +83,7 @@
     <!-- Assets Table -->
     <div class="card overflow-hidden">
         <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
-            <table class="w-full min-w-[800px]">
+            <table class="w-full min-w-[1000px]">
                 <thead class="bg-muted/50">
                     <tr>
                         <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Asset Tag</th>
@@ -90,12 +91,15 @@
                         <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Type</th>
                         <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Status</th>
                         <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Location</th>
-                        <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Assigned To</th>
+                        <th class="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Purchase Price</th>
+                        <th class="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Book Value</th>
+                        <th class="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Depreciation</th>
                         <th class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 sm:px-6 py-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     {% for asset in page_obj %}
+                    {% with dep=asset_depreciation_data|default_if_none:None %}
                     <tr class="hover:bg-muted/30">
                         <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                             <a href="{% url 'assets:asset_detail' asset.pk %}" class="text-sm font-medium text-primary hover:text-primary-600">
@@ -103,7 +107,7 @@
                             </a>
                         </td>
                         <td class="px-4 sm:px-6 py-3 sm:py-4">
-                            <div class="text-sm text-foreground font-medium max-w-[200px] truncate">{{ asset.name }}</div>
+                            <div class="text-sm text-foreground font-medium max-w-[180px] truncate">{{ asset.name }}</div>
                             {% if asset.serial_number %}
                             <div class="text-xs text-muted-foreground">S/N: {{ asset.serial_number }}</div>
                             {% endif %}
@@ -126,9 +130,56 @@
                         <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-muted-foreground">
                             {{ asset.location.name|default:"Not assigned" }}
                         </td>
-                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-muted-foreground">
-                            {{ asset.assigned_to.get_full_name|default:"Unassigned" }}
+
+                        <!-- Purchase Price -->
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                            {% if asset.purchase_price %}
+                            <span class="text-sm font-medium text-foreground">K{{ asset.purchase_price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="text-xs text-muted-foreground">—</span>
+                            {% endif %}
                         </td>
+
+                        <!-- Current Book Value -->
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                            {% if asset.pk in asset_depreciation_data %}
+                            {% with d=asset_depreciation_data|get_item:asset.pk %}
+                            <span class="text-sm font-semibold text-green-600">K{{ d.current_book_value|floatformat:0 }}</span>
+                            {% endwith %}
+                            {% elif asset.purchase_price %}
+                            <span class="text-sm font-medium text-foreground">K{{ asset.purchase_price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="text-xs text-muted-foreground">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Depreciation % -->
+                        <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                            {% if asset.pk in asset_depreciation_data %}
+                            {% with d=asset_depreciation_data|get_item:asset.pk %}
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-full
+                                    {% if d.depreciation_pct >= 80 %}bg-red-100 text-red-700
+                                    {% elif d.depreciation_pct >= 50 %}bg-orange-100 text-orange-700
+                                    {% elif d.depreciation_pct >= 20 %}bg-amber-100 text-amber-700
+                                    {% else %}bg-green-100 text-green-700{% endif %}">
+                                    {{ d.depreciation_pct }}%
+                                </span>
+                                <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                                    <div class="h-1.5 rounded-full
+                                        {% if d.depreciation_pct >= 80 %}bg-red-500
+                                        {% elif d.depreciation_pct >= 50 %}bg-orange-500
+                                        {% elif d.depreciation_pct >= 20 %}bg-amber-400
+                                        {% else %}bg-green-500{% endif %}"
+                                         style="width: {{ d.depreciation_pct }}%"></div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                            {% else %}
+                            <span class="text-xs text-muted-foreground">—</span>
+                            {% endif %}
+                        </td>
+
                         <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm">
                             <div class="flex items-center gap-1 sm:gap-2">
                                 <a href="{% url 'assets:asset_detail' asset.pk %}" class="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-primary hover:text-primary-600" title="View">
@@ -145,9 +196,10 @@
                             </div>
                         </td>
                     </tr>
+                    {% endwith %}
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-4 sm:px-6 py-6 sm:py-8 text-center text-sm text-muted-foreground">
+                        <td colspan="9" class="px-4 sm:px-6 py-6 sm:py-8 text-center text-sm text-muted-foreground">
                             No assets found. <a href="{% url 'assets:asset_create' %}" class="text-primary hover:text-primary-600">Create your first asset</a>
                         </td>
                     </tr>

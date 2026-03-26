@@ -17,21 +17,81 @@ from .audit_utils import log_export
 @login_required
 def company_list(request):
     """List all companies (Super Admin only)"""
+    from datetime import date
+    from assets.models import Asset
     if not getattr(request, 'is_super_admin', False):
         messages.error(request, 'Only super admin can access company management')
         return redirect('assets:dashboard')
-    
-    companies = Company.objects.filter(is_deleted=False).order_by('-created_at')
-    
-    # Pagination
-    paginator = Paginator(companies, 25)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
+
+    today = date.today()
+    in_30_days = today + timedelta(days=30)
+
+    companies = Company.objects.filter(is_deleted=False).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+        user_count=Count('user_profiles', filter=Q(user_profiles__user__is_active=True)),
+    ).order_by('-created_at')
+
+    # Summary stats
+    total_count = companies.count()
+    active_count = companies.filter(is_active=True).count()
+    expiring_count = companies.filter(
+        is_active=True,
+        subscription_end_date__gte=today,
+        subscription_end_date__lte=in_30_days,
+    ).count()
+    expired_count = companies.filter(
+        is_active=True,
+        subscription_end_date__lt=today,
+    ).count()
+
+    # Total assets belonging to expiring/expired companies
+    expiring_company_ids = list(Company.objects.filter(
+        is_deleted=False, is_active=True,
+        subscription_end_date__gte=today,
+        subscription_end_date__lte=in_30_days,
+    ).values_list('id', flat=True))
+    expired_company_ids = list(Company.objects.filter(
+        is_deleted=False, is_active=True,
+        subscription_end_date__lt=today,
+    ).values_list('id', flat=True))
+    assets_in_expiring = Asset.objects.filter(
+        company_id__in=expiring_company_ids + expired_company_ids,
+        is_deleted=False,
+    ).count()
+
+    # Enrich each company with days_left
+    companies_data = []
+    for company in companies:
+        days_left = None
+        status_label = 'no_date'
+        if company.subscription_end_date:
+            days_left = (company.subscription_end_date - today).days
+            if days_left < 0:
+                status_label = 'expired'
+            elif days_left <= 7:
+                status_label = 'critical'
+            elif days_left <= 30:
+                status_label = 'expiring'
+            else:
+                status_label = 'ok'
+        companies_data.append({
+            'company': company,
+            'days_left': days_left,
+            'status_label': status_label,
+        })
+
+    paginator = Paginator(companies_data, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
     context = {
         'page_obj': page_obj,
+        'total_count': total_count,
+        'active_count': active_count,
+        'expiring_count': expiring_count,
+        'expired_count': expired_count,
+        'assets_in_expiring': assets_in_expiring,
     }
-    
+
     return render(request, 'core/company_list.html', context)
 
 
@@ -111,6 +171,91 @@ def company_update(request, pk):
     }
     
     return render(request, 'core/company_form.html', context)
+
+
+@login_required
+def companies_active(request):
+    """List all active companies with detailed stats (Super Admin only)"""
+    from datetime import date
+    if not getattr(request, 'is_super_admin', False):
+        messages.error(request, 'Only super admin can access this page.')
+        return redirect('assets:dashboard')
+
+    from assets.models import Asset
+    from users.models import UserProfile
+
+    companies = Company.objects.filter(is_deleted=False, is_active=True).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+        user_count=Count('user_profiles', filter=Q(user_profiles__user__is_active=True)),
+    ).order_by('name')
+
+    # Enrich with subscription days remaining
+    today = date.today()
+    companies_data = []
+    for company in companies:
+        days_left = None
+        if company.subscription_end_date:
+            days_left = (company.subscription_end_date - today).days
+        companies_data.append({'company': company, 'days_left': days_left})
+
+    paginator = Paginator(companies_data, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'page_obj': page_obj,
+        'total_count': companies.count(),
+    }
+    return render(request, 'core/companies_active.html', context)
+
+
+@login_required
+def companies_expiring(request):
+    """List companies with subscriptions expiring within 30 days (Super Admin only)"""
+    from datetime import date
+    if not getattr(request, 'is_super_admin', False):
+        messages.error(request, 'Only super admin can access this page.')
+        return redirect('assets:dashboard')
+
+    today = date.today()
+    in_30_days = today + timedelta(days=30)
+
+    companies = Company.objects.filter(
+        is_deleted=False,
+        is_active=True,
+        subscription_end_date__gte=today,
+        subscription_end_date__lte=in_30_days,
+    ).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+        user_count=Count('user_profiles', filter=Q(user_profiles__user__is_active=True)),
+    ).order_by('subscription_end_date')
+
+    companies_data = []
+    for company in companies:
+        days_left = (company.subscription_end_date - today).days
+        companies_data.append({'company': company, 'days_left': days_left})
+
+    # Also get already-expired companies
+    expired = Company.objects.filter(
+        is_deleted=False,
+        is_active=True,
+        subscription_end_date__lt=today,
+    ).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+        user_count=Count('user_profiles', filter=Q(user_profiles__user__is_active=True)),
+    ).order_by('subscription_end_date')
+
+    expired_data = []
+    for company in expired:
+        days_overdue = (today - company.subscription_end_date).days
+        expired_data.append({'company': company, 'days_overdue': days_overdue})
+
+    context = {
+        'companies_data': companies_data,
+        'expired_data': expired_data,
+        'expiring_count': len(companies_data),
+        'expired_count': len(expired_data),
+    }
+    return render(request, 'core/companies_expiring.html', context)
 
 
 @login_required

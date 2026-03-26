@@ -1,0 +1,198 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Expiring Subscriptions - Assetz{% endblock %}
+{% block page_title %}Expiring Subscriptions{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <a href="{% url 'assets:dashboard' %}" class="hover:text-primary-600">Dashboard</a>
+                <span>/</span>
+                <span class="text-gray-700 font-medium">Expiring Subscriptions</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">Expiring Subscriptions</h1>
+            <p class="text-sm text-gray-500 mt-1">Companies whose subscriptions expire within the next 30 days</p>
+        </div>
+        <a href="{% url 'core:company_list' %}" class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+            <i data-lucide="list" class="w-4 h-4"></i>
+            All Companies
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="clock" class="w-6 h-6 text-amber-600"></i>
+            </div>
+            <div>
+                <p class="text-sm text-amber-700 font-medium">Expiring in 30 Days</p>
+                <p class="text-3xl font-bold text-amber-800">{{ expiring_count }}</p>
+            </div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-xl p-5 flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
+            </div>
+            <div>
+                <p class="text-sm text-red-700 font-medium">Already Expired</p>
+                <p class="text-3xl font-bold text-red-800">{{ expired_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiring Soon Table -->
+    {% if companies_data %}
+    <div class="bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden">
+        <div class="p-5 border-b border-amber-200 bg-amber-50 flex items-center gap-3">
+            <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
+            <h2 class="font-semibold text-amber-900">Expiring Within 30 Days ({{ expiring_count }})</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[640px]">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Company</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Assets</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Users</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Expires On</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Days Left</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for item in companies_data %}
+                    {% with company=item.company days_left=item.days_left %}
+                    <tr class="hover:bg-amber-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                {% if company.logo %}
+                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="h-10 w-10 rounded-lg object-cover">
+                                {% else %}
+                                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold text-sm">{{ company.name|slice:":1" }}</span>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-900">{{ company.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ company.code }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">{{ company.asset_count }}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">{{ company.user_count }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">{{ company.subscription_end_date|date:"d M Y" }}</td>
+                        <td class="px-6 py-4">
+                            {% if days_left <= 7 %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                                {{ days_left }} day{{ days_left|pluralize }} left
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                {{ days_left }} days left
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'core:company_detail' company.pk %}" class="p-1.5 hover:bg-gray-200 rounded-lg transition-colors" title="View">
+                                    <i data-lucide="eye" class="w-4 h-4 text-gray-600"></i>
+                                </a>
+                                <a href="{% url 'core:company_update' company.pk %}" class="p-1.5 hover:bg-blue-100 rounded-lg transition-colors" title="Renew / Edit">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-600"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div class="flex flex-col items-center gap-3">
+            <div class="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+                <i data-lucide="check-circle-2" class="w-8 h-8 text-green-500"></i>
+            </div>
+            <p class="text-sm font-medium text-gray-900">No subscriptions expiring in the next 30 days</p>
+            <p class="text-xs text-gray-500">All companies are in good standing</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Expired Table -->
+    {% if expired_data %}
+    <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+        <div class="p-5 border-b border-red-200 bg-red-50 flex items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+            <h2 class="font-semibold text-red-900">Already Expired ({{ expired_count }})</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[640px]">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Company</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Assets</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Users</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Expired On</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Overdue</th>
+                        <th class="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for item in expired_data %}
+                    {% with company=item.company days_overdue=item.days_overdue %}
+                    <tr class="hover:bg-red-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                {% if company.logo %}
+                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="h-10 w-10 rounded-lg object-cover">
+                                {% else %}
+                                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold text-sm">{{ company.name|slice:":1" }}</span>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-900">{{ company.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ company.code }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">{{ company.asset_count }}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">{{ company.user_count }}</td>
+                        <td class="px-6 py-4 text-sm text-red-700 font-medium">{{ company.subscription_end_date|date:"d M Y" }}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                                {{ days_overdue }} day{{ days_overdue|pluralize }} overdue
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'core:company_detail' company.pk %}" class="p-1.5 hover:bg-gray-200 rounded-lg transition-colors" title="View">
+                                    <i data-lucide="eye" class="w-4 h-4 text-gray-600"></i>
+                                </a>
+                                <a href="{% url 'core:company_update' company.pk %}" class="p-1.5 hover:bg-blue-100 rounded-lg transition-colors" title="Renew">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-600"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

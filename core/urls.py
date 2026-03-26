@@ -6,6 +6,8 @@ app_name = 'core'
 urlpatterns = [
     # Company Management
     path('companies/', views.company_list, name='company_list'),
+    path('companies/active/', views.companies_active, name='companies_active'),
+    path('companies/expiring/', views.companies_expiring, name='companies_expiring'),
     path('companies/create/', views.company_create, name='company_create'),
     path('companies/<int:pk>/', views.company_detail, name='company_detail'),
     path('companies/<int:pk>/update/', views.company_update, name='company_update'),

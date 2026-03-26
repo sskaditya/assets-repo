@@ -25,7 +25,7 @@ class AssetTypeAdmin(admin.ModelAdmin):
 class VendorAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'vendor_type', 'contact_person', 'phone', 'email', 'is_active')
     list_filter = ('vendor_type', 'is_active', 'created_at')
-    search_fields = ('name', 'code', 'contact_person', 'email', 'gstin', 'pan')
+    search_fields = ('name', 'code', 'contact_person', 'email', 'tin', 'pan')
     list_per_page = 25
 
 

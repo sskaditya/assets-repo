@@ -26,6 +26,26 @@ def pprint(value):
 
 
 @register.filter
+def get_item(dictionary, key):
+    """Get a dict value by variable key. Usage: {{ my_dict|get_item:variable }}"""
+    if isinstance(dictionary, dict):
+        return dictionary.get(key)
+    return None
+
+
+@register.filter
+def abs(value):
+    """Return the absolute value of a number."""
+    try:
+        return __builtins__['abs'](value) if isinstance(__builtins__, dict) else __import__('builtins').abs(value)
+    except Exception:
+        try:
+            return value if value >= 0 else -value
+        except Exception:
+            return value
+
+
+@register.filter
 def get_attribute(obj, attr_name):
     """
     Get an attribute from an object dynamically.

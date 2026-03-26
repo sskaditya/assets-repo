@@ -113,7 +113,7 @@
                     {% if company.address_line2 %}
                     <p class="text-sm text-gray-900">{{ company.address_line2 }}</p>
                     {% endif %}
-                    <p class="text-sm text-gray-900">{{ company.city }}{% if company.state %}, {{ company.state }}{% endif %}</p>
+                    <p class="text-sm text-gray-900">{{ company.city }}{% if company.province %}, {{ company.province }}{% endif %}</p>
                     <p class="text-sm text-gray-900">{{ company.country }} {{ company.postal_code }}</p>
                     {% else %}
                     <p class="text-sm text-gray-500">No address provided</p>
@@ -127,12 +127,12 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Tax Information</h3>
             <div class="space-y-3">
                 <div>
-                    <p class="text-xs text-gray-500">Tax ID</p>
-                    <p class="text-sm font-medium text-gray-900">{{ company.tax_id|default:"Not provided" }}</p>
+                    <p class="text-xs text-gray-500">IPA Registration</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.ipa_registration|default:"Not provided" }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500">GSTIN</p>
-                    <p class="text-sm font-medium text-gray-900">{{ company.gstin|default:"Not provided" }}</p>
+                    <p class="text-xs text-gray-500">TIN</p>
+                    <p class="text-sm font-medium text-gray-900">{{ company.tin|default:"Not provided" }}</p>
                 </div>
             </div>
         </div>

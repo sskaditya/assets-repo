@@ -25,6 +25,8 @@ class CompanyMiddleware(MiddlewareMixin):
             # Check if user is superuser (Softlogic super admin)
             if request.user.is_superuser:
                 request.is_super_admin = True
+                request.is_finance_officer = False
+                request.is_purchase_officer = False
                 # Super admin can optionally select a company to view
                 selected_company_id = request.session.get('selected_company_id')
                 if selected_company_id:
@@ -43,6 +45,8 @@ class CompanyMiddleware(MiddlewareMixin):
                 request.current_company = profile.company
                 request.is_super_admin = False
                 request.is_company_admin = profile.is_company_admin
+                request.is_finance_officer = profile.is_finance_officer
+                request.is_purchase_officer = profile.is_purchase_officer
             except:
                 # User has no profile - redirect to dashboard with error message
                 # The user should contact an administrator to set up their profile
@@ -54,6 +58,8 @@ class CompanyMiddleware(MiddlewareMixin):
             request.current_company = None
             request.is_super_admin = False
             request.is_company_admin = False
+            request.is_finance_officer = False
+            request.is_purchase_officer = False
         
         return None
 
@@ -78,3 +84,17 @@ def is_company_admin(request):
     Helper function to check if the current user is a company admin.
     """
     return getattr(request, 'is_company_admin', False)
+
+
+def is_finance_officer(request):
+    """
+    Helper function to check if the current user is a finance officer.
+    """
+    return getattr(request, 'is_finance_officer', False)
+
+
+def is_purchase_officer(request):
+    """
+    Helper function to check if the current user is a purchase officer.
+    """
+    return getattr(request, 'is_purchase_officer', False)

@@ -222,6 +222,53 @@
                 </div>
             </div>
 
+            <!-- Depreciation Schedule Table -->
+            {% if depreciation_schedule %}
+            <div class="card">
+                <div class="p-6 border-b border-border flex items-center gap-2">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-orange-500"></i>
+                    <h3 class="text-lg font-semibold text-foreground">Depreciation Schedule</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Year</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Depreciation</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Book Value</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">% Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for row in depreciation_schedule %}
+                            <tr class="hover:bg-gray-50 {% if forloop.counter == years_elapsed|floatformat:0|add:0 %}bg-amber-50{% endif %}">
+                                <td class="px-6 py-3 font-medium text-foreground">
+                                    Year {{ row.year }}
+                                    {% if asset.purchase_date %}
+                                    <span class="text-xs text-muted-foreground ml-1">({{ asset.purchase_date.year|add:row.year }})</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-3 text-right font-semibold text-orange-600">K{{ row.depreciation|floatformat:2 }}</td>
+                                <td class="px-6 py-3 text-right font-semibold text-green-600">K{{ row.book_value|floatformat:2 }}</td>
+                                <td class="px-6 py-3 text-right">
+                                    {% if asset.purchase_price %}
+                                    {% widthratio row.book_value asset.purchase_price 100 as pct %}
+                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full
+                                        {% if pct >= 50 %}bg-green-100 text-green-700
+                                        {% elif pct >= 20 %}bg-amber-100 text-amber-700
+                                        {% else %}bg-red-100 text-red-700{% endif %}">
+                                        {{ pct }}%
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Documents -->
             <div class="card">
                 <div class="p-6 border-b border-border flex items-center justify-between">
@@ -260,6 +307,90 @@
 
         <!-- Sidebar -->
         <div class="space-y-6">
+
+            <!-- Depreciation & Valuation -->
+            {% if current_book_value is not None %}
+            <div class="card border-orange-200">
+                <div class="p-5 border-b border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 rounded-t-xl flex items-center gap-2">
+                    <i data-lucide="trending-down" class="w-5 h-5 text-orange-600"></i>
+                    <h3 class="text-base font-semibold text-orange-900">Depreciation & Valuation</h3>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- Purchase Price -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-muted-foreground">Purchase Price</span>
+                        <span class="text-sm font-semibold text-foreground">K{{ asset.purchase_price|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Current Book Value -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-muted-foreground">Current Book Value</span>
+                        <span class="text-sm font-bold text-green-600">K{{ current_book_value|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Total Depreciation -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-muted-foreground">Total Depreciation</span>
+                        <span class="text-sm font-bold text-orange-600">K{{ total_depreciation|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Depreciation Progress Bar -->
+                    {% if depreciation_pct is not None %}
+                    <div>
+                        <div class="flex justify-between text-xs text-muted-foreground mb-1">
+                            <span>Depreciated</span>
+                            <span class="font-semibold {% if depreciation_pct >= 80 %}text-red-600{% elif depreciation_pct >= 50 %}text-orange-600{% else %}text-amber-600{% endif %}">{{ depreciation_pct }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="h-2.5 rounded-full {% if depreciation_pct >= 80 %}bg-red-500{% elif depreciation_pct >= 50 %}bg-orange-500{% else %}bg-amber-400{% endif %}"
+                                 style="width: {{ depreciation_pct }}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span class="text-green-600">K{{ current_book_value|floatformat:0 }} remaining</span>
+                            <span class="text-gray-400">{{ years_elapsed }}y elapsed</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Method & Rate -->
+                    <div class="pt-2 border-t border-gray-100 space-y-1.5">
+                        {% if asset.depreciation_rate %}
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted-foreground">Method</span>
+                            <span class="font-medium text-foreground">Reducing Balance</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted-foreground">Rate</span>
+                            <span class="font-medium text-foreground">{{ asset.depreciation_rate }}% p.a.</span>
+                        </div>
+                        {% elif asset.useful_life_years %}
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted-foreground">Method</span>
+                            <span class="font-medium text-foreground">Straight Line</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.useful_life_years %}
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted-foreground">Useful Life</span>
+                            <span class="font-medium text-foreground">{{ asset.useful_life_years }} years</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.salvage_value %}
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted-foreground">Salvage Value</span>
+                            <span class="font-medium text-foreground">K{{ asset.salvage_value|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'assets:asset_depreciation' asset.pk %}" class="flex items-center justify-center gap-2 w-full mt-2 px-4 py-2 text-sm border border-orange-200 text-orange-700 rounded-lg hover:bg-orange-50 transition-colors">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        Full Depreciation Schedule
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Quick Actions -->
             <div class="card">
                 <div class="p-6 border-b border-border">

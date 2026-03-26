@@ -165,8 +165,22 @@
                     <span class="text-sm font-medium text-gray-900">Asset Custodian</span>
                 </div>
                 {% endif %}
-                
-                {% if not profile.is_company_admin and not profile.is_asset_approver and not profile.is_asset_custodian and not user_obj.is_superuser %}
+
+                {% if profile.is_finance_officer %}
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-yellow-600"></i>
+                    <span class="text-sm font-medium text-gray-900">Finance Officer</span>
+                </div>
+                {% endif %}
+
+                {% if profile.is_purchase_officer %}
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-teal-600"></i>
+                    <span class="text-sm font-medium text-gray-900">Purchase Officer</span>
+                </div>
+                {% endif %}
+
+                {% if not profile.is_company_admin and not profile.is_asset_approver and not profile.is_asset_custodian and not profile.is_finance_officer and not profile.is_purchase_officer and not user_obj.is_superuser %}
                 <p class="text-gray-500 text-sm">No special roles assigned</p>
                 {% endif %}
                 {% endif %}

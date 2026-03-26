@@ -27,6 +27,24 @@ from .utils import (
 )
 
 
+def _can_access_financial(request):
+    """Finance Officers, Company Admins, and Super Admins can access financial views."""
+    return (
+        getattr(request, 'is_super_admin', False) or
+        getattr(request, 'is_company_admin', False) or
+        getattr(request, 'is_finance_officer', False)
+    )
+
+
+def _can_access_purchase(request):
+    """Purchase Officers, Company Admins, and Super Admins can access vendor/purchase views."""
+    return (
+        getattr(request, 'is_super_admin', False) or
+        getattr(request, 'is_company_admin', False) or
+        getattr(request, 'is_purchase_officer', False)
+    )
+
+
 @login_required
 def dashboard(request):
     """Dashboard view with asset statistics"""
@@ -60,7 +78,23 @@ def dashboard(request):
             asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
             user_count=Count('user_profiles', filter=Q(user_profiles__user__is_active=True))
         ).order_by('-created_at')[:10]
-        
+
+        # Assets belonging to expiring/expired companies
+        expiring_company_ids = list(Company.objects.filter(
+            is_deleted=False, is_active=True,
+            subscription_end_date__gte=date.today(),
+            subscription_end_date__lte=date.today() + timedelta(days=30),
+        ).values_list('id', flat=True))
+        expired_company_ids = list(Company.objects.filter(
+            is_deleted=False, is_active=True,
+            subscription_end_date__lt=date.today(),
+        ).values_list('id', flat=True))
+        assets_at_risk = Asset.objects.filter(
+            company_id__in=expiring_company_ids + expired_company_ids,
+            is_deleted=False,
+        ).count()
+        expired_companies_count = len(expired_company_ids)
+
         context.update({
             'is_super_admin_dashboard': True,
             'total_companies': total_companies,
@@ -69,6 +103,8 @@ def dashboard(request):
             'recent_companies': recent_companies,
             'total_assets_all': total_assets,
             'companies_with_stats': companies_with_stats,
+            'assets_at_risk': assets_at_risk,
+            'expired_companies_count': expired_companies_count,
         })
     else:
         # Regular User Dashboard - Asset Management Focus
@@ -122,6 +158,33 @@ def dashboard(request):
                 warranty_end_date__lte=date.today() + timedelta(days=30)
             ).select_related('company', 'category', 'location').order_by('warranty_end_date')[:10]
         
+        # Portfolio depreciation summary
+        depreciable_assets = Asset.objects.filter(
+            **(dict(company=company) if company else dict()),
+            is_deleted=False,
+            purchase_price__isnull=False,
+            purchase_date__isnull=False,
+        )
+        total_purchase_value = sum(a.purchase_price for a in depreciable_assets if a.purchase_price)
+        total_current_value = sum(calculate_current_book_value(a) for a in depreciable_assets)
+        total_depreciation_value = total_purchase_value - total_current_value
+        depreciation_pct_overall = round(float(total_depreciation_value / total_purchase_value) * 100, 1) if total_purchase_value else 0
+
+        # Top depreciating assets (highest % depreciated)
+        top_depreciating = []
+        for a in depreciable_assets:
+            if a.purchase_price:
+                cbv = calculate_current_book_value(a)
+                dep_amt = a.purchase_price - cbv
+                dep_pct = round(float(dep_amt / a.purchase_price) * 100, 1)
+                top_depreciating.append({
+                    'asset': a,
+                    'current_value': cbv,
+                    'depreciation_amount': dep_amt,
+                    'depreciation_pct': dep_pct,
+                })
+        top_depreciating.sort(key=lambda x: x['depreciation_pct'], reverse=True)
+
         context.update({
             'is_super_admin_dashboard': False,
             'total_assets': total_assets,
@@ -133,6 +196,11 @@ def dashboard(request):
             'warranty_expiring': warranty_expiring,
             'company': company,
             'showing_all_companies': not company,
+            'total_purchase_value': total_purchase_value,
+            'total_current_value': total_current_value,
+            'total_depreciation_value': total_depreciation_value,
+            'depreciation_pct_overall': depreciation_pct_overall,
+            'top_depreciating': top_depreciating[:5],
         })
     
     return render(request, 'assets/dashboard.html', context)
@@ -195,14 +263,28 @@ def asset_list(request):
     paginator = Paginator(assets, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
+    # Calculate depreciation for current page assets
+    asset_depreciation_data = {}
+    for asset in page_obj.object_list:
+        if asset.purchase_price and asset.purchase_date:
+            cbv = calculate_current_book_value(asset)
+            dep_amt = asset.purchase_price - cbv
+            dep_pct = round(float(dep_amt / asset.purchase_price) * 100, 1) if asset.purchase_price else 0
+            asset_depreciation_data[asset.pk] = {
+                'current_book_value': cbv,
+                'depreciation_amount': dep_amt,
+                'depreciation_pct': dep_pct,
+            }
+
     context = {
         'page_obj': page_obj,
         'filter_form': filter_form,
         'company': company,
         'showing_all_companies': not company,
+        'asset_depreciation_data': asset_depreciation_data,
     }
-    
+
     return render(request, 'assets/asset_list.html', context)
 
 
@@ -210,21 +292,43 @@ def asset_list(request):
 def asset_detail(request, pk):
     """Asset detail view"""
     asset = get_object_or_404(Asset, pk=pk, is_deleted=False)
-    
+
+    # Depreciation calculations
+    current_book_value = None
+    total_depreciation = None
+    depreciation_pct = None
+    depreciation_schedule = []
+    years_elapsed = None
+
+    if asset.purchase_price and asset.purchase_date:
+        from datetime import date as _date
+        current_book_value = calculate_current_book_value(asset)
+        total_depreciation = asset.purchase_price - current_book_value
+        depreciation_pct = round(float(total_depreciation / asset.purchase_price) * 100, 1) if asset.purchase_price else 0
+        years_elapsed = round((_date.today() - asset.purchase_date).days / 365.25, 1)
+
+    if asset.purchase_price and asset.purchase_date and asset.useful_life_years:
+        depreciation_schedule = calculate_depreciation_schedule(asset)
+
     # Get related data
     documents = asset.documents.filter(is_deleted=False).order_by('-created_at')
     history = asset.history.all().order_by('-action_date')[:20]
     maintenance_logs = asset.maintenance_logs.filter(is_deleted=False).order_by('-maintenance_date')[:10]
     maintenance_requests = asset.maintenance_requests.filter(is_deleted=False).order_by('-requested_date')[:10]
-    
+
     context = {
         'asset': asset,
         'documents': documents,
         'history': history,
         'maintenance_logs': maintenance_logs,
         'maintenance_requests': maintenance_requests,
+        'current_book_value': current_book_value,
+        'total_depreciation': total_depreciation,
+        'depreciation_pct': depreciation_pct,
+        'depreciation_schedule': depreciation_schedule,
+        'years_elapsed': years_elapsed,
     }
-    
+
     return render(request, 'assets/asset_detail.html', context)
 
 
@@ -291,7 +395,7 @@ def asset_import_excel(request):
     
     # Handle template download
     if request.GET.get('download_template'):
-        output = generate_import_template()
+        output = generate_import_template(company=company)
         response = HttpResponse(
             output.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -345,6 +449,47 @@ def asset_import_excel(request):
         'categories_count': categories_count,
         'types_count': types_count,
         'locations_count': locations_count,
+        'required_cols': [
+            ('Asset Tag *',   'Unique identifier per company, e.g. AST-001'),
+            ('Asset Name *',  'Full descriptive name of the asset'),
+            ('Category *',    'Must match an existing category exactly'),
+            ('Asset Type *',  'Must match an existing asset type exactly'),
+        ],
+        'basic_cols': [
+            ('Description',           'Detailed description'),
+            ('Make / Manufacturer',   'e.g. Dell, HP, Samsung'),
+            ('Model',                 'e.g. Latitude 5540'),
+            ('Serial Number',         'Must be globally unique'),
+            ('Status',                'PLANNING · IN_USE · DEPLOYED · RETIRED …'),
+            ('Condition',             'EXCELLENT · GOOD · FAIR · POOR · NOT_WORKING'),
+            ('Location',              'Must match an existing location'),
+            ('Department',            'Must match an existing department'),
+            ('Assigned To',           'Username or email of the user'),
+            ('Notes',                 'Any additional notes'),
+            ('Is Critical (Y/N)',     'Y or N'),
+            ('Is Insured (Y/N)',      'Y or N'),
+            ('Insurance Policy No',   'Policy reference number'),
+            ('Insurance Expiry',      'DD/MM/YYYY or YYYY-MM-DD'),
+        ],
+        'financial_cols': [
+            ('Vendor',                'Must match an existing vendor'),
+            ('Purchase Date',         'DD/MM/YYYY or YYYY-MM-DD'),
+            ('Purchase Price',        'Numeric, e.g. 1500.00'),
+            ('Purchase Order No',     'PO reference number'),
+            ('Invoice Number',        'Invoice reference'),
+            ('Invoice Date',          'DD/MM/YYYY or YYYY-MM-DD'),
+            ('Warranty Start Date',   'DD/MM/YYYY or YYYY-MM-DD'),
+            ('Warranty End Date',     'DD/MM/YYYY or YYYY-MM-DD'),
+            ('Warranty Months',       'Number, e.g. 24'),
+            ('AMC Start Date',        'DD/MM/YYYY or YYYY-MM-DD'),
+            ('AMC End Date',          'DD/MM/YYYY or YYYY-MM-DD'),
+            ('AMC Cost',              'Numeric, e.g. 500.00'),
+        ],
+        'depreciation_cols': [
+            ('Depreciation Rate %', 'Annual rate, e.g. 20 for 20%'),
+            ('Useful Life Years',   'Integer, e.g. 5'),
+            ('Salvage Value',       'Numeric residual value, e.g. 100.00'),
+        ],
     }
     
     return render(request, 'assets/asset_import_excel.html', context)
@@ -554,30 +699,72 @@ def asset_add_document(request, pk):
 
 @login_required
 def asset_categories(request):
-    """List all asset categories"""
+    """List all asset categories – top-level with sub-categories nested"""
     company = getattr(request, 'current_company', None)
-    
+
+    base_qs = AssetCategory.objects.filter(is_deleted=False)
     if company:
-        categories = AssetCategory.objects.filter(
-            company=company, is_deleted=False, is_active=True
-        ).annotate(
-            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
-        ).order_by('name')
+        base_qs = base_qs.filter(company=company)
     else:
-        # Super admin - show all categories with company info
-        categories = AssetCategory.objects.filter(
-            is_deleted=False, is_active=True
-        ).select_related('company').annotate(
-            asset_count=Count('assets', filter=Q(assets__is_deleted=False))
-        ).order_by('company__name', 'name')
-    
+        base_qs = base_qs.select_related('company')
+
+    # Top-level (parent) categories only
+    top_level = base_qs.filter(parent_category__isnull=True).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+        sub_count=Count('sub_categories', filter=Q(sub_categories__is_deleted=False)),
+    ).order_by('name')
+
+    # Attach sub-categories to each parent (avoids N+1)
+    all_subs = base_qs.filter(parent_category__isnull=False).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False)),
+    ).select_related('parent_category').order_by('name')
+
+    sub_map = {}
+    for sub in all_subs:
+        sub_map.setdefault(sub.parent_category_id, []).append(sub)
+
+    for cat in top_level:
+        cat.children = sub_map.get(cat.pk, [])
+
+    total_count     = base_qs.count()
+    top_count       = top_level.count()
+    sub_total_count = base_qs.filter(parent_category__isnull=False).count()
+
     context = {
-        'categories': categories,
+        'categories': top_level,
         'company': company,
         'showing_all_companies': not company,
+        'total_count': total_count,
+        'top_count': top_count,
+        'sub_total_count': sub_total_count,
     }
-    
+
     return render(request, 'assets/category_list.html', context)
+
+
+@login_required
+def category_detail(request, pk):
+    """Detail view for a single category, showing its sub-categories"""
+    company = getattr(request, 'current_company', None)
+    category = get_object_or_404(AssetCategory, pk=pk, is_deleted=False)
+
+    sub_categories = AssetCategory.objects.filter(
+        parent_category=category, is_deleted=False
+    ).annotate(
+        asset_count=Count('assets', filter=Q(assets__is_deleted=False))
+    ).order_by('name')
+
+    direct_assets = Asset.objects.filter(
+        category=category, is_deleted=False
+    ).select_related('asset_type', 'location')[:10]
+
+    context = {
+        'category': category,
+        'sub_categories': sub_categories,
+        'direct_assets': direct_assets,
+        'company': company,
+    }
+    return render(request, 'assets/category_detail.html', context)
 
 
 @login_required
@@ -611,6 +798,9 @@ def asset_types(request):
 @login_required
 def vendors(request):
     """List all vendors"""
+    if not _can_access_purchase(request):
+        messages.error(request, 'You do not have permission to access vendor information.')
+        return redirect('assets:dashboard')
     company = getattr(request, 'current_company', None)
     
     if company:
@@ -649,6 +839,10 @@ def category_create(request):
                 category.company = company
                 category.save()
                 messages.success(request, f'Category "{category.name}" created successfully!')
+                # Redirect back to parent detail page if we came from there
+                parent = category.parent_category
+                if parent:
+                    return redirect('assets:category_detail', pk=parent.pk)
                 return redirect('assets:category_list')
             except IntegrityError:
                 form.add_error(None, 'A category with this code or name already exists for this company.')
@@ -657,7 +851,15 @@ def category_create(request):
                 form.add_error(None, 'An unexpected error occurred. Please try again.')
     else:
         form = AssetCategoryForm(company=company)
-    
+        # Pre-select parent if ?parent=<pk> is passed (e.g. from "Add Sub-category" button)
+        parent_pk = request.GET.get('parent')
+        if parent_pk:
+            try:
+                parent_obj = AssetCategory.objects.get(pk=parent_pk, company=company, is_deleted=False)
+                form.initial['parent_category'] = parent_obj
+            except AssetCategory.DoesNotExist:
+                pass
+
     context = {
         'form': form,
         'title': 'Create Asset Category',
@@ -785,8 +987,11 @@ def type_delete(request, pk):
 @login_required
 def vendor_create(request):
     """Create new vendor"""
+    if not _can_access_purchase(request):
+        messages.error(request, 'You do not have permission to create vendors.')
+        return redirect('assets:vendor_list')
     company = getattr(request, 'current_company', None)
-    
+
     if not company:
         messages.error(request, 'Please select a specific company from the Company View selector before creating a vendor.')
         return redirect('assets:vendor_list')
@@ -819,6 +1024,9 @@ def vendor_create(request):
 @login_required
 def vendor_update(request, pk):
     """Update vendor"""
+    if not _can_access_purchase(request):
+        messages.error(request, 'You do not have permission to update vendors.')
+        return redirect('assets:vendor_list')
     vendor = get_object_or_404(Vendor, pk=pk, is_deleted=False)
     
     if request.method == 'POST':
@@ -842,6 +1050,9 @@ def vendor_update(request, pk):
 @login_required
 def vendor_delete(request, pk):
     """Delete vendor"""
+    if not _can_access_purchase(request):
+        messages.error(request, 'You do not have permission to delete vendors.')
+        return redirect('assets:vendor_list')
     vendor = get_object_or_404(Vendor, pk=pk, is_deleted=False)
     
     if request.method == 'POST':
@@ -1014,6 +1225,9 @@ def record_asset_movement(request):
 @login_required
 def financial_dashboard(request):
     """Financial dashboard with depreciation calculations"""
+    if not _can_access_financial(request):
+        messages.error(request, 'You do not have permission to access financial information.')
+        return redirect('assets:dashboard')
     company = getattr(request, 'current_company', None)
     
     if company:
@@ -1720,8 +1934,11 @@ def report_asset_list(request):
 @login_required
 def report_financial(request):
     """Financial Report"""
+    if not _can_access_financial(request):
+        messages.error(request, 'You do not have permission to access financial reports.')
+        return redirect('assets:dashboard')
     from .reports import FinancialReport
-    
+
     company = getattr(request, 'current_company', None)
     is_super_admin = getattr(request, 'is_super_admin', False)
     
@@ -1998,10 +2215,13 @@ def report_by_location(request):
 @login_required
 def report_depreciation(request):
     """Depreciation Schedule Report"""
+    if not _can_access_financial(request):
+        messages.error(request, 'You do not have permission to access depreciation reports.')
+        return redirect('assets:dashboard')
     from .reports import DepreciationScheduleReport
     from django.db.models import Sum, Count
     from assets.utils import calculate_current_book_value
-    
+
     company = getattr(request, 'current_company', None)
     is_super_admin = getattr(request, 'is_super_admin', False)
     

@@ -498,9 +498,11 @@
                                 <a href="{% url 'assets:type_list' %}" class="sidebar-link {% if 'types' in request.path %}active{% endif %}">
                                     <span>Asset Types</span>
                                 </a>
+                                {% if request.is_super_admin or request.is_company_admin or request.is_purchase_officer %}
                                 <a href="{% url 'assets:vendor_list' %}" class="sidebar-link {% if 'vendors' in request.path %}active{% endif %}">
                                     <span>Vendors</span>
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -543,9 +545,11 @@
                                 <a href="{% url 'assets:reports_dashboard' %}" class="sidebar-link {% if 'reports' in request.path and 'audit' not in request.path %}active{% endif %}">
                                     <span>Asset Reports</span>
                                 </a>
+                                {% if request.is_super_admin or request.is_company_admin or request.is_finance_officer %}
                                 <a href="{% url 'assets:financial_dashboard' %}" class="sidebar-link {% if 'financial' in request.path %}active{% endif %}">
                                     <span>Financial</span>
                                 </a>
+                                {% endif %}
                                 {% if request.is_super_admin or request.is_company_admin %}
                                 <a href="{% url 'core:audit_log_list' %}" class="sidebar-link {% if 'core/audit' in request.path and 'activity' not in request.path %}active{% endif %}">
                                     <span>Audit Logs</span>
@@ -628,6 +632,10 @@
                                     Super Admin
                                 {% elif request.is_company_admin %}
                                     Company Admin
+                                {% elif request.is_finance_officer %}
+                                    Finance Officer
+                                {% elif request.is_purchase_officer %}
+                                    Purchase Officer
                                 {% else %}
                                     User
                                 {% endif %}

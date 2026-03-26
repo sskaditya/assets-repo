@@ -39,11 +39,11 @@ class UserCreateForm(UserCreationForm):
     )
     phone = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+1234567890'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+675 XXX XXXX'})
     )
     mobile = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+1234567890'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+675 XXX XXXX'})
     )
     is_asset_custodian = forms.BooleanField(
         required=False,
@@ -54,6 +54,14 @@ class UserCreateForm(UserCreationForm):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
     is_company_admin = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    is_finance_officer = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    is_purchase_officer = forms.BooleanField(
         required=False,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
@@ -107,6 +115,8 @@ class UserCreateForm(UserCreationForm):
                 is_asset_custodian=self.cleaned_data.get('is_asset_custodian', False),
                 is_asset_approver=self.cleaned_data.get('is_asset_approver', False),
                 is_company_admin=self.cleaned_data.get('is_company_admin', False),
+                is_finance_officer=self.cleaned_data.get('is_finance_officer', False),
+                is_purchase_officer=self.cleaned_data.get('is_purchase_officer', False),
             )
         
         return user
@@ -147,15 +157,16 @@ class UserProfileUpdateForm(forms.ModelForm):
         fields = [
             'employee_id', 'department', 'location', 'designation',
             'phone', 'mobile', 'reporting_manager',
-            'is_asset_custodian', 'is_asset_approver', 'is_company_admin'
+            'is_asset_custodian', 'is_asset_approver', 'is_company_admin',
+            'is_finance_officer', 'is_purchase_officer'
         ]
         widgets = {
             'employee_id': forms.TextInput(attrs={'class': 'form-control'}),
             'department': forms.Select(attrs={'class': 'form-select'}),
             'location': forms.Select(attrs={'class': 'form-select'}),
             'designation': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'mobile': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+675 XXX XXXX'}),
+            'mobile': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+675 XXX XXXX'}),
             'reporting_manager': forms.Select(attrs={'class': 'form-select'}),
             'is_asset_custodian': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_asset_approver': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -326,7 +337,7 @@ class LocationForm(forms.ModelForm):
         model = Location
         fields = [
             'name', 'code', 'address_line1', 'address_line2', 
-            'city', 'state', 'country', 'postal_code', 
+            'city', 'province', 'country', 'postal_code', 
             'location_type', 'is_active'
         ]
         widgets = {
@@ -335,8 +346,8 @@ class LocationForm(forms.ModelForm):
             'address_line1': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address Line 1'}),
             'address_line2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address Line 2'}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
-            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
-            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
+            'province': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Province'}),
+            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Papua New Guinea'}),
             'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Postal Code'}),
             'location_type': forms.Select(attrs={'class': 'form-select'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
