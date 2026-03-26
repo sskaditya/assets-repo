@@ -50,7 +50,12 @@ SECRET_KEY = SECRET_KEY_ENV
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["https://assetz.toystack.dev"]
+# Both prod hostnames; extend via env for staging (comma-separated full URLs, e.g. https://host)
+_csrf_origins = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://assetz.toystack.dev,https://assetz-prod.toystack.dev,http://assetz.toystack.dev",
+)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
 
 # Site configuration for QR codes
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'localhost:8000')
